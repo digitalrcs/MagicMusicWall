@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>x64</PlatformTarget>
+    <VlcWindowsX64Enabled>true</VlcWindowsX64Enabled>
+    <VlcWindowsX86Enabled>false</VlcWindowsX86Enabled>
+    <VlcWindowsArm64Enabled>false</VlcWindowsArm64Enabled>
+    <AssemblyName>MagicMusicWall</AssemblyName>
+    <ApplicationIcon>..\..\installer\assets\DigitalRCS.ico</ApplicationIcon>
+    <Version>0.5.1</Version>
+    <Company>DigitalRCS.com</Company>
+    <Description>Local music and video library for Windows</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\digitalrcs-logo.png" />
+    <PackageReference Include="LibVLCSharp.WPF" Version="3.10.2" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.24" />
+    <PackageReference Include="QRCoder" Version="1.8.1" />
+    <ProjectReference Include="..\MagicMusicWall.Core\MagicMusicWall.Core.csproj" />
+    <ProjectReference Include="..\MagicMusicWall.Streaming\MagicMusicWall.Streaming.csproj" />
+  </ItemGroup>
+</Project>

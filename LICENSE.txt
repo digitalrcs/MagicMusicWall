@@ -1,0 +1,12 @@
+Magic Music Wall
+Copyright (c) 2026 DigitalRCS.com. All rights reserved.
+
+The Magic Music Wall application source code, documentation, and DigitalRCS
+branding are published with copyright reserved. No open-source license is
+granted for these project materials by making this repository public.
+
+Third-party software, provider content, and marks retain their respective
+licenses and rights. This notice does not replace or restrict those licenses.
+See THIRD-PARTY-NOTICES.md and the licenses directory.
+
+Contact: https://digitalrcs.com

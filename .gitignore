@@ -1,0 +1,17 @@
+**/bin/
+**/obj/
+artifacts/
+.vs/
+TestResults/
+*.user
+*.suo
+**/Data/
+dist/
+*.log
+*.bak
+*.mmw-backup-*
+.env
+.env.*
+settings.json
+library.json
+**/__pycache__/

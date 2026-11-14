@@ -1,0 +1,36 @@
+MAGIC MUSIC WALL
+DigitalRCS.com
+
+Windows 11 installation
+
+This installer includes the .NET runtime and VLC playback engine. You do not
+need to install .NET or VLC separately. Installation works offline; optional
+online song/movie lookup needs an internet connection.
+
+The x64 application is intended for Windows 11 Intel/AMD PCs. Windows 11 ARM
+may run it through x64 emulation, but ARM operation has not been validated.
+
+Setup installs for your Windows account. It creates a Start menu shortcut;
+you can also choose a desktop shortcut. The default installation location is:
+  %LOCALAPPDATA%\Programs\MagicMusicWall
+
+Your saved library and settings are separate:
+  %LOCALAPPDATA%\MagicMusicWall
+
+The installer does not copy music from another PC or change its tags. Add your
+music folders after installation. A USB drive or network source must remain
+connected when playing its files. Pair Bluetooth speakers on each PC.
+
+Upgrade and removal
+
+Close the app before upgrading. If a file is in use, Setup may ask you to close
+the application normally. It does not force-kill the player. Existing library
+data, playlists, settings and media remain in place when upgrading or removing
+the app. Uninstall removes the installed application and its shortcuts.
+
+For a removable USB copy that keeps its own data beside the app, use the
+separate Portable ZIP and its Start-MagicMusicWall.cmd launcher. Do not install
+over an existing portable Data folder. See the included offline documentation.
+
+Third-party software and online providers retain their own license terms.
+THIRD-PARTY-NOTICES.md and the licenses folder are included with the app.

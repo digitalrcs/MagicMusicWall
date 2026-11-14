@@ -1,0 +1,96 @@
+<Window x:Class="MagicMusicWall.App.SetupWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Magic Music Wall · Setup" Width="790" Height="755" MinWidth="680" MinHeight="570" WindowStartupLocation="CenterOwner" Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource TextBrush}" FontFamily="Segoe UI" FontSize="14">
+ <Window.Resources>
+  <ResourceDictionary>
+  <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="Assets/TmdbLogo.xaml"/></ResourceDictionary.MergedDictionaries>
+  <Style x:Key="Help" TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource MutedBrush}"/><Setter Property="TextWrapping" Value="Wrap"/><Setter Property="LineHeight" Value="21"/><Setter Property="Margin" Value="0,6,0,18"/></Style>
+  <Style x:Key="Label" TargetType="TextBlock"><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Margin" Value="0,18,0,8"/></Style>
+  <Style TargetType="TabItem"><Setter Property="Foreground" Value="{StaticResource MutedBrush}"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TabItem"><Border x:Name="Tab" Padding="16,12" Margin="0,0,4,0" CornerRadius="7,7,0,0" Background="#202430"><ContentPresenter ContentSource="Header"/></Border><ControlTemplate.Triggers><Trigger Property="IsSelected" Value="True"><Setter TargetName="Tab" Property="Background" Value="#39304D"/><Setter Property="Foreground" Value="{StaticResource TextBrush}"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
+  </ResourceDictionary>
+ </Window.Resources>
+ <Grid Margin="26">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <StackPanel Margin="0,0,0,20"><TextBlock Text="Setup" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="Your music, your devices, your home." Style="{StaticResource Help}" Margin="0,6,0,0"/></StackPanel>
+  <TabControl x:Name="SettingsTabs" Grid.Row="1" Background="#191C25" BorderThickness="0" Foreground="{StaticResource TextBrush}" Padding="20">
+   <TabItem Header="Sound">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+     <TextBlock Text="Listen through your stereo" FontSize="22"/>
+     <TextBlock Text="Pair and connect your stereo in Windows, refresh the list, then choose its audio output." Style="{StaticResource Help}"/>
+     <WrapPanel><Button Content="Bluetooth settings" Click="Bluetooth_Click" Margin="0,0,8,0"/><Button Content="Refresh outputs" Click="RefreshAudio_Click"/></WrapPanel>
+     <TextBlock Text="Preferred audio output" Style="{StaticResource Label}"/>
+     <ComboBox x:Name="AudioOutput" DisplayMemberPath="Name" AutomationProperties.Name="Preferred audio output"/>
+     <TextBlock Text="Your preferred device stays saved when disconnected. Playback pauses if the output changes. Reconnect and refresh outputs, then press Play." Style="{StaticResource Help}"/>
+     <DockPanel Margin="0,12,0,8"><TextBlock Text="Volume" FontWeight="SemiBold"/><TextBlock Text="{Binding ElementName=Volume, Path=Value, StringFormat={}{0:0}%}" HorizontalAlignment="Right"/></DockPanel>
+     <Slider x:Name="Volume" Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" AutomationProperties.Name="Saved volume"/>
+     <CheckBox x:Name="Shuffle" Content="Shuffle when starting a new queue" Margin="0,26,0,15"/>
+     <CheckBox x:Name="RepeatQueue" Content="Repeat the queue"/>
+     <TextBlock Text="Audio output, volume, shuffle and repeat changes in the player are also saved automatically." Style="{StaticResource Help}" Margin="0,22,0,0"/>
+    </StackPanel></ScrollViewer>
+   </TabItem>
+   <TabItem Header="Library">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+     <TextBlock Text="Keep your collection together" FontSize="22"/>
+     <TextBlock Text="Add folders from this PC, a connected USB drive, or an accessible network share. Windows handles access to shared folders." Style="{StaticResource Help}"/>
+     <ListBox x:Name="Folders" DisplayMemberPath="Path" Height="170" Background="#101218" AutomationProperties.Name="Configured library folders"/>
+     <WrapPanel Margin="0,10,0,10"><Button x:Name="AddFolder" Content="Add folder" Click="AddFolder_Click" Margin="0,0,8,8"/><Button x:Name="ManageFolders" Content="Manage folders" Click="ManageFolders_Click" Margin="0,0,8,8"/><Button x:Name="Rescan" Content="Rescan now" Click="Rescan_Click" Margin="0,0,0,8"/></WrapPanel>
+     <CheckBox x:Name="RescanStartup" Content="Rescan library folders when the app starts" Margin="0,12,0,8"/>
+     <TextBlock Text="Folders and playlists are saved as you edit them. Scanning reads your media; it does not move your files. Missing drives keep their saved entries." Style="{StaticResource Help}"/>
+    </StackPanel></ScrollViewer>
+   </TabItem>
+   <TabItem Header="Metadata">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+     <TextBlock Text="Online metadata &amp; file tags" FontSize="22"/>
+     <TextBlock Text="Right-click a song or video and choose Edit file tags. Search online, review the match, then choose which fields to write. Each save keeps a full backup beside the original file; allow space for a working copy and backup." Style="{StaticResource Help}"/>
+     <TextBlock Text="MusicBrainz · Music" Style="{StaticResource Label}"/>
+     <TextBlock Text="Artist, title, album and release year suggestions. No API key is needed. You can also edit album artist, genre, track, disc and comments manually." Style="{StaticResource Help}"/>
+     <TextBlock Text="TMDB · Movie lookup" Style="{StaticResource Label}"/>
+     <TextBlock Text="Optional: paste your TMDB API Read Access Token from your account's API settings. This is the long read-access token, not the shorter API key. It is encrypted for your Windows account when saved." Style="{StaticResource Help}"/>
+     <PasswordBox x:Name="TmdbToken" MaxLength="4096" MinHeight="36" Padding="8" AutomationProperties.Name="TMDB API Read Access Token"/>
+     <TextBlock x:Name="TmdbTokenStatus" Style="{StaticResource Help}" Margin="0,6,0,8"/>
+     <CheckBox x:Name="RemoveTmdbToken" Content="Remove saved movie lookup token when saving" Margin="0,0,0,12"/>
+     <Button Content="Open TMDB API settings" Click="TmdbSettings_Click" HorizontalAlignment="Left"/>
+     <TextBlock Text="Online searches send the artist/title you enter to the selected provider. Media files are never uploaded. File-tag editing is available in the Windows app; the web remote continues to browse the updated library." Style="{StaticResource Help}" Margin="0,18,0,8"/>
+     <TextBlock Text="Provider credits" Style="{StaticResource Label}"/>
+     <TextBlock Text="MusicBrainz metadata: MetaBrainz and MusicBrainz contributors." Style="{StaticResource Help}"/>
+     <Image Source="{StaticResource TmdbLogo}" Width="100" Height="32" Stretch="Uniform" HorizontalAlignment="Left"/>
+     <TextBlock Text="This product uses the TMDB API but is not endorsed or certified by TMDB." Style="{StaticResource Help}"/>
+    </StackPanel></ScrollViewer>
+   </TabItem>
+   <TabItem Header="Remote">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+     <TextBlock Text="Control or listen from your phone" FontSize="22"/>
+     <TextBlock Text="Open the page on a phone, tablet or another PC on your home network. Choose Control PC for your stereo, or Listen/watch here to play on that browser." Style="{StaticResource Help}"/>
+     <CheckBox x:Name="RemoteEnabled" Content="Run the web remote whenever this app is open" Margin="0,0,0,12"/>
+     <CheckBox x:Name="BrowserPlaybackEnabled" Content="Allow music and video playback in web browsers" Margin="0,0,0,6"/>
+     <TextBlock Text="PC network address" Style="{StaticResource Label}"/>
+     <ComboBox x:Name="RemoteAddress" DisplayMemberPath="Label" AutomationProperties.Name="Remote network address"/>
+     <TextBlock Text="Web remote port" Style="{StaticResource Label}"/>
+     <TextBox x:Name="RemotePort" MaxLength="5" Width="130" HorizontalAlignment="Left" AutomationProperties.Name="Web remote port"/>
+     <TextBlock x:Name="RemoteStatus" Text="Save your settings to start the remote." Style="{StaticResource Help}" Margin="0,14,0,10"/>
+     <TextBox x:Name="RemoteLink" IsReadOnly="True" TextWrapping="Wrap" MinHeight="64" AutomationProperties.Name="Remote control link"/>
+     <WrapPanel Margin="0,10,0,0"><Button Content="Show QR code" Click="ShowQr_Click" Margin="0,0,8,8"/><Button Content="Copy remote link" Click="CopyRemote_Click" Margin="0,0,8,8"/><Button Content="Open remote page" Click="OpenRemote_Click" Margin="0,0,8,8"/><Button Content="Replace access link" Click="RotateLink_Click" Margin="0,0,0,8"/></WrapPanel>
+     <WrapPanel><Button Content="Listening QR code" Click="ShowListeningQr_Click" Margin="0,0,8,8"/><Button Content="Copy listening link" Click="CopyListening_Click" Margin="0,0,0,8"/></WrapPanel>
+     <TextBlock Text="The listening link opens with browser playback selected. Tap a track to start; supported formats depend on the browser. Each browser plays independently of the PC." Style="{StaticResource Help}" FontSize="12"/>
+     <TextBlock Text="Anyone with this link on your network can control playback and, when enabled, stream your library. Use it on your trusted home network. The page uses local HTTP; no internet hosting or router forwarding is needed. If Windows asks, allow private-network access." Style="{StaticResource Help}" FontSize="12"/>
+    </StackPanel></ScrollViewer>
+   </TabItem>
+   <TabItem Header="TV &amp; data">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+     <TextBlock Text="Video on the big screen" FontSize="22"/>
+     <TextBlock Text="Use Find / refresh Chromecasts in the player to discover receivers, then select one under TV &amp; video output. Casting is selected for the current session." Style="{StaticResource Help}"/>
+     <TextBlock Text="Fire TV / VLC sharing address" Style="{StaticResource Label}"/>
+     <ComboBox x:Name="SharingAddress" DisplayMemberPath="Label" AutomationProperties.Name="File sharing network address"/>
+     <TextBlock Text="File sharing port (0 chooses an available port)" Style="{StaticResource Label}"/>
+     <TextBox x:Name="SharingPort" MaxLength="5" Width="130" HorizontalAlignment="Left" AutomationProperties.Name="File sharing port"/>
+     <TextBlock Text="Select a media file in the player, then choose Share file to Fire TV / VLC. Sharing starts only when you click Start sharing this file. New defaults apply the next time sharing starts." Style="{StaticResource Help}"/>
+     <Separator Background="{StaticResource LineBrush}" Margin="0,8"/>
+     <TextBlock Text="Library &amp; settings location" Style="{StaticResource Label}"/>
+     <TextBox x:Name="DataLocation" IsReadOnly="True" TextWrapping="Wrap" AutomationProperties.Name="Settings location"/>
+     <Button Content="Open data folder" Click="OpenData_Click" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+     <TextBlock Text="Back up this folder to preserve your playlists and preferences. Music and movies remain in their original folders." Style="{StaticResource Help}"/>
+     <StackPanel Orientation="Horizontal" Margin="0,8,0,0"><Image Source="Assets/digitalrcs-logo.png" Width="32" Height="32"/><TextBlock x:Name="AppVersionLabel" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="10,0,0,0"/></StackPanel>
+    </StackPanel></ScrollViewer>
+   </TabItem>
+  </TabControl>
+  <Grid Grid.Row="2" Margin="0,20,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="SaveStatus" Text="Save settings to apply your changes." Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,16,0"/><StackPanel Grid.Column="1" Orientation="Horizontal"><Button Content="Close" Click="Close_Click" Margin="0,0,8,0"/><Button x:Name="SaveButton" Content="Save settings" Style="{StaticResource AccentButton}" Click="Save_Click"/></StackPanel></Grid>
+ </Grid>
+</Window>

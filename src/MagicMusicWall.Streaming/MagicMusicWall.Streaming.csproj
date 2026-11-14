@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MagicMusicWall.Core\MagicMusicWall.Core.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <EmbeddedResource Include="RemotePage.html" LogicalName="MagicMusicWall.Streaming.RemotePage.html" />
+    <EmbeddedResource Include="..\MagicMusicWall.App\Assets\digitalrcs-logo.png" LogicalName="MagicMusicWall.Streaming.digitalrcs-logo.png" />
+  </ItemGroup>
+</Project>
