@@ -370,7 +370,7 @@ public partial class MainWindow : Window
                 _player.Stop();
                 if (version != _playVersion || _closing) return false;
                 if (!_player.SetRenderer(renderer)) throw new InvalidOperationException("VLC could not select that playback destination.");
-                ApplyRequestedAudio(muted);
+                ApplyRequestedAudio(muted, recreate: renderer is null);
                 using var media = new Media(_vlc, new Uri(item.Path));
                 Volatile.Write(ref _activeVersion, version);
                 return _player.Play(media);
@@ -497,9 +497,9 @@ public partial class MainWindow : Window
         ScheduleSettingsSave();
         await Playback(() => { _player.Volume = Volatile.Read(ref _requestedVolume); _player.Mute = false; return true; });
     }
-    private void ApplyRequestedAudio(bool muted = false, bool moveActive = false)
+    private void ApplyRequestedAudio(bool muted = false, bool moveActive = false, bool recreate = false)
     {
-        PlaybackEngine.ConfigureOutput(_player, Volatile.Read(ref _requestedAudioDevice), moveActive);
+        PlaybackEngine.ConfigureOutput(_player, Volatile.Read(ref _requestedAudioDevice), moveActive, recreate);
         _player.Volume = Volatile.Read(ref _requestedVolume);
         _player.Mute = muted;
     }

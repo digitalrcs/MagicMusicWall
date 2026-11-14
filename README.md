@@ -9,16 +9,16 @@ Add the music and videos you already own, browse a compact folder/file grid, bui
 
 ![Magic Music Wall library with demonstration folders](docs/images/library.png)
 
-## Download version 0.5.1
+## Download version 0.5.2
 
 For **Windows 11 on Intel/AMD x64 PCs**. The .NET runtime and VLC playback engine are included; no separate runtime installation is needed.
 
 | Package | What to do |
 | --- | --- |
-| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.5.1/MagicMusicWall-0.5.1-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
-| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.5.1/MagicMusicWall-0.5.1-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
-| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.5.1/MagicMusicWall-0.5.1-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
-| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.5.1/SHA256SUMS.txt) | Verify the downloaded files. |
+| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.5.2/MagicMusicWall-0.5.2-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
+| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.5.2/MagicMusicWall-0.5.2-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
+| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.5.2/MagicMusicWall-0.5.2-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
+| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.5.2/SHA256SUMS.txt) | Verify the downloaded files. |
 
 [All releases](https://github.com/digitalrcs/MagicMusicWall/releases) · [Install and USB instructions](docs/WINDOWS-INSTALLER.md) · [Full documentation](docs/README.md)
 

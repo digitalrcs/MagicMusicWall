@@ -5,11 +5,16 @@ namespace MagicMusicWall.App;
 
 internal static class PlaybackEngine
 {
-    public static void ConfigureOutput(MediaPlayer player, string device, bool moveActive)
+    public static void ConfigureOutput(MediaPlayer player, string device, bool moveActive, bool recreate = false)
     {
         // Stop destroys the current aout. Persist the mmdevice setting so the
         // next aout inherits it; the module-less setter only moves a live aout.
         player.SetOutputDevice(device, "mmdevice");
+        // LibVLC 3 volume/mute setters only affect an existing audio output.
+        // Create it after Stop and before applying those settings; Play would
+        // otherwise create it later with the engine's original startup volume.
+        if (recreate && !player.SetAudioOutput("mmdevice"))
+            throw new InvalidOperationException("Windows audio output could not be initialized.");
         if (moveActive) player.SetOutputDevice(device);
     }
 

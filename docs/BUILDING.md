@@ -47,6 +47,14 @@ Use synthetic media or disposable copies for file-write tests. Preserve both suc
 
 `scripts\Smoke-Test.ps1` performs a separate synthetic, zero-volume playback check. Its audio/discovery results do not prove that sound reaches a physical Bluetooth speaker or that a TV can play a cast. Discovery can trigger a Windows Firewall prompt.
 
+For native playback volume checks on Windows, run the opt-in console project against the VLC directory of an existing published payload:
+
+```powershell
+dotnet run --project tests/MagicMusicWall.Playback.Checks -c Release -- --native-dir artifacts/release-staging/0.5.2/app/libvlc/win-x64
+```
+
+Publish the payload first, or substitute another existing `libvlc/win-x64` directory. The check generates a temporary silent WAV and verifies VLC volume and mute state across track changes. It is separate from `dotnet test` and does not verify audible output quality or Bluetooth hardware.
+
 ## Project layout
 
 | Directory | Responsibility |
@@ -65,12 +73,12 @@ Use synthetic media or disposable copies for file-write tests. Preserve both suc
 
 `scripts\Publish.ps1` publishes a Windows x64 payload with its .NET runtime and VLC files. Keep the whole payload together; this is not a single-EXE distribution.
 
-Build release packages from a fresh, dedicated staging directory. Do not overwrite the folder of a running app and do not stage user data or personal media. The release staging contract is `artifacts\release-staging\app`.
+Build release packages from a fresh, dedicated staging directory. Do not overwrite the folder of a running app and do not stage user data or personal media. These examples use the versioned staging directory `artifacts\release-staging\0.5.2\app`.
 
 Publish the staged payload with:
 
 ```powershell
-pwsh -File scripts/Publish.ps1 -OutputDirectory artifacts/release-staging/app -SkipArchive
+pwsh -File scripts/Publish.ps1 -OutputDirectory artifacts/release-staging/0.5.2/app -SkipArchive
 ```
 
 The publish script assembles the application, required runtime/native libraries, third-party notices/license texts, and **OfflineDocs**. It renders the Markdown documentation using PowerShell 7's `ConvertFrom-Markdown`. `-SkipArchive` leaves archive creation to the release-packaging script.
@@ -80,8 +88,9 @@ The publish script assembles the application, required runtime/native libraries,
 Once the staged payload is ready:
 
 ```powershell
-.\scripts\Build-Installer.ps1 -PayloadDirectory .\artifacts\release-staging\app -OutputDirectory .\artifacts\release\0.5.1 -Version 0.5.1
-.\scripts\Package-Release.ps1 -PayloadDirectory .\artifacts\release-staging\app -OutputDirectory .\artifacts\release\0.5.1 -Version 0.5.1
+.\scripts\Build-Installer.ps1 -PayloadDirectory .\artifacts\release-staging\0.5.2\app -OutputDirectory .\artifacts\release\0.5.2 -Version 0.5.2
+.\scripts\Package-ThirdPartySources.ps1 -OutputDirectory .\artifacts\release\0.5.2 -Version 0.5.2
+.\scripts\Package-Release.ps1 -PayloadDirectory .\artifacts\release-staging\0.5.2\app -OutputDirectory .\artifacts\release\0.5.2 -Version 0.5.2 -AdditionalAsset .\artifacts\release\0.5.2\MagicMusicWall-0.5.2-ThirdParty-Sources.zip
 ```
 
 `Build-Installer.ps1` also accepts `-IsccPath` when the Inno compiler is installed in a nonstandard location. `Package-Release.ps1` accepts `-InstallerPath` for an already built installer and `-AdditionalAsset` for reviewed release companion files. It packages prepared inputs; it does not rebuild the application.
@@ -89,11 +98,13 @@ Once the staged payload is ready:
 Expected release files:
 
 ```text
-artifacts/release/0.5.1/
-  MagicMusicWall-0.5.1-Setup-x64.exe
-  MagicMusicWall-0.5.1-Setup-x64.exe.sha256
-  MagicMusicWall-0.5.1-Portable-x64.zip
-  MagicMusicWall-0.5.1-USB-Kit.zip
+artifacts/release/0.5.2/
+  MagicMusicWall-0.5.2-Setup-x64.exe
+  MagicMusicWall-0.5.2-Setup-x64.exe.sha256
+  MagicMusicWall-0.5.2-Portable-x64.zip
+  MagicMusicWall-0.5.2-ThirdParty-Sources.zip
+  MagicMusicWall-0.5.2-ThirdParty-Sources.zip.sha256
+  MagicMusicWall-0.5.2-USB-Kit.zip
   START-HERE.txt
   SHA256SUMS.txt
 ```

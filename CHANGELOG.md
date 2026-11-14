@@ -1,5 +1,10 @@
 # Changes
 
+## 0.5.2
+
+- Keep the selected volume when switching queued tracks, including Next, Previous and automatic advancement. The Windows audio output is recreated before volume and mute settings are applied.
+- Retain intentional mute and the selected output during local track changes.
+
 ## 0.5.1
 
 - Branded Windows 11 installer, portable distribution and USB transfer kit.
