@@ -18,7 +18,7 @@ if ([string]::IsNullOrWhiteSpace($InstallerPath)) { $InstallerPath = Join-Path $
 $installer = (Resolve-Path -LiteralPath $InstallerPath -ErrorAction Stop).Path
 $installerFile = Get-Item -LiteralPath $installer
 if ($installerFile.Length -lt 1MB) { throw 'The installer is unexpectedly small.' }
-$installerVersion = $installerFile.VersionInfo.ProductVersion
+$installerVersion = ([string]$installerFile.VersionInfo.ProductVersion).Trim()
 if ($installerVersion -ne $releaseVersion -and $installerVersion -ne ($releaseVersion + '.0')) {
     throw "Installer version $installerVersion does not match requested $releaseVersion."
 }
