@@ -1,5 +1,12 @@
 # Changes
 
+## 0.6.0
+
+- Sign in at the plain web remote address using a passphrase chosen in Setup. Remembered browsers stay signed in for 30 days, including across app restarts; QR access links remain available.
+- Change or remove the passphrase to revoke remembered browser access. Replacing the access link also revokes old links and remembered browsers.
+- Remove individual items from the PC or browser queue using touch-friendly Remove buttons. Saved playlists and media files are unchanged.
+- Wrap long song and folder names in the web remote. Phone layouts place artist and album below each song name and keep actions easy to tap.
+
 ## 0.5.2
 
 - Keep the selected volume when switching queued tracks, including Next, Previous and automatic advancement. The Windows audio output is recreated before volume and mute settings are applied.

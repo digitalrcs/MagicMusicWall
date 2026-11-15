@@ -48,7 +48,14 @@ public partial class SetupWindow : Window
     }
 
     private void RefreshFolders() => Folders.ItemsSource = _main.LibraryFolders;
-    private void RefreshRemote() { RemoteStatus.Text = _main.RemoteStatus; RemoteLink.Text = _main.RemoteLink; }
+    private void RefreshRemote()
+    {
+        RemoteStatus.Text = _main.RemoteStatus; RemoteLink.Text = _main.RemoteLink;
+        RemoteAddressLink.Text = _main.RemoteAddressLink;
+        RemotePassphraseStatus.Text = RemotePassphrase.IsConfigured(_draft.RemotePassphraseHash)
+            ? "Passphrase saved. Leave both fields blank to keep it."
+            : "No passphrase saved yet. QR access links still work.";
+    }
     private void RefreshAudio_Click(object sender, RoutedEventArgs e) => LoadAudio((AudioOutput.SelectedItem as AudioChoice)?.Id ?? "", true);
     private void Bluetooth_Click(object sender, RoutedEventArgs e) => _main.OpenExternal("ms-settings:bluetooth");
     private void OpenData_Click(object sender, RoutedEventArgs e) { Directory.CreateDirectory(App.DataDirectory); _main.OpenExternal(App.DataDirectory); }
@@ -81,6 +88,16 @@ public partial class SetupWindow : Window
         if (!int.TryParse(SharingPort.Text, out var sharePort) || sharePort is < 0 or > 65535)
             throw new InvalidOperationException("The file sharing port must be between 0 and 65535.");
         var audio = (AudioChoice)AudioOutput.SelectedItem;
+        string? newPassphraseHash = null;
+        if (RemoveRemotePassphrase.IsChecked == true) newPassphraseHash = "";
+        else if (RemotePassphraseInput.Password.Length > 0 || RemotePassphraseConfirm.Password.Length > 0)
+        {
+            if (RemotePassphraseInput.Password != RemotePassphraseConfirm.Password)
+                throw new InvalidOperationException("The remote passphrases do not match.");
+            // Capture current playback preferences after this asynchronous work.
+            var passphrase = RemotePassphraseInput.Password;
+            newPassphraseHash = await Task.Run(() => RemotePassphrase.CreateHash(passphrase));
+        }
         // A remote can change playback while this dialog is open. Only apply playback
         // fields the user changed here; preserve live values for untouched controls.
         var updated = _main.Preferences;
@@ -93,6 +110,7 @@ public partial class SetupWindow : Window
         if ((Shuffle.IsChecked == true) != _draft.Shuffle) updated.Shuffle = Shuffle.IsChecked == true;
         if ((RepeatQueue.IsChecked == true) != _draft.RepeatQueue) updated.RepeatQueue = RepeatQueue.IsChecked == true;
         updated.RemoteAccessToken = _draft.RemoteAccessToken;
+        if (newPassphraseHash is not null) updated.RemotePassphraseHash = newPassphraseHash;
         updated.RescanOnStartup = RescanStartup.IsChecked == true;
         updated.RemoteEnabled = RemoteEnabled.IsChecked == true;
         updated.BrowserPlaybackEnabled = BrowserPlaybackEnabled.IsChecked == true;
@@ -105,6 +123,7 @@ public partial class SetupWindow : Window
         SaveStatus.Text = "Saving settings…";
         SaveStatus.Text = await _main.SavePreferences(updated);
         _draft = _main.Preferences;
+        RemotePassphraseInput.Clear(); RemotePassphraseConfirm.Clear(); RemoveRemotePassphrase.IsChecked = false;
         TmdbToken.Clear(); RemoveTmdbToken.IsChecked = false; RefreshMetadataSettings();
         Volume.Value = _draft.Volume;
         Shuffle.IsChecked = _draft.Shuffle;
@@ -118,6 +137,19 @@ public partial class SetupWindow : Window
         if (string.IsNullOrEmpty(_main.RemoteLink)) { SaveStatus.Text = "Enable the remote and save settings first."; return; }
         try { Clipboard.SetText(_main.RemoteLink); SaveStatus.Text = "Remote link copied. Open it on a device on your home network."; }
         catch (Exception ex) { SaveStatus.Text = $"Could not copy the link: {ex.Message}"; }
+    }
+
+    private void CopyAddress_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(_main.RemoteAddressLink)) { SaveStatus.Text = "Enable the remote and save settings first."; return; }
+        try { Clipboard.SetText(_main.RemoteAddressLink); SaveStatus.Text = "Web address copied. Sign in there with your saved passphrase."; }
+        catch (Exception ex) { SaveStatus.Text = $"Could not copy the address: {ex.Message}"; }
+    }
+
+    private void OpenAddress_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(_main.RemoteAddressLink)) { SaveStatus.Text = "Enable the remote and save settings first."; return; }
+        _main.OpenExternal(_main.RemoteAddressLink);
     }
 
     private void OpenRemote_Click(object sender, RoutedEventArgs e)
@@ -135,7 +167,7 @@ public partial class SetupWindow : Window
     private void RotateLink_Click(object sender, RoutedEventArgs e)
     {
         _draft.RemoteAccessToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
-        SaveStatus.Text = "Save settings to replace the access link. Previously opened remotes will need the new link.";
+        SaveStatus.Text = "Save settings to replace the access link and sign out remembered browsers. Reconnect with your passphrase or the new link.";
     }
 
     private void CopyListening_Click(object sender, RoutedEventArgs e)

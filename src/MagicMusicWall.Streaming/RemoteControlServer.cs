@@ -34,7 +34,7 @@ public sealed record RemoteCommand(string Action, string? ItemId = null, string?
 
 /// <summary>
 /// Optional LAN remote for the desktop player. The page is public, but every API request
-/// requires a saved access key. Optional browser playback uses short-lived, file-scoped URLs;
+/// requires an access key or a signed session from passphrase sign-in. Browser playback uses short-lived, file-scoped URLs;
 /// media paths and general-purpose commands are never exposed.
 /// </summary>
 public sealed partial class RemoteControlServer : IAsyncDisposable
@@ -52,7 +52,7 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
     public string? BaseUrl { get { lock (_stateLock) return _baseUrl; } }
 
     /// <summary>Starts on one local IPv4 address. Port zero chooses a free port for diagnostics/tests.</summary>
-    public async Task StartAsync(string address, int port, string accessToken, IRemoteControl control)
+    public async Task StartAsync(string address, int port, string accessToken, IRemoteControl control, string passphraseHash = "")
     {
         var bindAddress = ValidateAddress(address);
         if (port is < 0 or > 65535) throw new ArgumentOutOfRangeException(nameof(port));
@@ -71,6 +71,8 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
             var page = ReadPage();
             var logo = ReadResource("MagicMusicWall.Streaming.digitalrcs-logo.png");
             var tokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(accessToken));
+            var signIn = new RemoteSignIn(accessToken, passphraseHash);
+            bool IsAuthorized(HttpRequest request) => Authorized(request, tokenHash) || signIn.Authorized(request);
             var lifetime = new CancellationTokenSource();
             var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
             {
@@ -101,22 +103,28 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return;
                 }
-                if (context.Request.Path.StartsWithSegments("/api"))
-                {
-                    if (!Authorized(context.Request, tokenHash))
-                    {
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        context.Response.Headers.WWWAuthenticate = "Bearer";
-                        await context.Response.WriteAsJsonAsync(new { error = "Open the remote link from the Windows app's Setup page." });
-                        return;
-                    }
-                }
-                if ((context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/stream")) &&
+                var protectedRoute = context.Request.Path.StartsWithSegments("/api") || context.Request.Path.StartsWithSegments("/auth");
+                if ((protectedRoute || context.Request.Path.StartsWithSegments("/stream")) &&
                     context.Request.Headers.TryGetValue("Origin", out var origin) &&
                     (origin.Count != 1 || !string.Equals(origin[0], $"http://{context.Request.Host}", StringComparison.OrdinalIgnoreCase)))
                 {
                     context.Response.StatusCode = StatusCodes.Status403Forbidden;
                     return;
+                }
+                if (protectedRoute && context.Request.Headers["Sec-Fetch-Site"] == "cross-site")
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return;
+                }
+                if (context.Request.Path.StartsWithSegments("/api"))
+                {
+                    if (!IsAuthorized(context.Request))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.Headers.WWWAuthenticate = "Bearer";
+                        await context.Response.WriteAsJsonAsync(new { error = "Sign in with your remote passphrase, or open the QR link from Setup." });
+                        return;
+                    }
                 }
                 try { await next(context).ConfigureAwait(false); }
                 catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested || lifetime.IsCancellationRequested)
@@ -132,6 +140,7 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
             });
             application.MapGet("/", () => Results.Text(page, "text/html; charset=utf-8"));
             application.MapGet("/brand-logo.png", () => Results.Bytes(logo, "image/png"));
+            signIn.MapRoutes(application, IsAuthorized);
             application.MapGet("/api/folders", async (HttpContext context) =>
             {
                 var folder = context.Request.Query["folder"];
@@ -225,7 +234,16 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
                     try { await control.ExecuteAsync(command, request.Token).ConfigureAwait(false); }
                     catch (KeyNotFoundException) { await FolderNotFound(context).ConfigureAwait(false); return; }
                 }
-                else await control.ExecuteAsync(command, request.Token).ConfigureAwait(false);
+                else
+                {
+                    try { await control.ExecuteAsync(command, request.Token).ConfigureAwait(false); }
+                    catch (ArgumentException) when (command.Action == "remove-queue-item")
+                    {
+                        context.Response.StatusCode = StatusCodes.Status409Conflict;
+                        await context.Response.WriteAsJsonAsync(new { error = "The queue changed. Refresh it and try removing the song again." });
+                        return;
+                    }
+                }
                 context.Response.StatusCode = StatusCodes.Status204NoContent;
             });
             try
@@ -433,7 +451,7 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
         {
             "play" or "pause" or "toggle" or "next" or "previous" or "play-results" => true,
             "play-item" or "queue-item" => !string.IsNullOrWhiteSpace(command.ItemId),
-            "play-queue-item" => !string.IsNullOrWhiteSpace(command.ItemId) && command.QueueIndex.HasValue,
+            "play-queue-item" or "remove-queue-item" => !string.IsNullOrWhiteSpace(command.ItemId) && command.QueueIndex.HasValue,
             "play-playlist" => !string.IsNullOrWhiteSpace(command.PlaylistId),
             "play-folder" => true,
             "volume" => command.Volume.HasValue,

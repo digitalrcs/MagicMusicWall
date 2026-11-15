@@ -46,12 +46,20 @@ An **Empty playlist** starts with no songs. To add songs, browse the library, se
 
 1. Keep the Windows app open and the PC awake.
 2. In **Setup → Remote**, confirm the remote is enabled and its status says it is running.
-3. Try **Open remote page** on the PC. If that fails too, inspect the Setup status for a port/address error.
+3. Try **Open sign-in page** or **Open remote page** on the PC. If that fails too, inspect the Setup status for a port/address error.
 4. Confirm the phone and PC are on a reachable home network. Guest Wi-Fi/client isolation can block access.
-5. Copy a fresh complete link or show a new QR code. The old one may be invalid after **Replace access link**, a changed PC address, or a move to another PC.
+5. Use **Copy web address** for the current plain URL, then sign in. A changed PC address or a move to another PC can make an old bookmark unreachable. For quick access, show a fresh QR code; old QR links stop working after **Replace access link**.
 6. Check Windows Firewall's allowed private-network access for the app. Use the PC's normal security controls; do not turn the firewall off as a workaround.
 
 The remote and file-sharing service need different ports. The default web remote port is `8787`; the file-sharing default `0` chooses an available port.
+
+## The web page opens but asks me to sign in
+
+Enter the remote passphrase you chose in **Setup → Remote**, then select **Connect to your music**. The plain URL works without an access key in it. If the page says no passphrase has been set, set and confirm one in Setup on the Windows PC, click **Save settings**, and choose **Check again** on the web page. An existing QR access link can also connect.
+
+If you forgot the passphrase, set a new one in the Windows app; you do not need the old one. Changing/removing the passphrase or replacing the access link revokes remembered browser access. **Remember this browser for 30 days** lasts across normal app restarts, but clearing cookies, changing browser, or using a private window requires another sign-in. Without that option, sign-in lasts for the browser session, up to eight hours.
+
+If the page reports too many sign-in attempts, wait one minute before trying again. Passphrases are case-sensitive. Use a passphrase unique to this app because the home-network page uses HTTP.
 
 ## Browser audio/video does not start
 

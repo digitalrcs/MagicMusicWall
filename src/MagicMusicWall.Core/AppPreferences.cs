@@ -26,6 +26,7 @@ public sealed class AppPreferences
     public string RemoteAddress { get; set; } = "";
     public int RemotePort { get; set; } = 8787;
     public string RemoteAccessToken { get; set; } = "";
+    public string RemotePassphraseHash { get; set; } = "";
     // Windows DPAPI ciphertext. Never store a plaintext provider token here.
     public string TmdbTokenProtected { get; set; } = "";
 
@@ -109,6 +110,7 @@ public sealed class AppPreferences
         SharingAddress ??= "";
         RemoteAddress ??= "";
         RemoteAccessToken ??= "";
+        RemotePassphraseHash ??= "";
         TmdbTokenProtected ??= "";
     }
 }

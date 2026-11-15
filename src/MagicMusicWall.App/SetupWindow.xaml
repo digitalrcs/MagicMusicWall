@@ -65,12 +65,23 @@
      <ComboBox x:Name="RemoteAddress" DisplayMemberPath="Label" AutomationProperties.Name="Remote network address"/>
      <TextBlock Text="Web remote port" Style="{StaticResource Label}"/>
      <TextBox x:Name="RemotePort" MaxLength="5" Width="130" HorizontalAlignment="Left" AutomationProperties.Name="Web remote port"/>
+     <TextBlock Text="Sign in at the plain web address" Style="{StaticResource Label}"/>
+     <TextBlock Text="Choose a memorable passphrase of 8–128 characters. Enter it on another PC or phone, then select Remember this browser to stay signed in for 30 days. Leave these fields blank to keep the saved passphrase." Style="{StaticResource Help}"/>
+     <PasswordBox x:Name="RemotePassphraseInput" MaxLength="128" MinHeight="36" Padding="8" AutomationProperties.Name="Remote passphrase"/>
+     <TextBlock Text="Confirm new passphrase" Margin="0,8,0,6"/>
+     <PasswordBox x:Name="RemotePassphraseConfirm" MaxLength="128" MinHeight="36" Padding="8" AutomationProperties.Name="Confirm remote passphrase"/>
+     <TextBlock x:Name="RemotePassphraseStatus" Style="{StaticResource Help}" Margin="0,6,0,8"/>
+     <CheckBox x:Name="RemoveRemotePassphrase" Content="Remove saved passphrase when saving (QR links still work)" Margin="0,0,0,12"/>
+     <TextBlock Text="Web address — no access key needed in the URL" Style="{StaticResource Label}"/>
+     <TextBox x:Name="RemoteAddressLink" IsReadOnly="True" TextWrapping="Wrap" AutomationProperties.Name="Plain remote web address"/>
+     <WrapPanel Margin="0,10,0,0"><Button Content="Copy web address" Click="CopyAddress_Click" Margin="0,0,8,8"/><Button Content="Open sign-in page" Click="OpenAddress_Click" Margin="0,0,8,8"/></WrapPanel>
      <TextBlock x:Name="RemoteStatus" Text="Save your settings to start the remote." Style="{StaticResource Help}" Margin="0,14,0,10"/>
+     <TextBlock Text="Quick access links &amp; QR codes" Style="{StaticResource Label}"/>
      <TextBox x:Name="RemoteLink" IsReadOnly="True" TextWrapping="Wrap" MinHeight="64" AutomationProperties.Name="Remote control link"/>
      <WrapPanel Margin="0,10,0,0"><Button Content="Show QR code" Click="ShowQr_Click" Margin="0,0,8,8"/><Button Content="Copy remote link" Click="CopyRemote_Click" Margin="0,0,8,8"/><Button Content="Open remote page" Click="OpenRemote_Click" Margin="0,0,8,8"/><Button Content="Replace access link" Click="RotateLink_Click" Margin="0,0,0,8"/></WrapPanel>
      <WrapPanel><Button Content="Listening QR code" Click="ShowListeningQr_Click" Margin="0,0,8,8"/><Button Content="Copy listening link" Click="CopyListening_Click" Margin="0,0,0,8"/></WrapPanel>
      <TextBlock Text="The listening link opens with browser playback selected. Tap a track to start; supported formats depend on the browser. Each browser plays independently of the PC." Style="{StaticResource Help}" FontSize="12"/>
-     <TextBlock Text="Anyone with this link on your network can control playback and, when enabled, stream your library. Use it on your trusted home network. The page uses local HTTP; no internet hosting or router forwarding is needed. If Windows asks, allow private-network access." Style="{StaticResource Help}" FontSize="12"/>
+     <TextBlock Text="Anyone with the passphrase or a quick access link on your network can control playback and, when enabled, stream your library. Changing the passphrase signs out remembered browsers; Replace access link revokes both old links and remembered browsers after saving. Use a passphrase unique to this app on your trusted home network: the page uses local HTTP. If Windows asks, allow private-network access." Style="{StaticResource Help}" FontSize="12"/>
     </StackPanel></ScrollViewer>
    </TabItem>
    <TabItem Header="TV &amp; data">

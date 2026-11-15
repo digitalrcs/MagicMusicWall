@@ -8,7 +8,7 @@
   <title>Magic Music Wall · Remote</title>
   <style>
     :root{--bg:#101218;--panel:#191c25;--raised:#232735;--line:#353949;--text:#f4f3f8;--muted:#a3a9bd;--accent:#b8a5ff;--ink:#191323;--good:#a5d8ba;--bad:#ffb5a9;font-family:"Segoe UI",Calibri,sans-serif;color:var(--text);background:var(--bg);font-synthesis:none}
-    *{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button,a,input,select{-webkit-tap-highlight-color:transparent}button{min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--raised);color:var(--text);cursor:pointer;padding:10px 15px;transition:background .15s,transform .15s}button:hover:not(:disabled){background:#32364a}button:active:not(:disabled){transform:translateY(1px)}button:disabled{opacity:.4;cursor:default}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px}a{color:inherit}svg{width:22px;height:22px;fill:currentColor;display:block}h1,h2,p{margin:0}h2{font-weight:600;font-size:22px;letter-spacing:-.4px}.eyebrow{font-size:10px;font-weight:600;letter-spacing:2px;color:var(--muted);text-transform:uppercase}.muted{color:var(--muted)}.shell{width:min(1100px,100%);margin:auto;padding:28px 32px max(24px,env(safe-area-inset-bottom))}.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:28px}.wordmark{display:flex;gap:12px;align-items:center}.wallmark{display:grid;grid-template-columns:repeat(4,3px);gap:3px;align-items:center;height:25px;color:var(--accent)}.wallmark i{display:block;background:currentColor;width:3px;border-radius:2px}.wallmark i:nth-child(1){height:13px}.wallmark i:nth-child(2){height:24px}.wallmark i:nth-child(3){height:18px}.wallmark i:nth-child(4){height:9px}.wordmark strong{display:block;font-size:14px;letter-spacing:.6px}.wordmark small{display:block;color:var(--muted);font-size:10px;letter-spacing:2px;margin-top:3px}.connection{font-size:12px;display:flex;align-items:center;gap:7px;white-space:nowrap;color:var(--muted)}.connection::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}.connection.online{color:var(--good)}.notice{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 18px;background:#2a2228;border:1px solid #67444d;border-radius:12px;margin:0 0 22px;font-size:13px;line-height:1.6}.notice[hidden]{display:none}.notice button{flex-shrink:0;min-width:72px}.layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:24px;align-items:start}.player{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.85fr);gap:34px;border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:30px}.playing-info{display:flex;gap:22px;align-items:center;min-width:0}.record{width:114px;height:114px;border:1px solid #4c4264;flex-shrink:0;border-radius:50%;background:repeating-radial-gradient(circle at center,#282337 0,#282337 2px,#302a40 3px,#282337 4px);display:grid;place-items:center;position:relative}.record::before{content:"";width:40px;height:40px;background:var(--accent);border:10px solid #8f7ebd;border-radius:50%}.record::after{content:"";position:absolute;width:6px;height:6px;background:var(--ink);border-radius:50%}.track-copy{min-width:0}.track-copy .eyebrow{color:var(--accent);margin-bottom:10px}.track-copy h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(26px,3.3vw,38px);font-weight:400;line-height:1.13;overflow-wrap:anywhere;letter-spacing:-.7px}.track-copy .artist{color:var(--muted);font-size:14px;line-height:1.45;margin-top:10px;overflow-wrap:anywhere}.output{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:var(--muted);line-height:1.6;margin-top:18px}.output svg{width:16px;height:16px;flex-shrink:0;margin-top:1px}.transport{display:flex;justify-content:center;align-items:center;gap:16px;margin-bottom:14px}.icon-button{padding:10px;display:grid;place-items:center;width:44px}.transport .play{width:60px;height:60px;border-radius:50%;border:0;background:var(--accent);color:var(--ink)}.transport .play:hover:not(:disabled){background:#cbbbff}.transport .play svg{width:25px;height:25px}.timeline{display:flex;gap:11px;align-items:center;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}.timeline time{min-width:33px}.timeline time:last-child{text-align:right}.range{width:100%;min-width:0;accent-color:var(--accent);height:28px;cursor:pointer;margin:0}.volume-row{display:flex;align-items:center;gap:10px;margin:13px 0 0;max-width:230px;margin-left:auto;margin-right:auto}.volume-row label{color:var(--muted);font-size:11px}.volume-row output{font-size:11px;color:var(--muted);min-width:32px;text-align:right;font-variant-numeric:tabular-nums}.section-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:6px 0 18px}.section-heading .eyebrow{margin-bottom:5px}.queue-count{font-size:12px;color:var(--muted)}.library-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-bottom:12px}.search-wrap{position:relative}.search-wrap svg{position:absolute;left:13px;top:13px;width:19px;height:19px;color:var(--muted);pointer-events:none}.search-wrap input{padding:12px 14px 12px 41px;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);min-height:46px;font-size:14px}.search-wrap input::placeholder{color:#949bb0}.playlist-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}.playlist-row label{font-size:11px;color:var(--muted)}select{min-height:44px;max-width:100%;min-width:0;flex:1;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 32px 9px 12px}.accent-button{background:var(--accent);border-color:var(--accent);color:var(--ink);font-size:13px;font-weight:600;white-space:nowrap}.accent-button:hover:not(:disabled){background:#cbbbff}.results-meta{font-size:11px;line-height:1.5;color:var(--muted);margin:12px 0;min-height:17px}.track-list{list-style:none;padding:0;margin:0}.track-row{display:flex;align-items:center;min-width:0;gap:8px;border-bottom:1px solid #292d38;padding:4px 0}.track-row.current{background:#292337;border-radius:8px;border-color:transparent}.track-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;background:transparent;border:0;border-radius:6px;padding:11px 8px}.track-main:hover:not(:disabled){background:#202430}.track-number{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:19px;text-align:center}.track-data{min-width:0;flex:1}.track-name,.track-subtitle{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.track-name{font-size:13px;font-weight:500}.track-subtitle{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4}.duration{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}.queue-add{min-width:44px;background:transparent;border:0;padding:10px;color:var(--muted);font-size:21px}.empty{border:1px dashed var(--line);border-radius:12px;padding:28px 20px;color:var(--muted);font-size:13px;line-height:1.7;text-align:center}.queue-section{border-left:1px solid var(--line);padding-left:24px}.queue-section .track-main{gap:8px}.queue-section .duration{display:none}.queue-section .track-list{max-height:520px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent}.footer{border-top:1px solid #292d38;display:flex;justify-content:space-between;gap:20px;align-items:center;font-size:11px;color:#929ab0;margin-top:36px;padding-top:18px}.footer a{display:flex;align-items:center;gap:8px;text-decoration:none;min-height:44px}.footer a:hover{text-decoration:underline}.footer img{width:27px;height:27px;object-fit:contain;border-radius:5px}.footer span:last-child{text-align:right}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);background:#343044;border:1px solid #6d608a;border-radius:12px;padding:12px 18px;box-shadow:0 8px 30px #0007;font-size:13px;text-align:center;line-height:1.5;z-index:10}.toast[hidden]{display:none}
+    *{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button,a,input,select{-webkit-tap-highlight-color:transparent}button{min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--raised);color:var(--text);cursor:pointer;padding:10px 15px;transition:background .15s,transform .15s}button:hover:not(:disabled){background:#32364a}button:active:not(:disabled){transform:translateY(1px)}button:disabled{opacity:.4;cursor:default}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px}a{color:inherit}svg{width:22px;height:22px;fill:currentColor;display:block}h1,h2,p{margin:0}h2{font-weight:600;font-size:22px;letter-spacing:-.4px}.eyebrow{font-size:10px;font-weight:600;letter-spacing:2px;color:var(--muted);text-transform:uppercase}.muted{color:var(--muted)}.shell{width:min(1100px,100%);margin:auto;padding:28px 32px max(24px,env(safe-area-inset-bottom))}.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:28px}.wordmark{display:flex;gap:12px;align-items:center}.wallmark{display:grid;grid-template-columns:repeat(4,3px);gap:3px;align-items:center;height:25px;color:var(--accent)}.wallmark i{display:block;background:currentColor;width:3px;border-radius:2px}.wallmark i:nth-child(1){height:13px}.wallmark i:nth-child(2){height:24px}.wallmark i:nth-child(3){height:18px}.wallmark i:nth-child(4){height:9px}.wordmark strong{display:block;font-size:14px;letter-spacing:.6px}.wordmark small{display:block;color:var(--muted);font-size:10px;letter-spacing:2px;margin-top:3px}.connection{font-size:12px;display:flex;align-items:center;gap:7px;white-space:nowrap;color:var(--muted)}.connection::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}.connection.online{color:var(--good)}.notice{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 18px;background:#2a2228;border:1px solid #67444d;border-radius:12px;margin:0 0 22px;font-size:13px;line-height:1.6}.notice[hidden]{display:none}.notice button{flex-shrink:0;min-width:72px}.layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:24px;align-items:start}.player{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.85fr);gap:34px;border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:30px}.playing-info{display:flex;gap:22px;align-items:center;min-width:0}.record{width:114px;height:114px;border:1px solid #4c4264;flex-shrink:0;border-radius:50%;background:repeating-radial-gradient(circle at center,#282337 0,#282337 2px,#302a40 3px,#282337 4px);display:grid;place-items:center;position:relative}.record::before{content:"";width:40px;height:40px;background:var(--accent);border:10px solid #8f7ebd;border-radius:50%}.record::after{content:"";position:absolute;width:6px;height:6px;background:var(--ink);border-radius:50%}.track-copy{min-width:0}.track-copy .eyebrow{color:var(--accent);margin-bottom:10px}.track-copy h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(26px,3.3vw,38px);font-weight:400;line-height:1.13;overflow-wrap:anywhere;letter-spacing:-.7px}.track-copy .artist{color:var(--muted);font-size:14px;line-height:1.45;margin-top:10px;overflow-wrap:anywhere}.output{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:var(--muted);line-height:1.6;margin-top:18px}.output svg{width:16px;height:16px;flex-shrink:0;margin-top:1px}.transport{display:flex;justify-content:center;align-items:center;gap:16px;margin-bottom:14px}.icon-button{padding:10px;display:grid;place-items:center;width:44px}.transport .play{width:60px;height:60px;border-radius:50%;border:0;background:var(--accent);color:var(--ink)}.transport .play:hover:not(:disabled){background:#cbbbff}.transport .play svg{width:25px;height:25px}.timeline{display:flex;gap:11px;align-items:center;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}.timeline time{min-width:33px}.timeline time:last-child{text-align:right}.range{width:100%;min-width:0;accent-color:var(--accent);height:28px;cursor:pointer;margin:0}.volume-row{display:flex;align-items:center;gap:10px;margin:13px 0 0;max-width:230px;margin-left:auto;margin-right:auto}.volume-row label{color:var(--muted);font-size:11px}.volume-row output{font-size:11px;color:var(--muted);min-width:32px;text-align:right;font-variant-numeric:tabular-nums}.section-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:6px 0 18px}.section-heading .eyebrow{margin-bottom:5px}.queue-count{font-size:12px;color:var(--muted)}.library-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-bottom:12px}.search-wrap{position:relative}.search-wrap svg{position:absolute;left:13px;top:13px;width:19px;height:19px;color:var(--muted);pointer-events:none}.search-wrap input{padding:12px 14px 12px 41px;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);min-height:46px;font-size:14px}.search-wrap input::placeholder{color:#949bb0}.playlist-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}.playlist-row label{font-size:11px;color:var(--muted)}select{min-height:44px;max-width:100%;min-width:0;flex:1;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 32px 9px 12px}.accent-button{background:var(--accent);border-color:var(--accent);color:var(--ink);font-size:13px;font-weight:600;white-space:nowrap}.accent-button:hover:not(:disabled){background:#cbbbff}.results-meta{font-size:11px;line-height:1.5;color:var(--muted);margin:12px 0;min-height:17px}.track-list{list-style:none;padding:0;margin:0}.track-row{display:flex;align-items:center;min-width:0;gap:8px;border-bottom:1px solid #292d38;padding:4px 0}.track-row.current{background:#292337;border-radius:8px;border-color:transparent}.track-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;background:transparent;border:0;border-radius:6px;padding:11px 8px}.track-main:hover:not(:disabled){background:#202430}.track-number{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:19px;text-align:center}.track-data{min-width:0;flex:1}.track-name,.track-subtitle{display:block;white-space:normal;overflow-wrap:anywhere;line-height:1.5}.track-name{font-size:13px;font-weight:500}.track-subtitle{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4}.duration{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}.queue-add{min-width:44px;background:transparent;border:0;padding:10px;color:var(--muted);font-size:21px}.empty{border:1px dashed var(--line);border-radius:12px;padding:28px 20px;color:var(--muted);font-size:13px;line-height:1.7;text-align:center}.queue-section{border-left:1px solid var(--line);padding-left:24px}.queue-section .track-main{gap:8px}.queue-section .duration{display:none}.queue-section .track-list{max-height:520px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent}.footer{border-top:1px solid #292d38;display:flex;justify-content:space-between;gap:20px;align-items:center;font-size:11px;color:#929ab0;margin-top:36px;padding-top:18px}.footer a{display:flex;align-items:center;gap:8px;text-decoration:none;min-height:44px}.footer a:hover{text-decoration:underline}.footer img{width:27px;height:27px;object-fit:contain;border-radius:5px}.footer span:last-child{text-align:right}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);background:#343044;border:1px solid #6d608a;border-radius:12px;padding:12px 18px;box-shadow:0 8px 30px #0007;font-size:13px;text-align:center;line-height:1.5;z-index:10}.toast[hidden]{display:none}
     @media(max-width:760px){.shell{padding:22px 20px max(24px,env(safe-area-inset-bottom))}.topbar{padding-bottom:22px}.layout{grid-template-columns:1fr;gap:26px}.player{grid-template-columns:1fr;gap:25px;padding:24px}.record{width:85px;height:85px}.playing-info{gap:18px}.track-copy h1{font-size:29px}.player-controls{max-width:460px;width:100%;margin:auto}.queue-section{border-left:0;border-top:1px solid var(--line);padding:22px 0 0}.queue-section .track-list{max-height:350px}.volume-row{max-width:250px}.footer{margin-top:25px}.output{margin-top:12px}}
     @media(max-width:400px){.shell{padding-left:15px;padding-right:15px}.player{padding:21px 18px}.record{width:66px;height:66px}.record::before{width:31px;height:31px;border-width:8px}.playing-info{gap:14px}.track-copy h1{font-size:26px}.wordmark strong{font-size:12px}.connection{font-size:10px}.library-tools{gap:7px}.accent-button{padding:9px 11px}.notice{padding:13px;gap:10px}.footer{gap:10px}}
     .range{height:44px}
@@ -16,8 +16,9 @@
     .song-info-button{margin-top:12px;min-height:44px;padding:9px 13px;font-size:12px;background:#2a2638;border-color:#4e4268;color:#d4c7ff}.row-info{width:44px;min-width:44px;padding:9px 5px;border:0;background:transparent;color:var(--muted);font-size:11px}.song-dialog{width:min(680px,calc(100% - 30px));max-height:calc(100dvh - 40px);padding:0;margin:auto;border:1px solid #504660;border-radius:18px;background:var(--panel);color:var(--text);box-shadow:0 24px 100px #0009}.song-dialog::backdrop{background:#080a11b8;backdrop-filter:blur(5px)}.song-dialog[open]{display:flex;flex-direction:column}.info-header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:23px 26px 18px;border-bottom:1px solid var(--line)}.info-header .eyebrow{color:var(--accent);margin-bottom:7px}.info-header h2{font-family:Georgia,"Times New Roman",serif;font-size:27px;font-weight:400;overflow-wrap:anywhere}.info-close{width:44px;min-width:44px;padding:8px;font-size:24px;line-height:1}.info-body{overflow-y:auto;padding:20px 26px 26px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}.local-details{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 15px;margin:0 0 19px;font-size:12px;line-height:1.6}.local-details dt{color:var(--muted)}.local-details dd{margin:0;overflow-wrap:anywhere}.info-query{display:grid;grid-template-columns:1fr 1fr;gap:14px}.info-query label{font-size:11px;color:var(--muted)}.info-query input{display:block;width:100%;min-width:0;min-height:44px;margin-top:6px;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--text);font-size:14px}.info-help{font-size:11px;line-height:1.7;color:var(--muted);margin:12px 0 15px}.info-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.info-actions button{font-size:12px;padding:10px 8px}.info-actions button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:#30283f}.info-status{font-size:12px;line-height:1.65;color:var(--muted);margin:17px 0;overflow-wrap:anywhere}.info-content{font-size:13px;line-height:1.7;overflow-wrap:anywhere}.info-content h3{font-size:17px;line-height:1.5;margin:0 0 8px;font-weight:600}.info-content p{margin:0 0 12px}.info-card{border:1px solid var(--line);border-radius:10px;padding:15px;margin:0 0 10px;background:#151821}.info-card .info-caption{font-size:12px;color:var(--muted);line-height:1.6}.info-links{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:10px}.info-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--accent);font-size:12px;text-underline-offset:3px}.info-links button{font-size:12px;min-height:44px}.lyrics-text{white-space:pre-wrap;font:14px/1.9 Georgia,"Times New Roman",serif;margin:18px 0;overflow-wrap:anywhere}.facts-text{white-space:pre-wrap}.info-attribution{font-size:11px!important;color:var(--muted);line-height:1.7;overflow-wrap:anywhere;border-top:1px solid var(--line);padding-top:13px;margin-top:20px!important}
     @media(max-width:500px){.info-header{padding:20px 18px 15px}.info-body{padding:18px}.info-query{grid-template-columns:1fr;gap:12px}.info-header h2{font-size:25px}.info-actions{gap:6px}.info-actions button{font-size:11px}.library-section .duration{display:none}.track-main{gap:8px}.queue-add{min-width:40px}.song-dialog{max-height:calc(100dvh - 24px);width:calc(100% - 22px)}}
     [hidden]{display:none!important}.mode-panel{grid-column:1/-1;border:1px solid var(--line);border-radius:13px;padding:15px 18px;background:var(--panel)}.mode-buttons{display:flex;gap:8px;flex-wrap:wrap}.mode-buttons button{font-size:13px}.mode-buttons button[aria-pressed="true"]{background:#3b3151;color:var(--accent);border-color:#766498}.mode-help{margin-top:10px;font-size:12px;line-height:1.6;color:var(--muted)}.browser-controls{min-width:0}.browser-controls audio,.browser-controls video{display:block;width:100%;max-height:320px;border-radius:10px;background:#0c0e14;margin:14px 0}.browser-transport{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.browser-transport button{font-size:12px}.browser-status{font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px}.listen-current{width:100%;font-size:12px}.listen-limit{font-size:11px;color:var(--muted);line-height:1.6;margin:0 0 12px}
-    .directory{width:100%;table-layout:fixed;border-collapse:collapse;border-top:1px solid var(--line);font-size:12px}.directory .metadata-column{width:28%}.directory .time-column{width:44px}.directory .actions-column{width:132px}.directory th{padding:8px 6px;border-bottom:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:10px;font-weight:600;text-align:left;letter-spacing:.5px}.directory td{height:44px;min-width:0;padding:0 6px;border-bottom:1px solid #292d38;vertical-align:middle}.directory .track-row{display:table-row;border:0;padding:0;border-radius:0;background:transparent}.directory tbody tr:hover{background:#171b24}.directory .track-row.current{background:#292337;border-radius:0}.directory .directory-name,.directory .directory-actions{padding:0}.directory .track-main,.directory-name>.folder-open{display:flex;align-items:center;gap:8px;width:100%;min-width:0;min-height:44px;padding:6px;border:0;border-radius:0;background:transparent;text-align:left}.directory .track-data{min-width:0;flex:1}.directory .track-name,.directory .folder-name,.directory-artist,.directory-album{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.directory .track-name,.directory .folder-name{font-size:12px;font-weight:400}.directory .folder-name{min-width:0}.directory-meta{color:var(--muted);font-size:11px}.directory-artist,.directory-album{line-height:16px}.directory-artist{color:var(--text)}.directory .directory-time{text-align:right;font-variant-numeric:tabular-nums}.directory .duration{display:inline;font-size:11px}.file-glyph{width:18px;min-width:18px;flex-shrink:0;line-height:1;text-align:center;font-size:18px;color:var(--accent)}.folder-glyph{position:relative;display:block;width:18px;min-width:18px;height:13px;flex-shrink:0;background:#9882cf;border-radius:1px 2px 2px 2px}.folder-glyph::before{content:"";position:absolute;left:0;top:-3px;width:8px;height:4px;background:#b8a5ff;border-radius:2px 2px 0 0}.directory-actions{white-space:nowrap}.directory-actions button{display:inline-block;width:44px;min-width:44px;min-height:44px;padding:0;border:0;border-radius:0;background:transparent;font-size:11px;vertical-align:middle}.directory-actions .queue-add{color:var(--accent)}.directory-actions .row-info{color:var(--muted)}
-    @media(max-width:600px){.directory .metadata-column,.directory .directory-meta{display:none}.directory .time-column{width:40px}.directory .directory-time{padding-left:4px;padding-right:4px}.directory .track-main,.directory-name>.folder-open{gap:6px;padding-left:4px;padding-right:4px}}
+    .directory{width:100%;table-layout:fixed;border-collapse:collapse;border-top:1px solid var(--line);font-size:12px}.directory .metadata-column{width:28%}.directory .time-column{width:44px}.directory .actions-column{width:132px}.directory th{padding:8px 6px;border-bottom:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:10px;font-weight:600;text-align:left;letter-spacing:.5px}.directory td{height:44px;min-width:0;padding:0 6px;border-bottom:1px solid #292d38;vertical-align:middle}.directory .track-row{display:table-row;border:0;padding:0;border-radius:0;background:transparent}.directory tbody tr:hover{background:#171b24}.directory .track-row.current{background:#292337;border-radius:0}.directory .directory-name,.directory .directory-actions{padding:0}.directory .track-main,.directory-name>.folder-open{display:flex;align-items:center;gap:8px;width:100%;min-width:0;min-height:44px;padding:6px;border:0;border-radius:0;background:transparent;text-align:left}.directory .track-data{min-width:0;flex:1}.directory .track-name,.directory .folder-name,.directory-artist,.directory-album{display:block;white-space:normal;overflow-wrap:anywhere}.directory .track-name,.directory .folder-name{font-size:14px;font-weight:400;line-height:1.5}.directory .track-subtitle{display:none}.directory .folder-name{min-width:0}.directory-meta{color:var(--muted);font-size:11px}.directory-artist,.directory-album{line-height:16px}.directory-artist{color:var(--text)}.directory .directory-time{text-align:right;font-variant-numeric:tabular-nums}.directory .duration{display:inline;font-size:11px}.file-glyph{width:18px;min-width:18px;flex-shrink:0;line-height:1;text-align:center;font-size:18px;color:var(--accent)}.folder-glyph{position:relative;display:block;width:18px;min-width:18px;height:13px;flex-shrink:0;background:#9882cf;border-radius:1px 2px 2px 2px}.folder-glyph::before{content:"";position:absolute;left:0;top:-3px;width:8px;height:4px;background:#b8a5ff;border-radius:2px 2px 0 0}.directory-actions{white-space:nowrap}.directory-actions button{display:inline-block;width:44px;min-width:44px;min-height:44px;padding:0;border:0;border-radius:0;background:transparent;font-size:11px;vertical-align:middle}.directory-actions .queue-add{color:var(--accent)}.directory-actions .row-info{color:var(--muted)}
+    .queue-actions{display:flex;flex-direction:column;flex-shrink:0;gap:2px}.queue-actions button{width:64px;min-width:64px;min-height:44px;padding:8px 5px;font-size:11px}.queue-remove{background:transparent;border:0;color:var(--bad)}.queue-remove:hover:not(:disabled){background:#3b2830}.queue-section .track-row{gap:4px}.queue-section .track-main{align-self:stretch}.session-controls{display:flex;align-items:center;gap:12px}.sign-out{background:transparent;font-size:12px;padding:8px 10px}.sign-in{max-width:520px;margin:12px auto 32px;padding:26px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}.sign-in h1{font:400 30px/1.2 Georgia,serif;margin:8px 0 12px}.sign-in p{font-size:13px;line-height:1.7;color:var(--muted)}.sign-in form{margin-top:20px}.passphrase-label{display:block;font-size:13px}.sign-in input[type=password]{display:block;width:100%;min-height:48px;margin-top:8px;padding:11px 12px;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--text);font-size:16px}.remember-device{display:flex;align-items:center;gap:10px;min-height:48px;margin:9px 0;font-size:13px}.remember-device input{width:20px;height:20px;accent-color:var(--accent)}.sign-in .sign-in-message{margin:14px 0 0;color:var(--bad)}.sign-in .setup-help{margin-top:16px}.sign-in-submit{width:100%}
+    @media(max-width:600px){.directory .metadata-column,.directory .directory-meta,.directory .time-column,.directory .directory-time{display:none}.directory .actions-column{width:88px}.directory-actions{white-space:normal}.directory-actions .row-info{width:88px}.directory-actions button,.queue-actions button{font-size:12px}.directory .track-main,.directory-name>.folder-open{gap:7px;padding:9px 5px}.directory .track-subtitle{display:block;font-size:11px}.directory .track-name,.directory .folder-name{font-size:14px}.topbar{flex-wrap:wrap}.session-controls{margin-left:auto}.sign-in{padding:23px 20px}}
     @media(prefers-reduced-motion:reduce){*{transition:none!important}}
   </style>
 </head>
@@ -25,10 +26,22 @@
   <div class="shell">
     <header class="topbar">
       <div class="wordmark"><span class="wallmark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><div><strong>MAGIC MUSIC WALL</strong><small>YOUR REMOTE</small></div></div>
-      <span class="connection" id="connection" role="status">Connecting</span>
+      <div class="session-controls"><span class="connection" id="connection" role="status">Connecting</span><button id="signOut" class="sign-out" type="button" hidden>Sign out</button></div>
     </header>
     <div class="notice" id="notice" hidden><p id="noticeText"></p><button id="retry" type="button">Retry</button></div>
-    <main class="layout">
+    <section id="signIn" class="sign-in" aria-labelledby="signInHeading" hidden>
+      <p class="eyebrow">Your home music remote</p><h1 id="signInHeading">Welcome back</h1>
+      <p id="signInHelp">Enter the remote passphrase chosen in the Windows app’s Setup page.</p>
+      <form id="signInForm" hidden>
+        <label class="passphrase-label" for="passphrase">Remote passphrase<input id="passphrase" name="password" type="password" autocomplete="current-password" maxlength="128" required></label>
+        <label class="remember-device"><input id="rememberDevice" type="checkbox" checked>Remember this browser for 30 days</label>
+        <button id="signInSubmit" class="accent-button sign-in-submit" type="submit">Connect to your music</button>
+      </form>
+      <p id="signInMessage" class="sign-in-message" role="status" hidden></p>
+      <p id="setupHelp" class="setup-help" hidden>On the Windows PC, open Setup → Remote, set a remote passphrase, and save. Then return to this address and sign in. You can also use the existing QR code or access link.</p>
+      <button id="signInRetry" type="button" class="library-retry" hidden>Check again</button>
+    </section>
+    <main class="layout" id="remoteContent" hidden>
       <section class="mode-panel" aria-label="Playback destination"><div class="mode-buttons" role="group" aria-label="Playback mode"><button id="pcMode" type="button" aria-pressed="true">Control PC</button><button id="listenMode" type="button" aria-pressed="false" disabled>Listen/watch here</button></div><p id="modeHelp" class="mode-help">Choose music and control playback on your Windows PC.</p></section>
       <section class="player" aria-label="Now playing">
         <div class="playing-info">
@@ -89,6 +102,11 @@
       try { history.replaceState(null, '', location.pathname + location.search); } catch (_) { /* No navigation needed. */ }
     }
     let connected = false;
+    let authRequired = false;
+    let authVersion = 0;
+    let authStatusRequest = 0;
+    let loginPending = false;
+    let queueRemovalPending = false;
     let state = null;
     let libraryItems = [];
     const collectionViewKey = 'magicmusic-collection-view';
@@ -137,7 +155,8 @@
     }
     function setConnection(ok, message = '') {
       connected = ok;
-      $('connection').textContent = ok ? 'Connected' : accessKey ? 'Disconnected' : 'Open your link';
+      $('connection').textContent = ok ? 'Connected' : authRequired ? 'Sign in' : 'Disconnected';
+      $('signOut').hidden = !ok;
       $('connection').classList.toggle('online', ok);
       $('noticeText').textContent = message;
       $('notice').hidden = !message;
@@ -154,6 +173,7 @@
     }
     async function api(path, options = {}) {
       const { timeoutMs = 9000, ...requestOptions } = options;
+      const requestAuthVersion = authVersion;
       const controller = new AbortController();
       const externalSignal = requestOptions.signal;
       const abort = () => controller.abort();
@@ -163,19 +183,20 @@
       try {
         const response = await fetch(path, {
           ...requestOptions,
-          headers: { 'Authorization': 'Bearer ' + accessKey, ...(requestOptions.body ? { 'Content-Type': 'application/json' } : {}) },
+          headers: { ...(accessKey ? { 'Authorization': 'Bearer ' + accessKey } : {}), ...(requestOptions.body ? { 'Content-Type': 'application/json' } : {}) },
           signal: controller.signal,
           cache: 'no-store',
-          credentials: 'omit'
+          credentials: 'same-origin'
         });
         if (!response.ok) {
           const error = new Error(response.status === 401 || response.status === 403
-            ? 'This remote link is missing or no longer valid. Open a fresh link from Setup in the Windows app.'
+            ? 'Please sign in again, or open a current access link from Setup.'
             : 'The Windows app could not complete that request.');
           error.status = response.status;
-          if (response.status !== 401 && response.status !== 403) {
+          if (response.status !== 403) {
             try { const body = await response.json(); if (typeof body.error === 'string') error.message = body.error; } catch (_) { /* Keep the readable fallback. */ }
           }
+          if (response.status === 401 && path.startsWith('/api/') && requestAuthVersion === authVersion) requireSignIn(error.message);
           throw error;
         }
         if (response.status === 204) return null;
@@ -187,6 +208,126 @@
       } finally {
         clearTimeout(timeout);
         externalSignal?.removeEventListener('abort', abort);
+      }
+    }
+    function clearAccessKey() {
+      accessKey = '';
+      try { sessionStorage.removeItem(storageKey); } catch (_) { /* The in-memory key is still cleared. */ }
+    }
+    function showSignInMessage(message) {
+      $('signInMessage').textContent = message;
+      $('signInMessage').hidden = !message;
+    }
+    function requireSignIn(message = '') {
+      authRequired = true;
+      ++authVersion;
+      clearTimeout(pollTimer);
+      clearAccessKey();
+      stateController?.abort();
+      libraryController?.abort();
+      ++stateRequest;
+      ++libraryRequest;
+      invalidateInfoRequest();
+      if ($('songDialog').open) $('songDialog').close();
+      cancelBrowserPlayback();
+      browserQueue = [];
+      browserQueueIndex = -1;
+      state = null;
+      $('passphrase').value = '';
+      $('remoteContent').hidden = true;
+      $('signIn').hidden = false;
+      $('notice').hidden = true;
+      setConnection(false);
+      showSignInMessage(message);
+      loadSignInOptions();
+    }
+    async function loadSignInOptions() {
+      const request = ++authStatusRequest;
+      const version = authVersion;
+      try {
+        const status = await api('/auth/status');
+        if (request !== authStatusRequest || version !== authVersion || !authRequired) return;
+        const enabled = status?.passphraseEnabled === true;
+        $('signInForm').hidden = !enabled;
+        $('setupHelp').hidden = enabled;
+        $('signInRetry').hidden = enabled;
+        $('signInHelp').textContent = enabled
+          ? 'Enter the remote passphrase chosen in the Windows app’s Setup page.'
+          : 'A remote passphrase has not been set on this PC yet.';
+      } catch (error) {
+        if (request !== authStatusRequest || version !== authVersion || !authRequired) return;
+        showSignInMessage(error.message);
+        $('signInRetry').hidden = false;
+      }
+    }
+    async function initializeConnection() {
+      const version = authVersion;
+      try {
+        const status = await api('/auth/status');
+        if (version !== authVersion) return;
+        if (status?.authenticated === true || accessKey) {
+          authRequired = false;
+          $('signIn').hidden = true;
+          $('remoteContent').hidden = false;
+          poll();
+        } else requireSignIn();
+      } catch (error) {
+        if (version !== authVersion) return;
+        setConnection(false, error.message);
+      }
+    }
+    async function signIn(event) {
+      event.preventDefault();
+      if (loginPending) return;
+      loginPending = true;
+      $('signInSubmit').disabled = true;
+      showSignInMessage('Connecting…');
+      const version = authVersion;
+      const passphrase = $('passphrase').value;
+      $('passphrase').value = '';
+      try {
+        await api('/auth/login', { method: 'POST', body: JSON.stringify({ passphrase, remember: $('rememberDevice').checked }) });
+        if (version !== authVersion) return;
+        ++authVersion;
+        authRequired = false;
+        clearAccessKey();
+        $('signIn').hidden = true;
+        $('remoteContent').hidden = false;
+        showSignInMessage('');
+        await poll();
+      } catch (error) {
+        if (version === authVersion) {
+          showSignInMessage(error.message);
+          $('passphrase').focus();
+        }
+      } finally {
+        loginPending = false;
+        $('signInSubmit').disabled = false;
+      }
+    }
+    async function signOut() {
+      $('signOut').disabled = true;
+      // Stop active requests immediately so their replies cannot reopen signed-out controls.
+      ++authVersion;
+      authRequired = true;
+      stateController?.abort();
+      libraryController?.abort();
+      ++stateRequest;
+      ++libraryRequest;
+      invalidateInfoRequest();
+      if ($('songDialog').open) $('songDialog').close();
+      cancelBrowserPlayback();
+      setConnection(false);
+      $('remoteContent').hidden = true;
+      clearTimeout(pollTimer);
+      try {
+        await api('/auth/logout', { method: 'POST', body: '{}' });
+        requireSignIn('Signed out of this browser.');
+      } catch (error) {
+        requireSignIn('This page is locked, but the saved sign-in could not be cleared. Reconnect and choose Sign out again.');
+        $('signOut').hidden = false;
+      } finally {
+        $('signOut').disabled = false;
       }
     }
     function addLibraryItem(item) {
@@ -234,7 +375,7 @@
       subtitle.className = 'track-subtitle';
       subtitle.textContent = [text(item.artist), !inQueue ? text(item.album) : '', item.isVideo ? 'Video' : ''].filter(Boolean).join(' · ') || 'Local file';
       details.append(name);
-      if (inQueue) details.append(subtitle);
+      details.append(subtitle);
       const duration = document.createElement('span');
       duration.className = 'duration';
       duration.textContent = text(item.duration) || '—';
@@ -260,8 +401,18 @@
         info.title = 'Song info';
         info.setAttribute('aria-label', 'Song info for ' + (text(item.title) || 'untitled track'));
         info.addEventListener('click', () => openSongInfo(item.id));
-      if (inQueue) row.append(info);
-      else {
+      if (inQueue) {
+        const actions = element('div', '', 'queue-actions');
+        const remove = element('button', 'Remove', 'queue-remove');
+        remove.type = 'button';
+        remove.dataset.command = '';
+        remove.disabled = !connected || queueRemovalPending;
+        remove.setAttribute('aria-label', 'Remove ' + title + ' from queue');
+        remove.title = 'Remove this item from the queue';
+        remove.addEventListener('click', () => removeQueueItem(item, index));
+        actions.append(info, remove);
+        row.append(actions);
+      } else {
         const actions = element('td', '', 'directory-actions');
         const add = document.createElement('button');
         add.type = 'button';
@@ -283,6 +434,30 @@
         row.append(actions);
       }
       return row;
+    }
+    async function removeQueueItem(item, index) {
+      if (!connected || queueRemovalPending) return;
+      if (playbackMode === 'listen') {
+        if (!browserPlaybackAllowed() || browserQueue[index] !== item) return;
+        const removingCurrent = index === browserQueueIndex;
+        // Invalidate pending stream creation before removing the current row.
+        if (removingCurrent) cancelBrowserPlayback();
+        browserQueue.splice(index, 1);
+        if (index < browserQueueIndex) --browserQueueIndex;
+        else if (removingCurrent) browserQueueIndex = -1;
+        updatePlaybackMode();
+        if (removingCurrent && browserQueue.length) playBrowserQueue(Math.min(index, browserQueue.length - 1));
+        else if (!browserQueue.length) {
+          browserQueueIndex = -1;
+          $('browserStatus').textContent = 'This browser’s queue is empty. Choose a song or video to add.';
+        }
+        showToast('Removed from this browser’s queue.');
+      } else {
+        queueRemovalPending = true;
+        updatePlaybackMode();
+        try { await command('remove-queue-item', { itemId: item.id, queueIndex: index }, 'Removed from queue.'); }
+        finally { queueRemovalPending = false; updatePlaybackMode(); }
+      }
     }
     function renderQueue(items) {
       const signature = playbackMode + JSON.stringify(items);
@@ -378,7 +553,7 @@
       $('browserNext').disabled = !allowed || browserQueueIndex < 0 || browserQueueIndex >= browserQueue.length - 1;
       $('queueHeading').textContent = listening ? 'This browser’s queue' : 'Up next';
       $('queueEmpty').textContent = listening ? 'Tap a song name to add it, then choose a queued track to play. This queue belongs to this browser.' : 'Tap a song name to add it to the queue, or choose Play beside a song to listen now.';
-      document.querySelectorAll('[data-command]').forEach(button => { button.disabled = !connected || (listening && !allowed); });
+      document.querySelectorAll('[data-command]').forEach(button => { button.disabled = !connected || (listening && !allowed) || (queueRemovalPending && button.classList.contains('queue-remove')); });
       for (const id of ['previous', 'toggle', 'next', 'volume']) $(id).disabled = !connected || listening;
       $('seek').disabled = !connected || listening || finite(state?.durationMs) <= 0;
       $('nowInfo').disabled = !connected || !displayedItemId();
@@ -460,7 +635,7 @@
       }
     }
     async function refreshState(force = false) {
-      if (!accessKey || document.hidden) return;
+      if (authRequired || document.hidden) return;
       if (stateController && !force) return;
       stateController?.abort();
       const controller = new AbortController();
@@ -481,7 +656,7 @@
     async function poll() {
       clearTimeout(pollTimer);
       await refreshState();
-      if (!document.hidden && accessKey) pollTimer = setTimeout(poll, 2000);
+      if (!document.hidden && !authRequired) pollTimer = setTimeout(poll, 2000);
     }
     function folderMode() {
       return !$('playlist').value && !$('search').value.trim() && collectionView === 'folders';
@@ -840,12 +1015,16 @@
     });
     async function command(action, values = {}, successMessage = '') {
       if (!connected || playbackMode !== 'pc') return;
+      const version = authVersion;
       try {
         await api('/api/command', { method: 'POST', body: JSON.stringify({ action, ...values }) });
+        if (version !== authVersion) return;
         if (successMessage) showToast(successMessage);
         await refreshState(true);
       } catch (error) {
+        if (version !== authVersion) return;
         showToast(error.message);
+        if (error.status === 409) await refreshState(true);
         if (error.status === 401 || error.status === 403) setConnection(false, error.message);
       }
     }
@@ -906,13 +1085,10 @@
     $('folderHome').addEventListener('click', () => openFolder(null));
     $('folderUp').addEventListener('click', () => { if (!$('folderUp').disabled) openFolder(parentFolderId); });
     $('libraryRetry').addEventListener('click', loadLibrary);
-    $('retry').addEventListener('click', () => {
-      if (!accessKey) {
-        setConnection(false, 'Open the remote link in Setup on the Windows app to connect this page.');
-        return;
-      }
-      refreshState(true);
-    });
+    $('retry').addEventListener('click', initializeConnection);
+    $('signInRetry').addEventListener('click', loadSignInOptions);
+    $('signInForm').addEventListener('submit', signIn);
+    $('signOut').addEventListener('click', signOut);
     for (const id of ['seek', 'volume']) {
       $(id).addEventListener('pointerdown', () => heldRanges.add(id));
       $(id).addEventListener('pointerup', () => heldRanges.delete(id));
@@ -929,11 +1105,10 @@
     document.addEventListener('visibilitychange', () => {
       clearTimeout(pollTimer);
       if (document.hidden) { stateController?.abort(); libraryController?.abort(); }
-      else poll();
+      else if (!authRequired) poll();
     });
     updatePlaybackMode();
-    if (accessKey) poll();
-    else setConnection(false, 'Open the remote link in Setup on the Windows app to connect this page.');
+    initializeConnection();
   })();
   </script>
 </body>

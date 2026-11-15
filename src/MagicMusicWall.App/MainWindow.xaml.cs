@@ -453,15 +453,42 @@ public partial class MainWindow : Window
     }
     private async void QueueRemove_Click(object sender, RoutedEventArgs e)
     {
-        if (_queueChanging) return;
-        var i = QueueList.SelectedIndex;
-        if (i < 0) return;
+        if (_queueChanging || _closing) return;
+        var index = QueueList.SelectedIndex;
+        if (index < 0 || index >= _queue.Count) return;
+        try { await RemoveQueueItem(index, _queue[index].Id); }
+        catch (Exception ex) { Error(ex); }
+    }
+
+    private async Task RemoveQueueItem(int index, string? expectedItemId)
+    {
+        if (_queueChanging || _closing) throw new InvalidOperationException("The player is busy. Try again shortly.");
+        // A remote's queue may be stale. Match both the position and song before
+        // changing anything, including stopping the currently playing item.
+        if (index < 0 || index >= _queue.Count || _queue[index].Id != expectedItemId)
+            throw new ArgumentException("The queue changed. Refresh the remote and choose the track again.");
+
         _queueChanging = true;
         try
         {
-            if (i == _queueIndex) { ++_playVersion; await Playback(() => { _player.Stop(); return true; }); _current = null; }
-            _queue.RemoveAt(i);
-            if (i < _queueIndex) _queueIndex--; else if (i == _queueIndex) { _queueIndex--; if (_queue.Count > 0) await PlayIndex(Math.Min(i, _queue.Count - 1)); else { NowTitle.Text = "Nothing playing yet"; NowArtist.Text = "Queue is empty"; } }
+            var removingCurrent = index == _queueIndex;
+            if (removingCurrent)
+            {
+                ++_playVersion;
+                await Playback(() => { _player.Stop(); return true; });
+                _current = null;
+            }
+            _queue.RemoveAt(index);
+            if (index < _queueIndex) _queueIndex--;
+            else if (removingCurrent) _queueIndex = -1;
+
+            if (removingCurrent || _queue.Count == 0)
+            {
+                NowTitle.Text = "Nothing playing yet";
+                NowArtist.Text = _queue.Count == 0 ? "Queue is empty" : "Choose a queued track to play";
+                if (_queue.Count == 0) { _queueIndex = -1; _current = null; }
+                else await PlayIndex(Math.Min(index, _queue.Count - 1));
+            }
         }
         finally { _queueChanging = false; }
     }

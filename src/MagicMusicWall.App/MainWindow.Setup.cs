@@ -18,6 +18,7 @@ public partial class MainWindow
     private string? _remoteError;
 
     internal AppPreferences Preferences => _settings.Copy();
+    internal string RemoteAddressLink => _remote.IsRunning ? _remote.BaseUrl + "/" : "";
     internal string RemoteLink => _remote.IsRunning ? $"{_remote.BaseUrl}/#key={Uri.EscapeDataString(_settings.RemoteAccessToken)}" : "";
     internal string ListeningLink => _settings.BrowserPlaybackEnabled && RemoteLink.Length > 0 ? RemoteLink + "&mode=listen" : "";
     internal string RemoteStatus => _remote.IsRunning ? "Remote is running. Open this link on your home network." : _remoteError ?? "Remote is off. Enable it and save settings to connect.";
@@ -101,6 +102,7 @@ public partial class MainWindow
         if (updated.RemoteAccessToken.Length < 32) updated.RemoteAccessToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         var restart = updated.RemoteEnabled != _settings.RemoteEnabled || updated.RemoteAddress != _settings.RemoteAddress ||
             updated.RemotePort != _settings.RemotePort || updated.RemoteAccessToken != _settings.RemoteAccessToken ||
+            updated.RemotePassphraseHash != _settings.RemotePassphraseHash ||
             updated.BrowserPlaybackEnabled != _settings.BrowserPlaybackEnabled;
         updated.Save(App.DataDirectory);
         _saveTimer.Stop();
@@ -135,7 +137,7 @@ public partial class MainWindow
                 _settings.RemoteAccessToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
                 _settings.Save(App.DataDirectory);
             }
-            await _remote.StartAsync(NetworkAddresses.Resolve(_settings.RemoteAddress), _settings.RemotePort, _settings.RemoteAccessToken, new RemoteBridge(this));
+            await _remote.StartAsync(NetworkAddresses.Resolve(_settings.RemoteAddress), _settings.RemotePort, _settings.RemoteAccessToken, new RemoteBridge(this), _settings.RemotePassphraseHash);
         }
         catch (Exception ex) { _remoteError = $"Web remote could not start: {ex.Message}"; Status(_remoteError); }
     }
@@ -165,6 +167,9 @@ public partial class MainWindow
                 if (index >= _queue.Count || _queue[index].Id != command.ItemId)
                     throw new ArgumentException("The queue changed. Refresh the remote and choose the track again.");
                 await PlayIndex(index);
+                break;
+            case "remove-queue-item":
+                await RemoveQueueItem(command.QueueIndex!.Value, command.ItemId);
                 break;
             case "play-item":
             case "queue-item":

@@ -2,7 +2,7 @@
 
 ![DigitalRCS.com](images/digitalrcs-logo.png)
 
-Magic Music Wall plays music and videos you already own through a Windows PC, its connected Bluetooth output, or a browser on your home network. These guides cover version **0.5.2**.
+Magic Music Wall plays music and videos you already own through a Windows PC, its connected Bluetooth output, or a browser on your home network. These guides cover version **0.6.0**.
 
 | I want to… | Open this guide |
 | --- | --- |

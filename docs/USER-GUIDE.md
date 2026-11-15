@@ -115,7 +115,7 @@ Open **Setup** and choose the tab for the setting you want. Click **Save setting
 | **Sound** | Preferred audio output, volume, shuffle for new queues, and queue repeat. Windows handles Bluetooth pairing. |
 | **Library** | Add/manage source folders, rescan now, and choose whether to rescan at startup. |
 | **Metadata** | Optional movie lookup token and provider information. Music lookup needs no API key. |
-| **Remote** | Enable the web page, allow browser playback, choose a PC address/port, and copy or replace access links and QR codes. |
+| **Remote** | Enable the web page, allow browser playback, set a sign-in passphrase, choose a PC address/port, and copy the web address or QR access links. |
 | **TV & data** | Choose defaults for file-sharing address/port and open the active library/settings folder. A sharing port of `0` selects an available port. |
 
 Changes to folders/playlists and the main player's output, volume, shuffle and repeat are also saved as you use them. A Chromecast selection applies to the current session. File sharing starts only after **Start sharing this file**; saving its defaults does not start it.
