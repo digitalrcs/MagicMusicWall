@@ -13,6 +13,7 @@
      <TextBlock Text="Click to browse · double-click to play" FontSize="10" Foreground="{StaticResource MutedBrush}" Margin="10,0,0,6" TextWrapping="Wrap"/>
     </StackPanel>
     <StackPanel DockPanel.Dock="Bottom">
+     <Button Content="Music constellation" Click="MusicMap_Click" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Music constellation"/>
      <Button Content="⚙  Setup" Click="Setup_Click" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Setup"/>
      <Button Content="Manage folders" Click="ManageFolders_Click" HorizontalAlignment="Stretch" Margin="0,12,0,8"/>
      <Button x:Name="RescanButton" Content="Rescan library" Click="Rescan_Click" HorizontalAlignment="Stretch"/>

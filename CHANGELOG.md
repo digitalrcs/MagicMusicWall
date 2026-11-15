@@ -1,5 +1,13 @@
 # Changes
 
+## 0.7.0
+
+- Explore a Music constellation in a separate window: choose an artist, album or song and follow labeled connections through your indexed music collection.
+- Search and page the full music index, filter by genre, explore an artist's albums or songs, and append a whole selection or individual songs to the queue.
+- Choose Metadata, Sound or Blended similarity. Optional local analysis samples up to the first 60 seconds of each music file, caches unchanged results, reports progress and failures, and preserves completed work when cancelled.
+- Explain metadata and sound relationships, show analyzed song coverage and estimated BPM, and label artist/album sound summaries as aggregates. No online recommendation database or AI service is used.
+- Refresh the open constellation after library changes, and rescan configured folders with **Rescan library & rebuild map** when files change outside the app. Sound analysis remains a separate optional action.
+
 ## 0.6.0
 
 - Sign in at the plain web remote address using a passphrase chosen in Setup. Remembered browsers stay signed in for 30 days, including across app restarts; QR access links remain available.

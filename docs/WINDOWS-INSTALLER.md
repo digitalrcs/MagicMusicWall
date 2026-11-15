@@ -10,9 +10,9 @@ Get the files from the project's [GitHub Releases page](https://github.com/digit
 
 | Download | Use it for |
 | --- | --- |
-| `MagicMusicWall-0.6.0-Setup-x64.exe` | Install on a Windows PC, including from a USB drive. |
-| `MagicMusicWall-0.6.0-Portable-x64.zip` | Extract and run without installing. Keep the extracted folder together. |
-| `MagicMusicWall-0.6.0-USB-Kit.zip` | Carry the installer, portable ZIP, instructions and checksums in one download. |
+| `MagicMusicWall-0.7.0-Setup-x64.exe` | Install on a Windows PC, including from a USB drive. |
+| `MagicMusicWall-0.7.0-Portable-x64.zip` | Extract and run without installing. Keep the extracted folder together. |
+| `MagicMusicWall-0.7.0-USB-Kit.zip` | Carry the installer, portable ZIP, instructions and checksums in one download. |
 | `SHA256SUMS.txt` | Compare downloaded files with the published checksums. |
 | GitHub source archives | Developers who want to inspect or build the code. These are not the ready-to-run app. |
 
@@ -22,7 +22,7 @@ This release targets **Windows 11 on Intel/AMD x64 PCs**. The installer permits 
 
 ## Install on this PC
 
-1. Copy or download `MagicMusicWall-0.6.0-Setup-x64.exe` to the PC, or open it from your USB drive.
+1. Copy or download `MagicMusicWall-0.7.0-Setup-x64.exe` to the PC, or open it from your USB drive.
 2. Close any running copy of Magic Music Wall before continuing.
 3. Open the installer and follow its pages. The default location is `%LOCALAPPDATA%\Programs\MagicMusicWall` for your Windows account.
 4. Choose whether to create a desktop shortcut, then finish the installation.
@@ -47,7 +47,7 @@ Installing on a second PC does not automatically transfer the first PC's library
 
 ## Run the portable copy
 
-1. Extract `MagicMusicWall-0.6.0-Portable-x64.zip` to a writable folder on the USB drive. Do not run the app from inside the ZIP.
+1. Extract `MagicMusicWall-0.7.0-Portable-x64.zip` to a writable folder on the USB drive. Do not run the app from inside the ZIP.
 2. Keep all extracted files and subfolders together; the player needs its bundled runtime and VLC files.
 3. Open **Start-MagicMusicWall.cmd**. This starts portable mode and keeps the library/settings in the adjacent **Data** folder.
 4. For music you want to carry, create a **Media** folder inside the extracted app folder and copy your music there. Add it through **Add folder** or **Add files**. Other reachable locations can also be added.
@@ -80,7 +80,7 @@ Back up the active data folder while the app is closed. It holds your playlist r
 This optional PowerShell command prints an installer's SHA-256 checksum:
 
 ```powershell
-Get-FileHash .\MagicMusicWall-0.6.0-Setup-x64.exe -Algorithm SHA256
+Get-FileHash .\MagicMusicWall-0.7.0-Setup-x64.exe -Algorithm SHA256
 ```
 
 Compare the full value with `SHA256SUMS.txt` for the same release. Matching values show that the file matches the published package; they do not replace your normal software-trust checks.

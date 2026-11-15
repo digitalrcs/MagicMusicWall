@@ -38,6 +38,8 @@ The grid shows only folders/files represented in your added library. It does not
 
 ## Find a folder, artist or album
 
+For a visual way to explore the collection, click **Music constellation** on the player's left side. Search for an artist, album or song, select it to view related music, and follow another name to explore further. Choose **Metadata**, **Sound** or **Blended** similarity. Optional **Analyze sound** samples up to the first 60 seconds of files locally, keeps cached results and supports **Cancel analysis** and later resumption. Queue the whole selection or individual songs without replacing the current queue. **Rescan library & rebuild map** updates the constellation after external folder/tag changes; sound analysis is a separate action for new or changed files. See the [music constellation guide](MUSIC-MAP.md) for controls, coverage and the limits of sample-based comparisons.
+
 | Control | What it does |
 | --- | --- |
 | **Folders** | Browse the added library's folder hierarchy. |

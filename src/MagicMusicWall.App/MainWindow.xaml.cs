@@ -143,6 +143,7 @@ public partial class MainWindow : Window
         EmptyTitle.Text = _catalog.Document.Items.Count == 0 ? "Make room for your music" : CurrentPlaylist is not null && SearchBox.Text.Length == 0 ? "This playlist is empty" : "No matches yet";
         EmptyDescription.Text = _catalog.Document.Items.Count == 0 ? "Add a folder from your PC, USB drive, or network share.\nYour original files stay right where they are." : CurrentPlaylist is not null && SearchBox.Text.Length == 0 ? "Browse your library and select songs. Choose this playlist\nin the dropdown on the right, then Add selected to playlist." : "Try a different artist, album, title, or folder name.";
         EmptyLibraryButton.Content = _catalog.Document.Items.Count == 0 ? "Choose a music folder" : "Browse your library";
+        RefreshMusicMapIfChanged();
     }
 
     private void ViewsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -587,6 +588,7 @@ public partial class MainWindow : Window
         _closing = true; _timer.Stop(); _saveTimer.Stop(); ++_playVersion; IsEnabled = false;
         try
         {
+            await StopMusicMapAnalysis();
             try { _settings.Save(App.DataDirectory); } catch (Exception ex) { LogCleanup(ex); }
             try { await StopCastingDiscoveryAsync(); } catch (Exception ex) { LogCleanup(ex); }
             try { await _remote.DisposeAsync(); } catch (Exception ex) { LogCleanup(ex); }

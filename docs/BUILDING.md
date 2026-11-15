@@ -45,12 +45,21 @@ dotnet test tests\MagicMusicWall.Core.Tests\MagicMusicWall.Core.Tests.csproj -c 
 
 Use synthetic media or disposable copies for file-write tests. Preserve both success and failure cases: selected tags, untouched metadata, backups, locked/read-only files and unsupported formats.
 
+For constellation grouping, synthetic audio features and sound ranking:
+
+```powershell
+dotnet test tests/MagicMusicWall.Core.Tests -c Release --filter "FullyQualifiedName~MusicMapIndexTests|FullyQualifiedName~AudioAnalysisTests"
+dotnet run --project tests/MagicMusicWall.MusicMap.Checks -c Release -- src/MagicMusicWall.App/bin/Release/net10.0-windows/libvlc/win-x64
+```
+
+Build the App first for the bundled VLC path. The second command generates a temporary WAV and checks silent decoding, cache reuse, changed-file invalidation, cancellation, unavailable media and corrupt-cache fallback. Neither command scans your library or tests perceived recommendation quality. The analysis cache and scan report are private runtime data, excluded from public packages.
+
 `scripts\Smoke-Test.ps1` performs a separate synthetic, zero-volume playback check. Its audio/discovery results do not prove that sound reaches a physical Bluetooth speaker or that a TV can play a cast. Discovery can trigger a Windows Firewall prompt.
 
 For native playback volume checks on Windows, run the opt-in console project against the VLC directory of an existing published payload:
 
 ```powershell
-dotnet run --project tests/MagicMusicWall.Playback.Checks -c Release -- --native-dir artifacts/release-staging/0.6.0/app/libvlc/win-x64
+dotnet run --project tests/MagicMusicWall.Playback.Checks -c Release -- --native-dir artifacts/release-staging/0.7.0/app/libvlc/win-x64
 ```
 
 Publish the payload first, or substitute another existing `libvlc/win-x64` directory. The check generates a temporary silent WAV and verifies VLC volume and mute state across track changes. It is separate from `dotnet test` and does not verify audible output quality or Bluetooth hardware.
@@ -62,6 +71,14 @@ dotnet test tests/MagicMusicWall.Streaming.Tests/MagicMusicWall.Streaming.Tests.
 ```
 
 `RemotePassphrase` saves a salted PBKDF2-HMAC-SHA256 verifier with 600,000 iterations using the [.NET one-shot PBKDF2 API](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.rfc2898derivebytes.pbkdf2?view=net-10.0), consistent with [OWASP's PBKDF2 guidance](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2). It does not save the passphrase. `RemoteSignIn` issues expiring signed HttpOnly/SameSite cookies bound to the verifier and access key, limits login attempts, and retains the server's Host/Origin checks. The listener still uses HTTP on a trusted LAN; these controls do not provide transport encryption.
+
+For the local music constellation index:
+
+```powershell
+dotnet test tests/MagicMusicWall.Core.Tests/MagicMusicWall.Core.Tests.csproj -c Release --filter FullyQualifiedName~MusicMapIndexTests
+```
+
+`MusicMapIndex` snapshots indexed non-video entries into artist, album and song entities. Stable IDs and raw `TrackIds` preserve queue integration. Related results are computed on demand for one selected entity using genre, artist, album and decade metadata; the index does not construct an all-pairs graph or send library data to an online recommendation service. `TaggedTrackCount` counts tracks with usable genre tags, not complete metadata. The WPF window pages browse results and draws a bounded neighborhood around its selection.
 
 ## Project layout
 
@@ -81,12 +98,12 @@ dotnet test tests/MagicMusicWall.Streaming.Tests/MagicMusicWall.Streaming.Tests.
 
 `scripts\Publish.ps1` publishes a Windows x64 payload with its .NET runtime and VLC files. Keep the whole payload together; this is not a single-EXE distribution.
 
-Build release packages from a fresh, dedicated staging directory. Do not overwrite the folder of a running app and do not stage user data or personal media. These examples use the versioned staging directory `artifacts\release-staging\0.6.0\app`.
+Build release packages from a fresh, dedicated staging directory. Do not overwrite the folder of a running app and do not stage user data or personal media. These examples use the versioned staging directory `artifacts\release-staging\0.7.0\app`.
 
 Publish the staged payload with:
 
 ```powershell
-pwsh -File scripts/Publish.ps1 -OutputDirectory artifacts/release-staging/0.6.0/app -SkipArchive
+pwsh -File scripts/Publish.ps1 -OutputDirectory artifacts/release-staging/0.7.0/app -SkipArchive
 ```
 
 The publish script assembles the application, required runtime/native libraries, third-party notices/license texts, and **OfflineDocs**. It renders the Markdown documentation using PowerShell 7's `ConvertFrom-Markdown`. `-SkipArchive` leaves archive creation to the release-packaging script.
@@ -96,9 +113,9 @@ The publish script assembles the application, required runtime/native libraries,
 Once the staged payload is ready:
 
 ```powershell
-.\scripts\Build-Installer.ps1 -PayloadDirectory .\artifacts\release-staging\0.6.0\app -OutputDirectory .\artifacts\release\0.6.0 -Version 0.6.0
-.\scripts\Package-ThirdPartySources.ps1 -OutputDirectory .\artifacts\release\0.6.0 -Version 0.6.0
-.\scripts\Package-Release.ps1 -PayloadDirectory .\artifacts\release-staging\0.6.0\app -OutputDirectory .\artifacts\release\0.6.0 -Version 0.6.0 -AdditionalAsset .\artifacts\release\0.6.0\MagicMusicWall-0.6.0-ThirdParty-Sources.zip
+.\scripts\Build-Installer.ps1 -PayloadDirectory .\artifacts\release-staging\0.7.0\app -OutputDirectory .\artifacts\release\0.7.0 -Version 0.7.0
+.\scripts\Package-ThirdPartySources.ps1 -OutputDirectory .\artifacts\release\0.7.0 -Version 0.7.0
+.\scripts\Package-Release.ps1 -PayloadDirectory .\artifacts\release-staging\0.7.0\app -OutputDirectory .\artifacts\release\0.7.0 -Version 0.7.0 -AdditionalAsset .\artifacts\release\0.7.0\MagicMusicWall-0.7.0-ThirdParty-Sources.zip
 ```
 
 `Build-Installer.ps1` also accepts `-IsccPath` when the Inno compiler is installed in a nonstandard location. `Package-Release.ps1` accepts `-InstallerPath` for an already built installer and `-AdditionalAsset` for reviewed release companion files. It packages prepared inputs; it does not rebuild the application.
@@ -106,13 +123,13 @@ Once the staged payload is ready:
 Expected release files:
 
 ```text
-artifacts/release/0.6.0/
-  MagicMusicWall-0.6.0-Setup-x64.exe
-  MagicMusicWall-0.6.0-Setup-x64.exe.sha256
-  MagicMusicWall-0.6.0-Portable-x64.zip
-  MagicMusicWall-0.6.0-ThirdParty-Sources.zip
-  MagicMusicWall-0.6.0-ThirdParty-Sources.zip.sha256
-  MagicMusicWall-0.6.0-USB-Kit.zip
+artifacts/release/0.7.0/
+  MagicMusicWall-0.7.0-Setup-x64.exe
+  MagicMusicWall-0.7.0-Setup-x64.exe.sha256
+  MagicMusicWall-0.7.0-Portable-x64.zip
+  MagicMusicWall-0.7.0-ThirdParty-Sources.zip
+  MagicMusicWall-0.7.0-ThirdParty-Sources.zip.sha256
+  MagicMusicWall-0.7.0-USB-Kit.zip
   START-HERE.txt
   SHA256SUMS.txt
 ```

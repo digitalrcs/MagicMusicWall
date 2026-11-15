@@ -52,6 +52,7 @@ public partial class MainWindow
         finally
         {
             _metadataWriting = _queueChanging = false;
+            RefreshMusicMapIfChanged();
             // An unrelated playing file may have ended while queue commands were blocked.
             if (_current is not null) Player_Ended(this, EventArgs.Empty);
         }

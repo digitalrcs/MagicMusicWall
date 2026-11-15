@@ -14,4 +14,6 @@ dist/
 .env.*
 settings.json
 library.json
+music-audio-features.json*
+music-audio-scan.txt
 **/__pycache__/
