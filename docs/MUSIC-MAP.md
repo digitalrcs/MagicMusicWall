@@ -2,7 +2,7 @@
 
 [Documentation home](README.md)
 
-The **Music constellation** is an interactive network of artists, albums and songs already in your library. Select a name to place it at the center, then follow its connections to find something else to queue. It opens in a separate window, so you can keep using the main player.
+The **Music constellation** is an animated network of artists, albums and songs already in your library. Select a name to explore its connections. Links act like springs: stronger relationships pull names closer, and related neighbors form groups as the network settles. It opens in a separate window, so you can keep using the main player.
 
 ![Music constellation using demonstration artists and analyzed samples](images/music-constellation.png)
 
@@ -11,10 +11,18 @@ The **Music constellation** is an interactive network of artists, albums and son
 1. Click **Music constellation** on the left side of the Windows player.
 2. Choose **Artist**, **Album** or **Song** under **Show**. Search by name, artist or album; use **Genre** to narrow the results.
 3. Choose **Metadata**, **Sound** or **Blended** under **Similarity**, then select a result in the list. The network shows that selection and related items, with labels explaining each connection. **Blended** works from saved tags before any sound analysis is available.
-4. Click another name in the network or the related-items list to explore from there. Use **← Back** to revisit a selection.
+4. Click another name in the network or the related-items list to explore from there. Clicking without dragging selects that music; it does not add it to the queue. Use **← Back** to revisit a selection.
 5. For an artist, choose **Explore albums** or **Explore songs**. Choose **All music** to return to the full library scope.
 
 The result list is paged so a large collection remains usable. **← Previous** and **Next →** move through the matching results; they do not skip library files during indexing. Use **+**, **−** and **Fit** to adjust the map. Drag empty map space to pan.
+
+## Move around the constellation
+
+With motion running, drag a name to move it, then release it to let its connections pull it back into the settling network. Dragging changes the layout without selecting different music or adding anything to the queue. Clicking a name without dragging makes it the new selection.
+
+Use **Pause motion** to hold the layout still and **Resume motion** to let the springs settle again. If animation effects are disabled in Windows, the map starts paused. You can still explore using the result list, related-item buttons and **← Back**; these controls work with the keyboard as well as the mouse.
+
+The new layout uses your existing library metadata and cached sound features. You do not need to rescan or repeat sound analysis just to use the animated constellation.
 
 ## Add music to the queue
 
@@ -34,11 +42,13 @@ Queue actions append to **Up next** without replacing the queue or interrupting 
 | **Sound** | Similar audio features from locally analyzed samples. Both sides need analyzed audio. |
 | **Blended** | Combines available sound evidence with metadata; falls back to metadata when sound analysis is unavailable. |
 
-Sound connections are blue; metadata connections distinguish genre, artist/album and era. Read the connection's explanation in the related-items list or hover over a name. Network positions are arranged for readability; distance on the screen is not a measured similarity score or a two-dimensional audio embedding.
+Sound connections are blue; metadata connections distinguish genre, artist/album and era. Read the connection's explanation in the related-items list or hover over a name. Lines connect the selected music to its neighbors and also show strong relationships between those neighbors.
+
+Stronger links pull their endpoints closer together. Distances are approximate: other connections, space for labels and the settling motion also affect positions. The layout is not an exact two-dimensional measurement of every pair's similarity. Connection strengths are relevance measures, not percentage probabilities that two artists or songs sound alike.
 
 Everything is calculated locally. The constellation does not use the Music-Map/Gnod recommendation database, an online account, API key or AI service. Artists missing from your collection are not added as recommendations.
 
-All indexed music is represented, including individually added files and entries on disconnected drives. Videos are excluded. The selected item is connected to a limited set of related matches so the display stays readable; searching and paging still reach the whole indexed music collection.
+All indexed music is represented, including individually added files and entries on disconnected drives. Videos are excluded. The network shows the selected item and up to 18 related neighbors so the display stays readable; searching and paging still reach the whole indexed music collection.
 
 Files with missing metadata remain visible. Unknown artist or album entries use their source folder to avoid combining unrelated releases. Missing genre tags do not create invented relationships. The coverage line reports how many music files have genre tags and how many have sound analysis.
 

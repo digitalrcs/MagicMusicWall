@@ -11,7 +11,7 @@ using MagicMusicWall.Core;
 namespace MagicMusicWall.App;
 
 /// <summary>A bounded similarity network over the entire indexed music collection.</summary>
-internal sealed class MusicMapWindow : Window
+internal sealed partial class MusicMapWindow : Window
 {
     private const int PageSize = 48;
     private readonly Func<bool, Task<MusicMapIndex>> _rebuild;
@@ -26,7 +26,7 @@ internal sealed class MusicMapWindow : Window
     private readonly TextBox _search = new() { MinWidth = 180, MaxLength = 256 };
     private readonly ComboBox _kind = new() { Width = 112, ItemsSource = Enum.GetValues<MusicMapKind>() };
     private readonly ComboBox _genre = new() { Width = 170 };
-    private readonly Canvas _map = new() { Background = Brush("#141923"), Width = 920 };
+    private readonly Canvas _map = new() { Background = Brush("#141923"), Width = 1040, Height = 680 };
     private readonly ScaleTransform _scale = new(.72, .72);
     private readonly TextBlock _coverage = Text("Building your library map…", 12, true);
     private readonly ListBox _library = new() { DisplayMemberPath = nameof(MusicMapEntity.Name) };
@@ -73,7 +73,7 @@ internal sealed class MusicMapWindow : Window
         heading.Children.Add(Text("YOUR LIBRARY, CONNECTED", 11, true));
         heading.Children.Add(Text("Music constellation", 30));
         heading.Children.Add(_coverage);
-        var explanation = Text("Choose music to explore related artists, albums or songs. Compare saved metadata, optional sound analysis, or a blend of both. Select a name to explore, then add what you like to the queue.", 12, true);
+        var explanation = Text("Explore your library as a moving network. Stronger similarities pull names closer; related neighbors connect to one another. Click to explore, drag to move, then queue what you like.", 12, true);
         explanation.Margin = new Thickness(0, 8, 0, 16); heading.Children.Add(explanation); root.Children.Add(heading);
 
         _toolbar.ColumnDefinitions.Add(new() { Width = new GridLength(1, GridUnitType.Star) });
@@ -127,7 +127,16 @@ internal sealed class MusicMapWindow : Window
         _library.Margin = new Thickness(0, 0, 10, 0);
         AutomationProperties.SetName(_library, "Music constellation library results");
         VirtualizingPanel.SetIsVirtualizing(_library, true);
-        browse.Children.Add(_library); Grid.SetColumn(_mapScroll, 1); browse.Children.Add(_mapScroll);
+        browse.Children.Add(_library);
+        var graph = new Grid();
+        graph.RowDefinitions.Add(new() { Height = GridLength.Auto });
+        graph.RowDefinitions.Add(new() { Height = new GridLength(1, GridUnitType.Star) });
+        graph.RowDefinitions.Add(new() { Height = GridLength.Auto });
+        _networkCaption.Margin = new Thickness(0, 0, 0, 7); graph.Children.Add(_networkCaption);
+        Grid.SetRow(_mapScroll, 1); graph.Children.Add(_mapScroll);
+        var mapHint = Text("Closer generally means more similar. Other links and label spacing also affect position. Drag a name; click to explore.", 11, true);
+        mapHint.Margin = new Thickness(0, 7, 0, 0); Grid.SetRow(mapHint, 2); graph.Children.Add(mapHint);
+        Grid.SetColumn(graph, 1); browse.Children.Add(graph);
         Grid.SetRow(browse, 1); mapPanel.Children.Add(browse);
         _library.SelectionChanged += (_, _) =>
         {
@@ -153,6 +162,7 @@ internal sealed class MusicMapWindow : Window
         zoom.Children.Add(Button("−", () => Zoom(-.1), "Zoom out of music constellation"));
         zoom.Children.Add(Button("Fit", FitMap));
         zoom.Children.Add(Button("+", () => Zoom(.1), "Zoom into music constellation"));
+        _motionButton = Button("Pause motion", ToggleMotion); zoom.Children.Add(_motionButton);
         DockPanel.SetDock(zoom, Dock.Left); bottom.Children.Add(zoom);
         var pages = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
         _previous = Button("← Previous", () => { _page--; _selected = null; DrawMap(); });
@@ -173,7 +183,8 @@ internal sealed class MusicMapWindow : Window
         _search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _searchTimer.Stop(); Filter(); } };
         Loaded += async (_, _) => await Rebuild(false);
         _libraryTimer.Tick += async (_, _) => { _libraryTimer.Stop(); if (!_busy && _libraryDirty) await Rebuild(false); };
-        Closed += (_, _) => { _closed = true; _searchTimer.Stop(); _libraryTimer.Stop(); _analysisCancellation?.Cancel(); };
+        Closed += (_, _) => { _closed = true; _searchTimer.Stop(); _libraryTimer.Stop(); _analysisCancellation?.Cancel(); StopNetworkMotion(); };
+        InitializeNetworkMotion();
         ShowDetails(null);
     }
 
@@ -205,7 +216,7 @@ internal sealed class MusicMapWindow : Window
                 var restored = _filtered.FirstOrDefault(e => e.Id == previousId);
                 if (restored is not null) { _selected = restored; _page = _filtered.IndexOf(restored) / PageSize; DrawMap(); }
             }
-            _status.Text = "Map ready. Select a name to explore its connections. Queue actions append songs without changing playback. Drag empty map space to pan.";
+            _status.Text = "Map ready. Click a name to explore, or drag it to feel its connections. Queue actions append songs without changing playback.";
         }
         catch (Exception ex) { if (!_closed) _status.Text = "Map could not be rebuilt: " + ex.Message; }
         finally { if (!_closed) SetBusy(false); }
@@ -271,6 +282,7 @@ internal sealed class MusicMapWindow : Window
     private void SetBusy(bool value)
     {
         _busy = value; _toolbar.IsEnabled = _body.IsEnabled = _analyzeButton.IsEnabled = !value;
+        UpdateNetworkMotion();
         if (!value && _libraryDirty && !_closed) { _libraryTimer.Stop(); _libraryTimer.Start(); }
     }
     private void ResetScope()
@@ -297,7 +309,7 @@ internal sealed class MusicMapWindow : Window
     private string Route(MusicMapEntity item) => item.Genres.FirstOrDefault() ?? "Unclassified";
     private void DrawMap()
     {
-        _map.Children.Clear(); _map.Height = 710;
+        StopNetworkMotion();
         var totalPages = Math.Max(1, (_filtered.Count + PageSize - 1) / PageSize);
         _page = Math.Clamp(_page, 0, totalPages - 1);
         _previous.IsEnabled = _page > 0; _next.IsEnabled = _page + 1 < totalPages;
@@ -308,34 +320,18 @@ internal sealed class MusicMapWindow : Window
         _updating = true; _library.ItemsSource = visible; _library.SelectedItem = _selected; _updating = false;
         if (_selected is null)
         {
+            ClearNetwork();
             var empty = Text(_index?.TrackCount == 0 ? "Add music folders in the main player, then rebuild your map." : "No matches. Clear the search or choose All music.", 18, true);
             empty.Width = 600; Place(empty, 90, 250); ShowDetails(null); return;
         }
         var selected = _selected;
-        var matches = _index!.Related(selected.Id, 12, Similarity);
-        var subtitle = Text($"{selected.Kind} connections · {Similarity} · {matches.Count} related items", 14, true);
-        Place(subtitle, 28, 22);
-        var legend = Text("BLUE: sound     PURPLE: genre     TEAL: artist / album     GOLD: era", 14, true);
-        Place(legend, 28, 49);
-        var center = new Point(460, 360);
-        for (var i = 0; i < matches.Count; i++)
-        {
-            var match = matches[i];
-            var angle = -Math.PI / 2 + i * (Math.PI * 2 / Math.Max(matches.Count, 1));
-            var point = new Point(center.X + 338 * Math.Cos(angle), center.Y + 240 * Math.Sin(angle));
-            var color = ConnectionBrush(match.Reason);
-            var line = new Line { X1 = center.X, Y1 = center.Y, X2 = point.X, Y2 = point.Y, Stroke = color, StrokeThickness = 1.6, Opacity = .45, IsHitTestVisible = false };
-            _map.Children.Add(line);
-            AddNode(match.Entity, point, false, color, match.Reason);
-        }
-        AddNode(selected, center, true, Brush("#B8A5FF"), "Selected music — use the right panel to queue or explore it.");
+        var matches = _index!.Related(selected.Id, 18, Similarity);
+        RenderNetwork(selected, matches);
         if (matches.Count == 0)
         {
             var help = Text(Similarity == MusicMapSimilarity.Sound ? "No sound matches yet. Choose Analyze sound to compare locally sampled audio. All music remains available in the library list." : "No related items found yet. Add metadata or choose Analyze sound to build more connections.", 14, true);
-            help.Width = 500; help.TextAlignment = TextAlignment.Center; Place(help, 210, 520);
+            help.Width = 500; help.TextAlignment = TextAlignment.Center; Place(help, (_map.Width - 500) / 2, _map.Height - 105);
         }
-        var footnote = Text("Positions are arranged for readability. Sound analysis estimates features from a sample, not whole-track meaning or mood.", 14, true);
-        footnote.Width = 830; Place(footnote, 28, 670);
         ShowDetails(selected);
     }
 
@@ -345,25 +341,6 @@ internal sealed class MusicMapWindow : Window
         if (reason.Contains("Shared genre:", StringComparison.Ordinal)) return Brush("#B8A5FF");
         if (reason.Contains("Same artist", StringComparison.Ordinal) || reason.Contains("Same album", StringComparison.Ordinal)) return Brush("#64CEBA");
         return Brush("#F1BC69");
-    }
-
-    private void AddNode(MusicMapEntity entity, Point center, bool selected, Brush color, string reason)
-    {
-        var width = selected ? 210d : 156d;
-        var panel = new StackPanel { Width = width - 20 };
-        var title = Text(entity.Name, selected ? 20 : 18);
-        title.TextAlignment = TextAlignment.Center; title.LineHeight = selected ? 24 : 21; title.MaxHeight = selected ? 88 : 42;
-        title.TextTrimming = TextTrimming.CharacterEllipsis;
-        title.FontWeight = selected ? FontWeights.SemiBold : FontWeights.Normal;
-        panel.Children.Add(title);
-        var description = Text(entity.Kind == MusicMapKind.Song ? entity.Artist : $"{entity.TrackIds.Count:N0} songs", 12, true);
-        description.TextAlignment = TextAlignment.Center; description.LineHeight = 16; description.MaxHeight = 16;
-        description.TextTrimming = TextTrimming.CharacterEllipsis; panel.Children.Add(description);
-        var frame = new Border { Child = panel, BorderBrush = color, BorderThickness = new Thickness(selected ? 2.5 : 1), CornerRadius = new CornerRadius(selected ? 18 : 12), Padding = new Thickness(9), Background = Brush(selected ? "#30263F" : "#1A202D") };
-        var button = new Button { Content = frame, Background = Brushes.Transparent, Padding = new Thickness(0), ToolTip = entity.Name + "\n" + entity.Artist + "\n" + reason, MinHeight = 44 };
-        AutomationProperties.SetName(button, selected ? "Selected " + entity.Kind + " " + entity.Name : "Explore related " + entity.Name);
-        button.Click += (_, _) => { if (!selected) Reveal(entity); };
-        Place(button, center.X - width / 2, center.Y - 48);
     }
 
     private void FocusEntity(MusicMapEntity entity, bool remember)
@@ -425,7 +402,7 @@ internal sealed class MusicMapWindow : Window
             _details.Children.Add(Text("Ctrl-click or Shift-click to select several songs.", 11, true));
         }
         _details.Children.Add(Section("Related music"));
-        var matches = _index!.Related(entity.Id, 12, Similarity);
+        var matches = _index!.Related(entity.Id, 18, Similarity);
         if (matches.Count == 0) _details.Children.Add(Text(Similarity == MusicMapSimilarity.Sound ? "Choose Analyze sound to create local sound comparisons. Unanalyzed music can still be queued." : "No related music found. Explore All music, improve saved tags, or choose Analyze sound.", 12, true));
         foreach (var match in matches)
         {

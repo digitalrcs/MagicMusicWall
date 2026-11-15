@@ -181,4 +181,38 @@ public sealed class MusicMapIndexTests
 
     private static AudioFeatures Features(double value) => new(Enumerable.Range(0, 26).Select(i => value * (i + 1) / 26).ToArray(),
         Enumerable.Range(0, 12).Select(i => i == 9 ? 1d : 0d).ToArray(), 120, .8, .3, 800);
+
+    [Theory]
+    [InlineData(MusicMapSimilarity.Metadata, 210)]
+    [InlineData(MusicMapSimilarity.Sound, 1000)]
+    [InlineData(MusicMapSimilarity.Blended, 1000)]
+    public void ConnectionsUseTheSameUnroundedScoresAndReasonsAsRelated(MusicMapSimilarity mode, double scale)
+    {
+        var map = MusicMapIndex.Build([Item("a"), Item("b"), Item("c", "Other", "Other", "Jazz", 2001)],
+            new Dictionary<string, AudioFeatures> { ["a"] = Features(1), ["b"] = Features(2), ["c"] = Features(9) });
+        var edges = map.Connections(["song:b", "song:a", "song:c", "song:a", "unknown"], mode);
+        foreach (var edge in edges)
+        {
+            Assert.InRange(edge.Strength, double.Epsilon, 1);
+            Assert.True(string.CompareOrdinal(edge.SourceId, edge.TargetId) < 0);
+            var related = map.Related(edge.SourceId, mode: mode).Single(x => x.Entity.Id == edge.TargetId);
+            Assert.Equal(related.Score, Math.Max(1, (int)Math.Round(edge.Strength * scale)));
+            Assert.Equal(related.Reason, edge.Reason);
+        }
+        Assert.Equal(edges.Count, edges.Select(x => (x.SourceId, x.TargetId)).Distinct().Count());
+        if (mode != MusicMapSimilarity.Metadata) Assert.Contains(edges, x => Math.Abs(x.Strength * scale - Math.Round(x.Strength * scale)) > .001);
+    }
+
+    [Fact]
+    public void ConnectionsSkipMissingSoundCrossKindsAndZeroEvidenceAndCapVisibleGraph()
+    {
+        var map = MusicMapIndex.Build([Item("a"), Item("b"), Item("c", "Other", "Other", "Jazz", 2001)],
+            new Dictionary<string, AudioFeatures> { ["a"] = Features(1) });
+        Assert.Empty(map.Connections(map.Entities.Select(x => x.Id), MusicMapSimilarity.Sound));
+        var edges = map.Connections(map.Entities.Select(x => x.Id), MusicMapSimilarity.Metadata);
+        var edge = Assert.Single(edges);
+        Assert.Equal("song:a", edge.SourceId); Assert.Equal("song:b", edge.TargetId);
+        Assert.Empty(map.Connections(["missing", "missing"], MusicMapSimilarity.Metadata));
+        Assert.Throws<ArgumentException>(() => map.Connections(Enumerable.Range(0, 33).Select(i => "id" + i), MusicMapSimilarity.Metadata));
+    }
 }

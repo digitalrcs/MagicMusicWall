@@ -1,5 +1,13 @@
 # Changes
 
+## 0.7.1
+
+- Replace the fixed constellation ring with an animated spring network: stronger similarity links pull music closer, and connections between neighbors reveal related groups.
+- Show up to 18 neighbors around the selected music. Drag a name and release it to let the network settle; click without dragging to explore that selection.
+- Add **Pause motion** and **Resume motion**. The map starts paused when Windows animation effects are disabled; the library list, related-item buttons and Back navigation also support keyboard exploration.
+- Explain that connection strengths measure relevance, not probability, and that displayed distances are approximate because other links and label spacing also affect positions.
+- Reuse existing metadata and cached sound analysis for the new layout. No new sound scan is needed to use it, and the audio-analysis algorithm is unchanged.
+
 ## 0.7.0
 
 - Explore a Music constellation in a separate window: choose an artist, album or song and follow labeled connections through your indexed music collection.

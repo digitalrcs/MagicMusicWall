@@ -8,6 +8,7 @@ public enum MusicMapKind { Artist, Album, Song }
 public sealed record MusicMapEntity(string Id, MusicMapKind Kind, string Name, string Artist,
     string Album, IReadOnlyList<string> TrackIds, IReadOnlyList<string> Genres, IReadOnlyList<int> Decades);
 public sealed record MusicMapMatch(MusicMapEntity Entity, int Score, string Reason);
+public sealed record MusicMapConnection(string SourceId, string TargetId, double Strength, string Reason);
 
 /// <summary>A local library snapshot with metadata relationships and optional measured audio descriptors.</summary>
 public sealed class MusicMapIndex
@@ -81,54 +82,85 @@ public sealed class MusicMapIndex
     {
         if (limit <= 0 || entityId is null || !_byId.TryGetValue(entityId, out var source)) return [];
         if (!Enum.IsDefined(mode)) throw new ArgumentOutOfRangeException(nameof(mode));
-        var sourceIdentity = _identities[source.Id];
-        _audio.TryGetValue(source.Id, out var sourceAudio);
-        if (mode == MusicMapSimilarity.Sound && sourceAudio is null) return [];
         var matches = new List<(MusicMapMatch Match, double Rank)>();
         foreach (var candidate in Entities)
         {
             if (candidate.Kind != source.Kind || candidate.Id == source.Id) continue;
-            var score = 0;
-            var reasons = new List<string>();
-            var commonGenres = source.Genres.Intersect(candidate.Genres, StringComparer.OrdinalIgnoreCase).Take(3).ToArray();
-            if (commonGenres.Length > 0)
-            {
-                score += 100 + 10 * (commonGenres.Length - 1);
-                reasons.Add("Shared genre: " + string.Join(", ", commonGenres));
-            }
-            var candidateIdentity = _identities[candidate.Id];
-            if (source.Kind != MusicMapKind.Artist && sourceIdentity.ArtistKey is not null && sourceIdentity.ArtistKey == candidateIdentity.ArtistKey)
-            { score += 35; reasons.Add("Same artist"); }
-            if (source.Kind == MusicMapKind.Song && sourceIdentity.AlbumKey is not null && sourceIdentity.AlbumKey == candidateIdentity.AlbumKey)
-            { score += 45; reasons.Add("Same album"); }
-            var commonDecades = source.Decades.Intersect(candidate.Decades).Take(2).ToArray();
-            if (commonDecades.Length > 0)
-            {
-                score += 10;
-                reasons.Add("Shared era: " + string.Join(", ", commonDecades.Select(x => x + "s")));
-            }
-            double rank = score;
-            if (mode != MusicMapSimilarity.Metadata)
-            {
-                _audio.TryGetValue(candidate.Id, out var candidateAudio);
-                if (sourceAudio is not null && candidateAudio is not null)
-                {
-                    var resemblance = 1 / (1 + AudioDistance(sourceAudio, candidateAudio));
-                    rank = mode == MusicMapSimilarity.Sound ? 1000 * resemblance : 1000 * (.7 * resemblance + .3 * Math.Min(1, score / 210.0));
-                    if (mode == MusicMapSimilarity.Sound) reasons.Clear();
-                    reasons.Insert(0, $"Estimated sound resemblance (analyzed {sourceAudio.Summary.AnalyzedTracks}/{sourceAudio.Summary.TotalTracks} and {candidateAudio.Summary.AnalyzedTracks}/{candidateAudio.Summary.TotalTracks} tracks)");
-                }
-                else if (mode == MusicMapSimilarity.Sound) continue;
-                else
-                {
-                    rank = 1000 * .3 * Math.Min(1, score / 210.0);
-                    reasons.Insert(0, "Metadata only: sound analysis unavailable for one or both selections");
-                }
-            }
-            if (rank > 0) matches.Add((new(candidate, Math.Max(1, (int)Math.Round(rank)), string.Join(" · ", reasons)), rank));
+            var (rank, reason) = PairScore(source, candidate, mode);
+            if (rank > 0) matches.Add((new(candidate, Math.Max(1, (int)Math.Round(rank)), reason), rank));
         }
         return matches.OrderByDescending(x => x.Rank).ThenBy(x => x.Match.Entity.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(x => x.Match.Entity.Id, StringComparer.Ordinal).Take(Math.Min(limit, 100)).Select(x => x.Match).ToArray();
+    }
+
+    /// <summary>Measured relationships for a small visible subgraph, with each unordered pair returned once.</summary>
+    public IReadOnlyList<MusicMapConnection> Connections(IEnumerable<string> entityIds, MusicMapSimilarity mode)
+    {
+        ArgumentNullException.ThrowIfNull(entityIds);
+        if (!Enum.IsDefined(mode)) throw new ArgumentOutOfRangeException(nameof(mode));
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var id in entityIds)
+        {
+            if (id is null) continue;
+            ids.Add(id);
+            if (ids.Count > 32) throw new ArgumentException("A visible constellation is limited to 32 nodes.", nameof(entityIds));
+        }
+        var entities = ids.Where(_byId.ContainsKey).Order(StringComparer.Ordinal).Select(id => _byId[id]).ToArray();
+        var links = new List<MusicMapConnection>();
+        for (var i = 0; i < entities.Length; i++)
+            for (var j = i + 1; j < entities.Length; j++)
+            {
+                if (entities[i].Kind != entities[j].Kind) continue;
+                var (rank, reason) = PairScore(entities[i], entities[j], mode);
+                if (rank > 0) links.Add(new(entities[i].Id, entities[j].Id,
+                    Math.Clamp(rank / (mode == MusicMapSimilarity.Metadata ? 210 : 1000), 0, 1), reason));
+            }
+        return links;
+    }
+
+    private (double Rank, string Reason) PairScore(MusicMapEntity source, MusicMapEntity candidate, MusicMapSimilarity mode)
+    {
+        var sourceIdentity = _identities[source.Id];
+        _audio.TryGetValue(source.Id, out var sourceAudio);
+        if (mode == MusicMapSimilarity.Sound && sourceAudio is null) return (0, "");
+        var score = 0;
+        var reasons = new List<string>();
+        var commonGenres = source.Genres.Intersect(candidate.Genres, StringComparer.OrdinalIgnoreCase).Take(3).ToArray();
+        if (commonGenres.Length > 0)
+        {
+            score += 100 + 10 * (commonGenres.Length - 1);
+            reasons.Add("Shared genre: " + string.Join(", ", commonGenres));
+        }
+        var candidateIdentity = _identities[candidate.Id];
+        if (source.Kind != MusicMapKind.Artist && sourceIdentity.ArtistKey is not null && sourceIdentity.ArtistKey == candidateIdentity.ArtistKey)
+        { score += 35; reasons.Add("Same artist"); }
+        if (source.Kind == MusicMapKind.Song && sourceIdentity.AlbumKey is not null && sourceIdentity.AlbumKey == candidateIdentity.AlbumKey)
+        { score += 45; reasons.Add("Same album"); }
+        var commonDecades = source.Decades.Intersect(candidate.Decades).Take(2).ToArray();
+        if (commonDecades.Length > 0)
+        {
+            score += 10;
+            reasons.Add("Shared era: " + string.Join(", ", commonDecades.Select(x => x + "s")));
+        }
+        double rank = score;
+        if (mode != MusicMapSimilarity.Metadata)
+        {
+            _audio.TryGetValue(candidate.Id, out var candidateAudio);
+            if (sourceAudio is not null && candidateAudio is not null)
+            {
+                var resemblance = 1 / (1 + AudioDistance(sourceAudio, candidateAudio));
+                rank = mode == MusicMapSimilarity.Sound ? 1000 * resemblance : 1000 * (.7 * resemblance + .3 * Math.Min(1, score / 210.0));
+                if (mode == MusicMapSimilarity.Sound) reasons.Clear();
+                reasons.Insert(0, $"Estimated sound resemblance (analyzed {sourceAudio.Summary.AnalyzedTracks}/{sourceAudio.Summary.TotalTracks} and {candidateAudio.Summary.AnalyzedTracks}/{candidateAudio.Summary.TotalTracks} tracks)");
+            }
+            else if (mode == MusicMapSimilarity.Sound) return (0, "");
+            else
+            {
+                rank = 1000 * .3 * Math.Min(1, score / 210.0);
+                reasons.Insert(0, "Metadata only: sound analysis unavailable for one or both selections");
+            }
+        }
+        return (rank, string.Join(" · ", reasons));
     }
 
     private Dictionary<string, AnalyzedEntity> BuildAudio(Dictionary<string, AudioFeatures> measured)
