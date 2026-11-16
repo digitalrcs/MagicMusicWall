@@ -1,5 +1,11 @@
 # Changes
 
+## 0.9.3
+
+- Show an animated progress bar and prominent AI search status panel, with distinct working and stopping states.
+- Put the explanation below Recommend in a visible bordered panel. Keep status and results reachable when search controls need scrolling.
+- Disable duplicate recommendation requests while searching and restore controls after completion, cancellation or failure.
+
 ## 0.9.2
 
 - Group the AI request, search scope, song/folder selection and song limit within a full-width bordered section.

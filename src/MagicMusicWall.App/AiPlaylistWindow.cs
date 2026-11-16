@@ -20,6 +20,12 @@ internal sealed class AiPlaylistWindow : Window
     private readonly Func<IReadOnlyList<string>, IReadOnlyList<string>?> _pick;
     private readonly TextBox _limit = new() { Text = "20", Width = 88, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
     private readonly TextBlock _status = new() { TextWrapping = TextWrapping.Wrap, Margin = new(0, 10, 0, 10) };
+    private readonly ProgressBar _activity = new() { Height = 6, Visibility = Visibility.Collapsed, Margin = new(0, 10, 0, 0) };
+    private readonly TextBlock _activityTitle = new() { Text = "Search status", FontWeight = FontWeights.SemiBold, FontSize = 16 };
+    private readonly Border _statusBox = new() { BorderThickness = new(1.5), CornerRadius = new(8), Padding = new(12), Margin = new(0, 8, 0, 12) };
+    private readonly Button _recommendButton;
+    private readonly Button _recommendPlayButton;
+    private readonly Button _cancelButton;
     private readonly ListBox _results = new() { SelectionMode = SelectionMode.Extended };
     private readonly WrapPanel _actions = new();
     private readonly Func<AppPreferences> _settings;
@@ -39,7 +45,11 @@ internal sealed class AiPlaylistWindow : Window
         Title = "AI playlist assistant"; Width = 940; Height = 840; MinWidth = 760; MinHeight = 700;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         var root = new DockPanel { Margin = new(24) }; Content = root;
-        var top = new StackPanel(); DockPanel.SetDock(top, Dock.Top); root.Children.Add(top);
+        var top = new StackPanel();
+        var topScroll = new ScrollViewer { Content = top, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
+        DockPanel.SetDock(topScroll, Dock.Top); root.Children.Add(topScroll);
+        // Keep results and queue actions reachable on smaller screens and with larger text.
+        root.SizeChanged += (_, _) => topScroll.MaxHeight = Math.Max(240, root.ActualHeight - 300);
         top.Children.Add(new TextBlock { Text = "Ask your music library", FontSize = 26 });
         top.Children.Add(new TextBlock { Text = "Try: songs from the 80's · gentle guitar and relaxing rhythms · dinner music", TextWrapping = TextWrapping.Wrap, Margin = new(0, 8, 0, 10) });
         var searchSection = new Border
@@ -95,11 +105,34 @@ internal sealed class AiPlaylistWindow : Window
         };
         _selectionSummary.Text = $"{_chosen.Count:N0} songs selected from your indexed library.";
         var buttons = new WrapPanel(); top.Children.Add(buttons);
-        AddButton(buttons, "Recommend", () => Recommend(false));
-        AddButton(buttons, "Recommend & play", () => Recommend(true));
-        AddButton(buttons, "Cancel", () => { _cancel?.Cancel(); return Task.CompletedTask; });
-        top.Children.Add(new TextBlock { Text = "Recommend previews only. Recommend & play replaces the queue after a successful review. Metadata and sound estimates go to the provider configured in Setup > AI; audio files are not uploaded. Large libraries require multiple requests.", TextWrapping = TextWrapping.Wrap, Margin = new(0, 8, 0, 0) });
-        top.Children.Add(_status);
+        _recommendButton = AddButton(buttons, "Recommend", () => Recommend(false));
+        _recommendPlayButton = AddButton(buttons, "Recommend & play", () => Recommend(true));
+        _cancelButton = AddButton(buttons, "Cancel", () =>
+        {
+            _cancel?.Cancel(); _activityTitle.Text = "Stopping search…";
+            if (_cancelButton is { } cancelButton) cancelButton.IsEnabled = false;
+            return Task.CompletedTask;
+        });
+        _cancelButton.IsEnabled = false;
+        var explanation = new Border
+        {
+            BorderThickness = new(1.5), CornerRadius = new(8), Padding = new(12), Margin = new(0, 8, 0, 0),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(0x85, 0x8D, 0xA3)),
+            Child = new TextBlock { Text = "Recommend previews only. Recommend & play replaces the queue after a successful review. Metadata and sound estimates go to the provider configured in Setup > AI; audio files are not uploaded. Large libraries require multiple requests.", TextWrapping = TextWrapping.Wrap }
+        };
+        explanation.SetResourceReference(Border.BackgroundProperty, "PanelBrush");
+        top.Children.Add(explanation);
+        _statusBox.SetResourceReference(Border.BackgroundProperty, "PanelBrush");
+        _statusBox.BorderBrush = new SolidColorBrush(Color.FromRgb(0x85, 0x8D, 0xA3));
+        _activity.SetResourceReference(Control.ForegroundProperty, "AccentBrush");
+        _activity.SetResourceReference(Control.BackgroundProperty, "BackgroundBrush");
+        System.Windows.Automation.AutomationProperties.SetName(_activity, "AI search in progress");
+        var statusContent = new StackPanel(); _statusBox.Child = statusContent;
+        statusContent.Children.Add(_activityTitle); statusContent.Children.Add(_activity); statusContent.Children.Add(_status);
+        _status.Margin = new(0, 8, 0, 0);
+        _status.Text = "Ready. Enter a request and choose Recommend to start.";
+        // Keep activity and progress visible while the search controls scroll.
+        DockPanel.SetDock(_statusBox, Dock.Top); root.Children.Add(_statusBox);
         DockPanel.SetDock(_actions, Dock.Bottom); root.Children.Add(_actions);
         AddButton(_actions, "Add selected to queue", () => Apply(false));
         AddButton(_actions, "Play selected", () => Apply(true));
@@ -117,7 +150,7 @@ internal sealed class AiPlaylistWindow : Window
         root.Children.Add(_results);
         Closed += (_, _) => { _closed = true; _cancel?.Cancel(); };
     }
-    private void AddButton(Panel panel, string label, Func<Task> action)
+    private Button AddButton(Panel panel, string label, Func<Task> action)
     {
         var button = new Button { Content = label, Margin = new(0, 0, 8, 6) };
         button.Click += async (_, _) =>
@@ -129,6 +162,17 @@ internal sealed class AiPlaylistWindow : Window
                 : ex is HttpRequestException ? "Could not reach the AI provider. Check Setup > AI and your server connection." : ex.Message; }
         };
         panel.Children.Add(button);
+        return button;
+    }
+    private void SetSearching(bool searching)
+    {
+        _activity.IsIndeterminate = searching;
+        _activity.Visibility = searching ? Visibility.Visible : Visibility.Collapsed;
+        _activityTitle.Text = searching ? "AI is searching your music…" : "Search status";
+        if (searching) _statusBox.SetResourceReference(Border.BorderBrushProperty, "AccentBrush");
+        else _statusBox.BorderBrush = new SolidColorBrush(Color.FromRgb(0x85, 0x8D, 0xA3));
+        _recommendButton.IsEnabled = _recommendPlayButton.IsEnabled = !searching;
+        _cancelButton.IsEnabled = searching;
     }
     private async Task Recommend(bool play)
     {
@@ -142,6 +186,7 @@ internal sealed class AiPlaylistWindow : Window
         _status.Text = $"Preparing library for {settings.AiProvider}…";
         _rows.Clear(); _actions.IsEnabled = false;
         using var cancel = new CancellationTokenSource(); _cancel = cancel;
+        SetSearching(true);
         _scope.IsEnabled = _choose.IsEnabled = _first.IsEnabled = _question.IsEnabled = _limit.IsEnabled = false;
         try
         {
@@ -182,6 +227,7 @@ internal sealed class AiPlaylistWindow : Window
         finally
         {
             _cancel = null;
+            SetSearching(false);
             _actions.IsEnabled = _rows.Count > 0;
             _scope.IsEnabled = _choose.IsEnabled = _first.IsEnabled = _question.IsEnabled = _limit.IsEnabled = true;
         }
