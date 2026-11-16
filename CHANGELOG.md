@@ -1,5 +1,10 @@
 # Changes
 
+## 0.9.2
+
+- Group the AI request, search scope, song/folder selection and song limit within a full-width bordered section.
+- Give the search list its own border, separate the control groups, and use lighter, thicker borders for visibility against the dark theme.
+
 ## 0.9.1
 
 - Choose indexed songs and folders for AI recommendations; carry selected collection items into the assistant.

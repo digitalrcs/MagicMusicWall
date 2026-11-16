@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Media;
 using MagicMusicWall.Core;
 
 namespace MagicMusicWall.App;
@@ -10,14 +11,14 @@ namespace MagicMusicWall.App;
 internal sealed class AiPlaylistWindow : Window
 {
     private readonly TextBox _question = new() { Text = "Suggest relaxing songs for dinner", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Height = 80 };
-    private readonly ListBox _scope = new() { DisplayMemberPath = "Name", MaxHeight = 115, MinWidth = 230 };
+    private readonly ListBox _scope = new() { DisplayMemberPath = "Name", MaxHeight = 115, MinWidth = 0 };
     private readonly CheckBox _first = new() { Content = "Stop when enough matches are found", IsChecked = true, Margin = new(0, 8, 0, 10) };
     private readonly ObservableCollection<Row> _rows = [];
     private readonly TextBlock _selectionSummary = new() { TextWrapping = TextWrapping.Wrap };
-    private readonly Button _choose = new() { Content = "Choose songs / folders…", VerticalAlignment = VerticalAlignment.Center, Margin = new(8, 0, 0, 0) };
+    private readonly Button _choose = new() { Content = "Choose songs / folders…", VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Left };
     private IReadOnlyList<string> _chosen = [];
     private readonly Func<IReadOnlyList<string>, IReadOnlyList<string>?> _pick;
-    private readonly TextBox _limit = new() { Text = "20", Width = 65, VerticalAlignment = VerticalAlignment.Center };
+    private readonly TextBox _limit = new() { Text = "20", Width = 88, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
     private readonly TextBlock _status = new() { TextWrapping = TextWrapping.Wrap, Margin = new(0, 10, 0, 10) };
     private readonly ListBox _results = new() { SelectionMode = SelectionMode.Extended };
     private readonly WrapPanel _actions = new();
@@ -41,14 +42,49 @@ internal sealed class AiPlaylistWindow : Window
         var top = new StackPanel(); DockPanel.SetDock(top, Dock.Top); root.Children.Add(top);
         top.Children.Add(new TextBlock { Text = "Ask your music library", FontSize = 26 });
         top.Children.Add(new TextBlock { Text = "Try: songs from the 80's · gentle guitar and relaxing rhythms · dinner music", TextWrapping = TextWrapping.Wrap, Margin = new(0, 8, 0, 10) });
-        top.Children.Add(_question);
-        top.Children.Add(Ui.Text("Search in", 13, true));
-        var options = new WrapPanel { Margin = new(0, 10, 0, 10) }; top.Children.Add(options);
+        var searchSection = new Border
+        {
+            BorderThickness = new(1.5), CornerRadius = new(8), Padding = new(16),
+            Margin = new(0, 8, 0, 16), HorizontalAlignment = HorizontalAlignment.Stretch
+        };
+        searchSection.BorderBrush = new SolidColorBrush(Color.FromRgb(0x85, 0x8D, 0xA3));
+        searchSection.SetResourceReference(Border.BackgroundProperty, "PanelBrush");
+        top.Children.Add(searchSection);
+        var searchContent = new StackPanel(); searchSection.Child = searchContent;
+        searchContent.Children.Add(Ui.Text("What would you like to hear?", 14));
+        searchContent.Children.Add(_question);
+        var options = new Grid { Margin = new(0, 16, 0, 0) };
+        options.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        options.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(24) });
+        options.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        options.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(24) });
+        options.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        searchContent.Children.Add(options);
+        var sourceColumn = new StackPanel(); options.Children.Add(sourceColumn);
+        sourceColumn.Children.Add(Ui.Text("Search in", 14));
+        var scopeBorder = new Border { BorderThickness = new(1.5), CornerRadius = new(4), Padding = new(4), Child = _scope };
+        scopeBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0x85, 0x8D, 0xA3));
+        scopeBorder.SetResourceReference(Border.BackgroundProperty, "BackgroundBrush");
+        sourceColumn.Children.Add(scopeBorder);
+        var selectionColumn = new StackPanel(); Grid.SetColumn(selectionColumn, 2); options.Children.Add(selectionColumn);
+        selectionColumn.Children.Add(Ui.Text("Songs and folders", 14));
+        selectionColumn.Children.Add(_choose);
+        _selectionSummary.Margin = new(0, 8, 0, 0);
+        _selectionSummary.FontSize = 12;
+        _selectionSummary.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush");
+        selectionColumn.Children.Add(_selectionSummary);
+        var limitColumn = new StackPanel(); Grid.SetColumn(limitColumn, 4); options.Children.Add(limitColumn);
+        limitColumn.Children.Add(Ui.Text("Max songs", 14));
+        limitColumn.Children.Add(_limit);
+        limitColumn.Children.Add(new TextBlock { Text = "1–100 songs", Margin = new(0, 8, 0, 0), FontSize = 12 });
+        _first.Margin = new(0, 16, 0, 0);
+        searchContent.Children.Add(_first);
+        System.Windows.Automation.AutomationProperties.SetName(_question, "Music request");
+        System.Windows.Automation.AutomationProperties.SetName(_scope, "Search in");
+        System.Windows.Automation.AutomationProperties.SetName(_limit, "Maximum songs");
         _scope.ItemsSource = new[] { new Scope("Entire music library", null), new Scope("Current queue", "$queue"), new Scope("Selected songs / folders", "$selection") }
             .Concat(playlists.Select(x => new Scope(x.Name, x.Id))).ToArray();
         _scope.SelectedItem = _scope.Items.Cast<Scope>().FirstOrDefault(x => x.Id == (_chosen.Count > 0 ? "$selection" : selectedPlaylist)) ?? _scope.Items[0];
-        options.Children.Add(_scope);
-        options.Children.Add(_choose);
         _choose.Click += (_, _) =>
         {
             var chosen = _pick(_chosen);
@@ -58,8 +94,6 @@ internal sealed class AiPlaylistWindow : Window
             _selectionSummary.Text = $"{_chosen.Count:N0} songs selected from your indexed library.";
         };
         _selectionSummary.Text = $"{_chosen.Count:N0} songs selected from your indexed library.";
-        top.Children.Add(_selectionSummary);
-        top.Children.Add(_first); options.Children.Add(new TextBlock { Text = "  Max songs: ", VerticalAlignment = VerticalAlignment.Center }); options.Children.Add(_limit);
         var buttons = new WrapPanel(); top.Children.Add(buttons);
         AddButton(buttons, "Recommend", () => Recommend(false));
         AddButton(buttons, "Recommend & play", () => Recommend(true));
