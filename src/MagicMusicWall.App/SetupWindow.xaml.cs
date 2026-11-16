@@ -30,6 +30,7 @@ public partial class SetupWindow : Window
         SharingPort.Text = _draft.SharingPort.ToString();
         DataLocation.Text = App.DataDirectory;
         AppVersionLabel.Text = $"DigitalRCS.com · Magic Music Wall {typeof(App).Assembly.GetName().Version?.ToString(3)}";
+        InitializeAi();
         RefreshMetadataSettings();
         RefreshFolders(); RefreshRemote();
         Closing += (_, e) => { if (_busy) { e.Cancel = true; SaveStatus.Text = "Please wait for the current operation to finish."; } };
@@ -121,8 +122,11 @@ public partial class SetupWindow : Window
         if (RemoveTmdbToken.IsChecked == true) updated.TmdbTokenProtected = "";
         else if (TmdbToken.Password.Length > 0) updated.TmdbTokenProtected = ProviderSecrets.Protect(TmdbToken.Password);
         SaveStatus.Text = "Saving settings…";
+        SaveAi(updated);
         SaveStatus.Text = await _main.SavePreferences(updated);
         _draft = _main.Preferences;
+        AiKey.Clear(); RemoveAiKey.IsChecked = false;
+        AiStatus.Text = string.IsNullOrEmpty(_draft.AiKeyProtected) ? "No AI key saved." : "AI key saved for this provider and endpoint.";
         RemotePassphraseInput.Clear(); RemotePassphraseConfirm.Clear(); RemoveRemotePassphrase.IsChecked = false;
         TmdbToken.Clear(); RemoveTmdbToken.IsChecked = false; RefreshMetadataSettings();
         Volume.Value = _draft.Volume;

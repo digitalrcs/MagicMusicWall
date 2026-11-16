@@ -12,6 +12,13 @@ public sealed class AppPreferences
         WriteIndented = true
     };
 
+    public string AiProvider { get; set; } = "LM Studio";
+    public string AiBaseUrl { get; set; } = "http://localhost:1234/v1";
+    public string AiModel { get; set; } = "";
+    public string AiKeyProtected { get; set; } = "";
+    public string AiKeyEndpoint { get; set; } = "";
+    public string AiKeyProvider { get; set; } = "";
+
     public int Volume { get; set; } = 65;
     public string AudioDeviceId { get; set; } = "";
     public string AudioDeviceName { get; set; } = "";
@@ -112,5 +119,11 @@ public sealed class AppPreferences
         RemoteAccessToken ??= "";
         RemotePassphraseHash ??= "";
         TmdbTokenProtected ??= "";
+        AiProvider ??= "LM Studio";
+        AiBaseUrl ??= "http://localhost:1234/v1";
+        AiModel ??= "";
+        AiKeyProtected ??= "";
+        AiKeyEndpoint ??= "";
+        AiKeyProvider ??= "";
     }
 }

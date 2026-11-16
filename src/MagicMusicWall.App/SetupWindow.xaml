@@ -11,6 +11,24 @@
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <StackPanel Margin="0,0,0,20"><TextBlock Text="Setup" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="Your music, your devices, your home." Style="{StaticResource Help}" Margin="0,6,0,0"/></StackPanel>
   <TabControl x:Name="SettingsTabs" Grid.Row="1" Background="#191C25" BorderThickness="0" Foreground="{StaticResource TextBrush}" Padding="20">
+   <TabItem Header="AI">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+     <TextBlock Text="AI playlist assistant" FontSize="22"/>
+     <TextBlock Text="Only library tags and saved sound estimates are sent, never audio files or file paths. Cloud providers receive this information and may charge per request. LM Studio uses your chosen local server." Style="{StaticResource Help}"/>
+     <TextBlock Text="Provider" Style="{StaticResource Label}"/>
+     <ComboBox x:Name="AiProvider" SelectionChanged="AiProvider_Changed"/>
+     <TextBlock Text="API base URL (include /v1 when required)" Style="{StaticResource Label}"/>
+     <TextBox x:Name="AiBaseUrl"/>
+     <TextBlock Text="Model ID" Style="{StaticResource Label}"/>
+     <ComboBox x:Name="AiModel" IsEditable="True"/>
+     <TextBlock Text="API key (optional for LM Studio)" Style="{StaticResource Label}"/>
+     <PasswordBox x:Name="AiKey" Padding="10"/>
+     <CheckBox x:Name="RemoveAiKey" Content="Remove saved AI key" Margin="0,8,0,8"/>
+     <TextBlock Text="Keys are protected for this Windows account. Blank keeps the saved key only if provider and endpoint are unchanged. Enter a model ID or load the available models." Style="{StaticResource Help}"/>
+     <Button Content="Connect / load models" Click="AiModels_Click" HorizontalAlignment="Left"/>
+     <TextBlock x:Name="AiStatus" Style="{StaticResource Help}"/>
+    </StackPanel></ScrollViewer>
+   </TabItem>
    <TabItem Header="Sound">
     <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
      <TextBlock Text="Listen through your stereo" FontSize="22"/>

@@ -24,7 +24,7 @@ function Resolve-MagicMusicWallPayload {
     if (($binaryVersion -split '\+')[0] -ne $Version) { throw "Payload version $binaryVersion does not match requested $Version." }
     foreach ($entry in Get-ChildItem -LiteralPath $payload -Recurse -Force) {
         if (($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw "Release payload contains a symbolic link or placeholder: $($entry.Name)." }
-        if ($entry.PSIsContainer -and $entry.Name -in @('Data', '.git', '.vs', 'TestResults', 'obj')) { throw "Release payload contains a private/build data directory: $($entry.Name)." }
+        if ($entry.PSIsContainer -and $entry.Name -in @('Data', 'ai-song-notes', '.git', '.vs', 'TestResults', 'obj')) { throw "Release payload contains a private/build data directory: $($entry.Name)." }
         if (-not $entry.PSIsContainer -and ($entry.Name -match '^(library|settings)(\..*)?\.json($|\.)|^music-audio-(features\.json|scan\.txt)($|\.)|^errors\.log($|\.)|^\.env($|\.)|\.mmw-backup-|\.pfx$|\.p12$|\.key$')) {
             throw "Release payload contains a runtime data or secret file: $($entry.Name)."
         }

@@ -45,6 +45,6 @@ public partial class MainWindow
             if (match is null) _catalog.ClearAlbumOverride(item.Id);
             else _catalog.SetAlbumOverride(item.Id, match.Album, match.SourceUrl);
             RefreshView();
-        }, owner => ShowMetadata(item, owner), owner => ShowMusicBrainz(new[] { item.Id }, owner)) { Owner = this }.ShowDialog();
+        }, owner => ShowMetadata(item, owner), owner => ShowMusicBrainz(new[] { item.Id }, owner), owner => ShowAiNotes(item.Id, owner)) { Owner = this }.ShowDialog();
     }
 }

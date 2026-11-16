@@ -9,16 +9,16 @@ Add the music and videos you already own, browse a compact folder/file grid, bui
 
 ![Magic Music Wall library with demonstration folders](docs/images/library.png)
 
-## Download version 0.8.1
+## Download version 0.9.0
 
 For **Windows 11 on Intel/AMD x64 PCs**. The .NET runtime and VLC playback engine are included; no separate runtime installation is needed.
 
 | Package | What to do |
 | --- | --- |
-| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.8.1/MagicMusicWall-0.8.1-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
-| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.8.1/MagicMusicWall-0.8.1-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
-| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.8.1/MagicMusicWall-0.8.1-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
-| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.8.1/SHA256SUMS.txt) | Verify the downloaded files. |
+| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.0/MagicMusicWall-0.9.0-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
+| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.0/MagicMusicWall-0.9.0-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
+| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.0/MagicMusicWall-0.9.0-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
+| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.0/SHA256SUMS.txt) | Verify the downloaded files. |
 
 [All releases](https://github.com/digitalrcs/MagicMusicWall/releases) · [Install and USB instructions](docs/WINDOWS-INSTALLER.md) · [Full documentation](docs/README.md)
 
@@ -87,3 +87,7 @@ Windows packages include an offline snapshot of the guides and screenshots in **
 The application uses .NET 10, WPF, LibVLCSharp, TagLibSharp and QRCoder. The [developer guide](docs/BUILDING.md) separates developer setup from the ready-to-run downloads. Report reproducible problems in [GitHub Issues](https://github.com/digitalrcs/MagicMusicWall/issues); remove access links, tokens and personal paths from reports.
 
 **Copyright © 2026 DigitalRCS.com. All rights reserved.** This repository is public with copyright reserved; no open-source license is granted for the project's source, documentation or branding. See [LICENSE.txt](LICENSE.txt) and [CONTRIBUTING.md](CONTRIBUTING.md). Third-party components retain their own licenses and notices: [third-party notices](THIRD-PARTY-NOTICES.md) and [source provenance](licenses/REDISTRIBUTION.md).
+
+## AI playlists and song notes
+
+Use the optional [AI playlist assistant and saved song notes](docs/AI-PLAYLISTS.md) with LM Studio or your own cloud-provider API key. Recommend from your library, review the results, then queue or play them.

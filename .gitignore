@@ -17,3 +17,5 @@ library.json
 music-audio-features.json*
 music-audio-scan.txt
 **/__pycache__/
+
+**/ai-song-notes/

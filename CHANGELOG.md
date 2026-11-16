@@ -1,5 +1,14 @@
 # Changes
 
+## 0.9.0
+
+- Add an optional AI playlist assistant scoped to the music library, current queue, or saved playlist, with reviewable recommendations, queue actions and explicit play actions.
+- Add provider settings for LM Studio, OpenAI, Claude, DeepSeek and OpenAI-compatible services, model discovery and Windows-protected API keys.
+- Review inventories in cancellable batches using tags, MusicBrainz evidence, cached tempo estimates and clearly labeled saved AI interpretations. Reject unknown song IDs and recheck file availability before queueing.
+- Add saved AI song notes with provider/model/date and a MusicBrainz web-lookup action. Notes stay separate from verified metadata and original media tags.
+- Include expanded getting-started, FAQ and AI documentation in the offline help.
+- Validation: clean build, nine focused tests and live LM Studio requests with synthetic metadata. Cloud accounts and rendered UI were not live-verified for this release.
+
 ## 0.8.1
 
 - Focus the constellation on the current music, selected queue/library item or indexed folder, with the first queued song as a fallback. Reopening refocuses the map; changing Artist/Album/Song view preserves the musical selection.

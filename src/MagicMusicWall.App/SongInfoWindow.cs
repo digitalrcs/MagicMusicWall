@@ -30,7 +30,7 @@ internal sealed class SongInfoWindow : Window
     private string _lyricsUrl = "", _articleUrl = "";
     private bool _busy, _closed;
 
-    public SongInfoWindow(MediaItem item, MusicLookupService music, SongFactsService facts, Action<RecordingMatch?> saveAlbum, Action<Window>? editTags = null, Action<Window>? enrich = null)
+    public SongInfoWindow(MediaItem item, MusicLookupService music, SongFactsService facts, Action<RecordingMatch?> saveAlbum, Action<Window>? editTags = null, Action<Window>? enrich = null, Action<Window>? aiNotes = null)
     {
         _item = item; _music = music; _facts = facts; _saveAlbum = saveAlbum;
         Ui.Theme(this);
@@ -44,6 +44,11 @@ internal sealed class SongInfoWindow : Window
         {
             var info = Ui.Button("MusicBrainz library info…", (_, _) => enrich(this));
             info.HorizontalAlignment = HorizontalAlignment.Left; header.Children.Add(info);
+        }
+        if (aiNotes is not null)
+        {
+            var notes = Ui.Button("AI song notes…", (_, _) => aiNotes(this));
+            notes.HorizontalAlignment = HorizontalAlignment.Left; header.Children.Add(notes);
         }
         if (editTags is not null)
         {
