@@ -9,7 +9,7 @@ The **Music constellation** is an animated network of artists, albums and songs 
 ## Open and explore
 
 1. Click **Music constellation** on the left side of the Windows player.
-2. Choose **Artist**, **Album** or **Song** under **Show**. Search by name, artist or album; use **Genre** to narrow the results.
+2. Choose **Artist**, **Album** or **Song** under **Show**. Search by name, artist or album; saved MusicBrainz labels and credits also help find music. Use **Genre** to narrow the results.
 3. Choose **Metadata**, **Sound** or **Blended** under **Similarity**, then select a result in the list. The network shows that selection and related items, with labels explaining each connection. **Blended** works from saved tags before any sound analysis is available.
 4. Click another name in the network or the related-items list to explore from there. Clicking without dragging selects that music; it does not add it to the queue. Use **← Back** to revisit a selection.
 5. For an artist, choose **Explore albums** or **Explore songs**. Choose **All music** to return to the full library scope.
@@ -38,7 +38,7 @@ Queue actions append to **Up next** without replacing the queue or interrupting 
 
 | Similarity mode | What connects the music |
 | --- | --- |
-| **Metadata** | Saved **Shared genre**, **Same artist**, **Same album** and **Shared era** tags. Genre has the strongest metadata weighting; sharing a decade alone is weaker evidence. |
+| **Metadata** | Library artist, album, era and genre information, plus available saved MusicBrainz genres, community labels and instrument/performance credits. |
 | **Sound** | Similar audio features from locally analyzed samples. Both sides need analyzed audio. |
 | **Blended** | Combines available sound evidence with metadata; falls back to metadata when sound analysis is unavailable. |
 
@@ -46,11 +46,30 @@ Sound connections are blue; metadata connections distinguish genre, artist/album
 
 Stronger links pull their endpoints closer together. Distances are approximate: other connections, space for labels and the settling motion also affect positions. The layout is not an exact two-dimensional measurement of every pair's similarity. Connection strengths are relevance measures, not percentage probabilities that two artists or songs sound alike.
 
-Everything is calculated locally. The constellation does not use the Music-Map/Gnod recommendation database, an online account, API key or AI service. Artists missing from your collection are not added as recommendations.
+The network and similarity scores are calculated locally from your library and saved information. Optional MusicBrainz lookups need internet access when you start them; the saved results can be used afterward without another request. No MusicBrainz API key is required. The constellation does not use the Music-Map/Gnod recommendation database or an AI service, and artists missing from your collection are not added as recommendations.
 
 All indexed music is represented, including individually added files and entries on disconnected drives. Videos are excluded. The network shows the selected item and up to 18 related neighbors so the display stays readable; searching and paging still reach the whole indexed music collection.
 
 Files with missing metadata remain visible. Unknown artist or album entries use their source folder to avoid combining unrelated releases. Missing genre tags do not create invented relationships. The coverage line reports how many music files have genre tags and how many have sound analysis.
+
+## Add MusicBrainz information
+
+1. Click **MusicBrainz info** at the top of the constellation to work with all music in your library. To work with one artist, album or song, select it and click **MusicBrainz for this selection** in its details.
+2. In the MusicBrainz window, click **Lookup missing**. Songs that already have saved MusicBrainz information are skipped. A strict, unique match can be saved automatically; uncertain matches remain **Needs review**.
+3. To review a song, select its row and open the right-side **Find match** tab. Check the artist/title fields and **Album for search (optional)**. The album starts with the saved value to narrow versions; clear or correct it if the old tag is wrong. Click **Search selected song**.
+4. Compare the candidate recording, album and duration with your copy, then choose **Use selected match**. The window switches to **Saved info** after saving. Editing search fields does not change file tags.
+5. Use **Refresh saved** to update information for already-saved rows in this window's scope. It retrieves their saved recording/release IDs; use **Search selected song** when you want to choose a different match. On **Saved info**, **Remove saved info** removes the selected song's saved MusicBrainz details from the app.
+6. Click **Cancel** to stop a batch. Completed saves remain. Run **Lookup missing** again to continue with songs that still have no saved information, including unresolved review rows. A busy or failing provider pauses the batch so you can try again later.
+
+MusicBrainz requests are spaced at least one second apart across the app. A song can need several requests, so a large library can take time. Opening the constellation, opening the information window, starting the app, or rebuilding the map does not automatically start online lookups.
+
+Automatic saving requires matching artist and title, known durations within three seconds, and a matching album if your library already has one. Only one distinct recording ID may satisfy those checks. Partial or truncated MusicBrainz result sets remain **Needs review**. If the local album is missing, an automatic match saves recording information without choosing an arbitrary album. You can choose a recording/release explicitly during review. These checks reduce accidental matches but do not prove that a remaster or live version is the one you own.
+
+Saved genres, community labels and instrument/performance credits improve **Metadata** and **Blended** connections and constellation search when MusicBrainz has that information. **Sound** continues to use local audio analysis. Community labels describe contributors' knowledge or opinions; they are not inferred from your audio, and missing labels or credits remain missing.
+
+Information is stored in the app's `library.json`, separately from the media files' original tags. It includes source links and retrieval information. MusicBrainz enrichment does not write tags, rename files, or upload media. Searches send artist/title text and optional album text; subsequent requests use MusicBrainz IDs. The saved results remain available after cancellation or a restart. See the [metadata guide](METADATA.md#save-musicbrainz-information-in-your-library) for attribution and the difference between library information and file-tag editing.
+
+A tag edit or rescan that changes a song's artist/title identity clears its saved MusicBrainz match. Album changes clear a saved match when it included a selected release; recording-only matches remain. Review changed songs before relying on their enriched connections again.
 
 ## Analyze the sound of your collection
 
@@ -76,4 +95,4 @@ Library rescanning and sound analysis are separate operations. After adding or c
 
 Building or refreshing the constellation does not change the playback queue. Mapping an unavailable file does not make it playable: reconnect its drive or share before queuing it for playback.
 
-For better connections, review and correct your file tags using the [metadata guide](METADATA.md), then rebuild the constellation.
+For better connections, add and review MusicBrainz information or correct your file tags using the [metadata guide](METADATA.md). Saving or removing library information refreshes the constellation; file-tag changes made outside the app require a rescan.

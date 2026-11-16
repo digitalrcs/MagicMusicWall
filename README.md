@@ -9,16 +9,16 @@ Add the music and videos you already own, browse a compact folder/file grid, bui
 
 ![Magic Music Wall library with demonstration folders](docs/images/library.png)
 
-## Download version 0.7.1
+## Download version 0.8.0
 
 For **Windows 11 on Intel/AMD x64 PCs**. The .NET runtime and VLC playback engine are included; no separate runtime installation is needed.
 
 | Package | What to do |
 | --- | --- |
-| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.7.1/MagicMusicWall-0.7.1-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
-| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.7.1/MagicMusicWall-0.7.1-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
-| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.7.1/MagicMusicWall-0.7.1-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
-| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.7.1/SHA256SUMS.txt) | Verify the downloaded files. |
+| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.8.0/MagicMusicWall-0.8.0-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
+| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.8.0/MagicMusicWall-0.8.0-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
+| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.8.0/MagicMusicWall-0.8.0-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
+| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.8.0/SHA256SUMS.txt) | Verify the downloaded files. |
 
 [All releases](https://github.com/digitalrcs/MagicMusicWall/releases) · [Install and USB instructions](docs/WINDOWS-INSTALLER.md) · [Full documentation](docs/README.md)
 
@@ -39,6 +39,7 @@ The directory grid shows the folders and files you added to your library. Search
 
 - **Play your own collection:** music and video playback, queue controls, saved playlists, shuffle and repeat.
 - **Explore your music constellation:** follow an animated spring network of artists, albums and songs, with stronger connections pulling music closer together. Drag names, pause motion, explore Metadata, Sound or Blended similarity, and queue what you discover. Optional local sound analysis keeps cached results and can be cancelled and resumed. [Constellation guide](docs/MUSIC-MAP.md).
+- **Add MusicBrainz information:** look up missing details for your library or a selected artist, album or song. Review uncertain matches, refresh saved information, and use available genres, community labels and instrument credits in constellation search and connections. Results stay in the app's library; the [MusicBrainz workflow](docs/METADATA.md#save-musicbrainz-information-in-your-library) explains matching and privacy.
 - **Choose an output:** PC audio or a Windows-connected Bluetooth device, plus Chromecast discovery and VLC casting.
 - **Use your phone:** sign in with a passphrase at the plain web address and remember that browser, or scan a QR access link. Read wrapped song names, remove queued items, and listen/watch independently in the browser.
 - **Find song details:** MusicBrainz recordings and albums, local or LRCLIB lyrics, and attributed Wikipedia facts.
@@ -67,7 +68,7 @@ Keep the PC, application and source drives available. Share the passphrase or qu
 | Installing, USB, updating and uninstalling | [Windows installer and USB](docs/WINDOWS-INSTALLER.md) |
 | Folders, searching, queue, playlists and video | [User guide](docs/USER-GUIDE.md) |
 | Connected artists, albums and songs | [Music constellation](docs/MUSIC-MAP.md) |
-| Album lookup, lyrics, facts and file tags | [Metadata guide](docs/METADATA.md) |
+| MusicBrainz library information, lyrics, facts and file tags | [Metadata guide](docs/METADATA.md) |
 | Phone control and browser listening | [Web remote](docs/WEB-REMOTE.md) |
 | Audio, missing files, network and data recovery | [Troubleshooting](docs/TROUBLESHOOTING.md) |
 | Building and packaging the application | [Developer guide](docs/BUILDING.md) |

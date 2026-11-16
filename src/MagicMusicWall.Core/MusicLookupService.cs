@@ -27,6 +27,8 @@ public sealed record MusicSearchResult
     public IReadOnlyList<RecordingMatch> Items { get; init; } = [];
     public string SourceUrl { get; init; } = "https://musicbrainz.org/";
     public string? Message { get; init; }
+    // False when the provider count is unknown or any candidate was omitted.
+    public bool IsComplete { get; init; }
 }
 
 public sealed record LyricsResult
@@ -50,10 +52,10 @@ public sealed record LyricsChoice(LyricsResult Lyrics, double DurationSeconds, s
 /// Explicit, user-initiated metadata/lyrics requests. No media paths, file writes,
 /// background scans, automatic catalog edits, or generated song facts.
 /// </summary>
-public sealed class MusicLookupService : IDisposable
+public sealed partial class MusicLookupService : IDisposable
 {
     private const int MaximumResponseBytes = 4 * 1024 * 1024;
-    private const string UserAgent = "MagicMusicWall/0.3 (https://digitalrcs.com)";
+    private const string UserAgent = "MagicMusicWall/0.8 (https://digitalrcs.com)";
     private static readonly ProviderGate MusicBrainzGate = new(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
     private static readonly ProviderGate LyricsGate = new(TimeSpan.Zero, TimeSpan.FromMilliseconds(250));
     private readonly HttpClient _client;
@@ -70,7 +72,7 @@ public sealed class MusicLookupService : IDisposable
         if (_timeout <= TimeSpan.Zero || _timeout > TimeSpan.FromMinutes(2)) throw new ArgumentOutOfRangeException(nameof(requestTimeout));
     }
 
-    public async Task<MusicSearchResult> SearchRecordingsAsync(string artist, string title, CancellationToken cancellationToken = default)
+    public async Task<MusicSearchResult> SearchRecordingsAsync(string artist, string title, CancellationToken cancellationToken = default, string album = "")
     {
         cancellationToken.ThrowIfCancellationRequested();
         var source = "https://musicbrainz.org/";
@@ -78,21 +80,27 @@ public sealed class MusicLookupService : IDisposable
         {
             artist = Input(artist, "artist", required: false);
             title = Input(title, "title", required: true);
+            album = Input(album, "album", required: false);
             var query = $"recording:\"{EscapeLucene(title)}\"";
             if (artist.Length > 0) query += $" AND artist:\"{EscapeLucene(artist)}\"";
+            if (album.Length > 0) query += $" AND release:\"{EscapeLucene(album)}\"";
             source = "https://musicbrainz.org/search?type=recording&method=advanced&query=" + Uri.EscapeDataString(query);
             var uri = "https://musicbrainz.org/ws/2/recording?fmt=json&limit=12&query=" + Uri.EscapeDataString(query);
             using var document = await Request(uri, "MusicBrainz", MusicBrainzGate, cancellationToken).ConfigureAwait(false);
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("recordings", out var recordings) || recordings.ValueKind != JsonValueKind.Array)
                 throw new LookupFailure("MusicBrainz returned an unexpected response. Please try again later.");
+            var complete = root.TryGetProperty("count", out var total) && total.ValueKind == JsonValueKind.Number
+                && total.TryGetInt32(out var count) && count >= 0 && count <= recordings.GetArrayLength()
+                && recordings.GetArrayLength() <= 100;
+            if (root.TryGetProperty("offset", out var offset) && (offset.ValueKind != JsonValueKind.Number || !offset.TryGetInt32(out var start) || start != 0)) complete = false;
             var groups = new List<List<RecordingMatch>>();
             foreach (var recording in recordings.EnumerateArray().Take(100))
             {
                 var id = Text(recording, "id");
                 var name = Text(recording, "title");
                 var credit = ArtistCredit(recording);
-                if (!Guid.TryParse(id, out var recordingId) || name.Length == 0 || credit.Length == 0) continue;
+                if (!Guid.TryParse(id, out var recordingId) || name.Length == 0 || credit.Length == 0) { complete = false; continue; }
                 var baseMatch = new RecordingMatch
                 {
                     Id = recordingId.ToString(), Title = name, Artist = credit,
@@ -105,12 +113,13 @@ public sealed class MusicLookupService : IDisposable
                 var albums = new List<RecordingMatch>();
                 if (recording.TryGetProperty("releases", out var releases) && releases.ValueKind == JsonValueKind.Array)
                 {
+                    if (releases.GetArrayLength() > 200) complete = false;
                     foreach (var release in releases.EnumerateArray().Take(200))
                     {
-                        var album = Text(release, "title");
-                        if (album.Length == 0 || albums.Any(a => a.Album.Equals(album, StringComparison.OrdinalIgnoreCase))) continue;
+                        var releaseTitle = Text(release, "title");
+                        if (releaseTitle.Length == 0 || albums.Any(a => a.Album.Equals(releaseTitle, StringComparison.OrdinalIgnoreCase))) { complete = false; continue; }
                         var releaseId = Guid.TryParse(Text(release, "id"), out var parsed) ? parsed.ToString() : "";
-                        albums.Add(baseMatch with { Album = album, ReleaseId = releaseId, ReleaseDate = Text(release, "date") });
+                        albums.Add(baseMatch with { Album = releaseTitle, ReleaseId = releaseId, ReleaseDate = Text(release, "date") });
                     }
                 }
                 groups.Add(albums.Count == 0 ? [baseMatch] : albums);
@@ -120,9 +129,10 @@ public sealed class MusicLookupService : IDisposable
             // Include one result per recording before extra albums so prolific reissues
             // cannot displace every alternate recording. Keep distinct album choices.
             var candidates = groups.OrderByDescending(g => g[0].Score).ToList();
-            var items = candidates.Select(g => g[0]).Concat(candidates.SelectMany(g => g.Skip(1)))
-                .DistinctBy(m => (m.Id, m.Album.ToUpperInvariant())).Take(12).ToList();
-            return new() { Items = items, SourceUrl = source, Message = items.Count == 0 ? "No matching recordings found. Try a different artist or title." : "Choose the recording and album that match your file; online matches are suggestions." };
+            var allItems = candidates.Select(g => g[0]).Concat(candidates.SelectMany(g => g.Skip(1))).ToList();
+            var items = allItems.DistinctBy(m => (m.Id, m.Album.ToUpperInvariant())).Take(12).ToList();
+            return new() { Items = items, SourceUrl = source, IsComplete = complete && items.Count == allItems.Count,
+                Message = items.Count == 0 ? "No matching recordings found. Try a different artist or title." : "Choose the recording and album that match your file; online matches are suggestions." };
         }
         catch (Exception ex) when (FailureMessage(ex, "MusicBrainz", cancellationToken) is not null)
         {

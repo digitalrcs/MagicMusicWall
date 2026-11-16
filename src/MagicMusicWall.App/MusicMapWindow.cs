@@ -17,6 +17,7 @@ internal sealed partial class MusicMapWindow : Window
     private readonly Func<bool, Task<MusicMapIndex>> _rebuild;
     private readonly Func<IReadOnlyList<string>, Task> _enqueue;
     private readonly Action<string> _songInfo;
+    private readonly Func<IReadOnlyList<string>?, Task> _enrich;
     private readonly Func<IProgress<MusicMapScanProgress>, CancellationToken, Task<MusicMapScanResult>> _analyze;
     private CancellationTokenSource? _analysisCancellation;
     private readonly ComboBox _similarity = new() { Width = 125, ItemsSource = Enum.GetValues<MusicMapSimilarity>() };
@@ -55,9 +56,10 @@ internal sealed partial class MusicMapWindow : Window
     private double _dragHorizontal, _dragVertical;
 
     public MusicMapWindow(Func<bool, Task<MusicMapIndex>> rebuild, Func<IReadOnlyList<string>, Task> enqueue, Action<string> songInfo,
-        Func<IProgress<MusicMapScanProgress>, CancellationToken, Task<MusicMapScanResult>> analyze)
+        Func<IProgress<MusicMapScanProgress>, CancellationToken, Task<MusicMapScanResult>> analyze,
+        Func<IReadOnlyList<string>?, Task> enrich)
     {
-        _rebuild = rebuild; _enqueue = enqueue; _songInfo = songInfo; _analyze = analyze;
+        _rebuild = rebuild; _enqueue = enqueue; _songInfo = songInfo; _analyze = analyze; _enrich = enrich;
         Ui.Theme(this);
         Title = "Magic Music Wall · Music constellation";
         Width = 1380; Height = 900; MinWidth = 1050; MinHeight = 650;
@@ -81,7 +83,7 @@ internal sealed partial class MusicMapWindow : Window
         _toolbar.ColumnDefinitions.Add(new() { Width = GridLength.Auto });
         _toolbar.ColumnDefinitions.Add(new() { Width = GridLength.Auto });
         var searchGroup = new StackPanel { Margin = new Thickness(0, 0, 12, 0) };
-        searchGroup.Children.Add(Text("Search this view by name or artist", 11, true)); searchGroup.Children.Add(_search);
+        searchGroup.Children.Add(Text("Search names, genres, tags or instruments", 11, true)); searchGroup.Children.Add(_search);
         _toolbar.Children.Add(searchGroup);
         AddLabeledControl(_toolbar, "Show", _kind, 1); AddLabeledControl(_toolbar, "Genre", _genre, 2);
         _toolbar.ColumnDefinitions.Add(new() { Width = GridLength.Auto });
@@ -103,7 +105,10 @@ internal sealed partial class MusicMapWindow : Window
         _cancelAnalysis = Button("Cancel analysis", CancelAnalysis);
         _cancelAnalysis.Visibility = Visibility.Collapsed;
         AutomationProperties.SetName(_analysisProgress, "Sound analysis progress");
-        Grid.SetColumn(_analyzeButton, 1); Grid.SetColumn(_cancelAnalysis, 2); analysis.Children.Add(_analyzeButton); analysis.Children.Add(_cancelAnalysis);
+        var analysisActions = new WrapPanel { VerticalAlignment = VerticalAlignment.Top };
+        analysisActions.Children.Add(Button("MusicBrainz info", async () => await Enrich(null)));
+        analysisActions.Children.Add(_analyzeButton); analysisActions.Children.Add(_cancelAnalysis);
+        Grid.SetColumn(analysisActions, 1); Grid.SetColumnSpan(analysisActions, 2); analysis.Children.Add(analysisActions);
         Grid.SetRow(analysis, 2); root.Children.Add(analysis);
 
         var body = _body; body.Margin = new Thickness(0, 18, 0, 12);
@@ -202,7 +207,7 @@ internal sealed partial class MusicMapWindow : Window
             _index = index;
             _songs = index.Entities.Where(e => e.Kind == MusicMapKind.Song).SelectMany(e => e.TrackIds.Select(id => (id, e))).GroupBy(x => x.id, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First().e, StringComparer.Ordinal);
             _updating = true; _genre.ItemsSource = new[] { "All genres" }.Concat(index.Genres).Append("Unclassified").Distinct(StringComparer.OrdinalIgnoreCase).ToList(); _genre.SelectedItem = _genre.Items.Cast<string>().Contains(previousGenre) ? previousGenre : "All genres"; _updating = false;
-            _coverage.Text = $"{index.TrackCount:N0} music files · {index.Entities.Count(e => e.Kind == MusicMapKind.Artist):N0} artists · {index.Entities.Count(e => e.Kind == MusicMapKind.Album):N0} albums · {index.TaggedTrackCount:N0} with genre tags · {index.AnalyzedTrackCount:N0} sound-analyzed";
+            _coverage.Text = $"{index.TrackCount:N0} music files · {index.Entities.Count(e => e.Kind == MusicMapKind.Artist):N0} artists · {index.Entities.Count(e => e.Kind == MusicMapKind.Album):N0} albums · {index.TaggedTrackCount:N0} with genres · {index.AnalyzedTrackCount:N0} sound-analyzed · {index.EnrichedTrackCount:N0} MusicBrainz";
             if (_scopeId is not null)
             {
                 var scopeEntity = index.Entities.FirstOrDefault(e => e.Id == _scopeId);
@@ -223,6 +228,16 @@ internal sealed partial class MusicMapWindow : Window
     }
 
     private MusicMapSimilarity Similarity => _similarity.SelectedItem is MusicMapSimilarity mode ? mode : MusicMapSimilarity.Blended;
+
+    private async Task Enrich(IReadOnlyList<string>? ids)
+    {
+        if (_busy || _closed) return;
+        SetBusy(true);
+        try { await _enrich(ids); }
+        catch (Exception ex) { if (!_closed) _status.Text = ex.Message; }
+        finally { if (!_closed) SetBusy(false); }
+        if (!_closed) await Rebuild(false);
+    }
 
     private void CancelAnalysis()
     {
@@ -301,7 +316,9 @@ internal sealed partial class MusicMapWindow : Window
         var query = _search.Text.Trim();
         _filtered = _index.Entities.Where(e => e.Kind == kind && (_scope is null || e.TrackIds.Any(_scope.Contains)) &&
             (genre == "All genres" || (genre == "Unclassified" ? e.Genres.Count == 0 : e.Genres.Contains(genre, StringComparer.OrdinalIgnoreCase))) &&
-            (query.Length == 0 || e.Name.Contains(query, StringComparison.OrdinalIgnoreCase) || e.Artist.Contains(query, StringComparison.OrdinalIgnoreCase) || e.Album.Contains(query, StringComparison.OrdinalIgnoreCase)))
+            (query.Length == 0 || query.Split(' ', StringSplitOptions.RemoveEmptyEntries).All(term =>
+                e.Name.Contains(term, StringComparison.OrdinalIgnoreCase) || e.Artist.Contains(term, StringComparison.OrdinalIgnoreCase) || e.Album.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || e.Genres.Concat(e.Keywords).Concat(e.Instruments).Concat(e.Credits).Any(label => label.Contains(term, StringComparison.OrdinalIgnoreCase)))))
             .OrderBy(e => Route(e), StringComparer.CurrentCultureIgnoreCase).ThenBy(e => e.Name, StringComparer.CurrentCultureIgnoreCase).ThenBy(e => e.Id, StringComparer.Ordinal).ToList();
         _page = 0; DrawMap();
     }
@@ -340,6 +357,8 @@ internal sealed partial class MusicMapWindow : Window
         if (reason.StartsWith("Estimated sound resemblance", StringComparison.Ordinal)) return Brush("#7BB8EF");
         if (reason.Contains("Shared genre:", StringComparison.Ordinal)) return Brush("#B8A5FF");
         if (reason.Contains("Same artist", StringComparison.Ordinal) || reason.Contains("Same album", StringComparison.Ordinal)) return Brush("#64CEBA");
+        if (reason.Contains("instrument", StringComparison.OrdinalIgnoreCase)) return Brush("#64CEBA");
+        if (reason.Contains("MusicBrainz", StringComparison.Ordinal)) return Brush("#B8A5FF");
         return Brush("#F1BC69");
     }
 
@@ -371,6 +390,10 @@ internal sealed partial class MusicMapWindow : Window
         _details.Children.Add(Text(entity.Name, 24));
         if (entity.Kind != MusicMapKind.Artist) _details.Children.Add(Text(entity.Artist, 13, true));
         _details.Children.Add(Text(string.Join(" · ", entity.Genres.Concat(entity.Decades.Select(d => d + "s"))), 12, true));
+        _details.Children.Add(Text($"MusicBrainz information: {entity.MusicBrainzTrackCount:N0}/{entity.TrackIds.Count:N0} songs", 12, true));
+        if (entity.Instruments.Count > 0) _details.Children.Add(Text("Credited instruments: " + string.Join(", ", entity.Instruments), 12, true));
+        if (entity.MusicBrainzTags.Count > 0) _details.Children.Add(Text("Community tags: " + string.Join(", ", entity.MusicBrainzTags.Take(16)), 12, true));
+        _details.Children.Add(Button("MusicBrainz for this selection", async () => await Enrich(entity.TrackIds)));
         var audio = _index?.AudioSummary(entity.Id);
         if (audio is not null)
         {

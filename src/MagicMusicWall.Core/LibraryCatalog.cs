@@ -77,8 +77,11 @@ public sealed partial class LibraryCatalog
                 ?? throw new ArgumentException("This file is no longer in the library.", nameof(itemId));
             var previous = (item.Title, item.Artist, item.Album, item.TaggedAlbum, item.AlbumOverride,
                 item.AlbumLookupSource, item.Genre, item.Year, item.TrackNumber, item.DiscNumber);
+            var previousMusicBrainz = item.MusicBrainz;
             try
             {
+                InvalidateMusicBrainzIdentity(item, NonBlank(tags.Title, System.IO.Path.GetFileNameWithoutExtension(item.Path)),
+                    NonBlank(tags.Artist, tags.AlbumArtist), replaceAlbumOverride || string.IsNullOrEmpty(item.AlbumOverride) ? tags.Album : item.AlbumOverride);
                 item.Title = NonBlank(tags.Title, System.IO.Path.GetFileNameWithoutExtension(item.Path));
                 item.Artist = NonBlank(tags.Artist, tags.AlbumArtist);
                 item.TaggedAlbum = tags.Album;
@@ -90,6 +93,7 @@ public sealed partial class LibraryCatalog
             }
             catch
             {
+                item.MusicBrainz = previousMusicBrainz;
                 (item.Title, item.Artist, item.Album, item.TaggedAlbum, item.AlbumOverride,
                     item.AlbumLookupSource, item.Genre, item.Year, item.TrackNumber, item.DiscNumber) = previous;
                 throw;
@@ -187,6 +191,8 @@ public sealed partial class LibraryCatalog
                 // A transient tag read failure must not erase previously indexed metadata.
                 if (!batch.TagReadFailures.Contains(incoming.Path))
                 {
+                    InvalidateMusicBrainzIdentity(old, incoming.Title, incoming.Artist,
+                        string.IsNullOrEmpty(old.AlbumOverride) ? incoming.TaggedAlbum ?? incoming.Album : old.AlbumOverride);
                     old.Title = incoming.Title; old.Artist = incoming.Artist;
                     old.TaggedAlbum = incoming.TaggedAlbum ?? incoming.Album;
                     old.Album = string.IsNullOrEmpty(old.AlbumOverride) ? old.TaggedAlbum : old.AlbumOverride;
@@ -350,15 +356,16 @@ public sealed partial class LibraryCatalog
         lock (_gate)
         {
             var item = FindItem(itemId);
-            var prior = (item.Album, item.TaggedAlbum, item.AlbumOverride, item.AlbumLookupSource);
+            var prior = (item.Album, item.TaggedAlbum, item.AlbumOverride, item.AlbumLookupSource, item.MusicBrainz);
             try
             {
+                InvalidateMusicBrainzIdentity(item, item.Title, item.Artist, name);
                 item.TaggedAlbum ??= item.Album;
                 item.Album = item.AlbumOverride = name;
                 item.AlbumLookupSource = canonicalSource;
                 SaveLocked();
             }
-            catch { (item.Album, item.TaggedAlbum, item.AlbumOverride, item.AlbumLookupSource) = prior; throw; }
+            catch { (item.Album, item.TaggedAlbum, item.AlbumOverride, item.AlbumLookupSource, item.MusicBrainz) = prior; throw; }
         }
     }
 
@@ -368,15 +375,16 @@ public sealed partial class LibraryCatalog
         lock (_gate)
         {
             var item = FindItem(itemId);
-            var prior = (item.Album, item.TaggedAlbum, item.AlbumOverride, item.AlbumLookupSource);
+            var prior = (item.Album, item.TaggedAlbum, item.AlbumOverride, item.AlbumLookupSource, item.MusicBrainz);
             try
             {
+                InvalidateMusicBrainzIdentity(item, item.Title, item.Artist, item.TaggedAlbum ?? item.Album);
                 item.TaggedAlbum ??= item.Album;
                 item.Album = item.TaggedAlbum;
                 item.AlbumOverride = item.AlbumLookupSource = "";
                 SaveLocked();
             }
-            catch { (item.Album, item.TaggedAlbum, item.AlbumOverride, item.AlbumLookupSource) = prior; throw; }
+            catch { (item.Album, item.TaggedAlbum, item.AlbumOverride, item.AlbumLookupSource, item.MusicBrainz) = prior; throw; }
         }
     }
 
@@ -442,6 +450,9 @@ public sealed partial class LibraryCatalog
             item.TaggedAlbum ??= item.Album;
             item.AlbumOverride ??= ""; item.AlbumLookupSource ??= "";
             item.Album = item.AlbumOverride.Length > 0 ? item.AlbumOverride : item.TaggedAlbum;
+            if (item.MusicBrainz is not null)
+                try { item.MusicBrainz = NormalizeMusicBrainzInfo(item.MusicBrainz); }
+                catch (ArgumentException) { item.MusicBrainz = null; }
         }
         if (doc.Playlists.Any(p => p == null || string.IsNullOrWhiteSpace(p.Id) || p.ItemIds == null)
             || doc.Folders.Any(f => f == null || string.IsNullOrWhiteSpace(f.Path))) throw new InvalidDataException("Invalid folder or playlist.");

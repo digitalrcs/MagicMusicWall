@@ -59,7 +59,7 @@ Build the App first for the bundled VLC path. The second command generates a tem
 For native playback volume checks on Windows, run the opt-in console project against the VLC directory of an existing published payload:
 
 ```powershell
-dotnet run --project tests/MagicMusicWall.Playback.Checks -c Release -- --native-dir artifacts/release-staging/0.7.1/app/libvlc/win-x64
+dotnet run --project tests/MagicMusicWall.Playback.Checks -c Release -- --native-dir artifacts/release-staging/0.8.0/app/libvlc/win-x64
 ```
 
 Publish the payload first, or substitute another existing `libvlc/win-x64` directory. The check generates a temporary silent WAV and verifies VLC volume and mute state across track changes. It is separate from `dotnet test` and does not verify audible output quality or Bluetooth hardware.
@@ -78,7 +78,9 @@ For the local music constellation index:
 dotnet test tests/MagicMusicWall.Core.Tests/MagicMusicWall.Core.Tests.csproj -c Release --filter FullyQualifiedName~MusicMapIndexTests
 ```
 
-`MusicMapIndex` snapshots indexed non-video entries into artist, album and song entities. Stable IDs and raw `TrackIds` preserve queue integration. Related results are computed on demand for one selected entity using genre, artist, album and decade metadata; the index does not construct an all-pairs graph or send library data to an online recommendation service. `TaggedTrackCount` counts tracks with usable genre tags, not complete metadata. The WPF window pages browse results and draws a bounded neighborhood around its selection.
+`MusicMapIndex` snapshots indexed non-video entries into artist, album and song entities. Stable IDs and raw `TrackIds` preserve queue integration. Related results are computed locally on demand for one selected entity using library metadata, optional saved MusicBrainz genres/labels/instrument credits, and cached sound features. The index does not construct an all-pairs graph. `TaggedTrackCount` counts tracks with usable genre information, not complete metadata. The WPF window pages browse results and draws a bounded neighborhood around its selection.
+
+MusicBrainz enrichment is a separate, explicitly started API workflow. `MediaItem.MusicBrainz` persists in `library.json` alongside original tag values, so a lookup does not rewrite a media file. Search requests use artist/title and optional album text; detail requests use MusicBrainz IDs, with duration checks performed locally. Requests share the existing MusicBrainz rate gate. Opening or rebuilding the map only reads saved information. Saved MusicBrainz rows, source links and search/scan logs are personal runtime data and must stay out of release fixtures and packages. No additional runtime dependency is required for enrichment.
 
 ## Project layout
 
@@ -98,12 +100,12 @@ dotnet test tests/MagicMusicWall.Core.Tests/MagicMusicWall.Core.Tests.csproj -c 
 
 `scripts\Publish.ps1` publishes a Windows x64 payload with its .NET runtime and VLC files. Keep the whole payload together; this is not a single-EXE distribution.
 
-Build release packages from a fresh, dedicated staging directory. Do not overwrite the folder of a running app and do not stage user data or personal media. These examples use the versioned staging directory `artifacts\release-staging\0.7.1\app`.
+Build release packages from a fresh, dedicated staging directory. Do not overwrite the folder of a running app and do not stage user data or personal media. These examples use the versioned staging directory `artifacts\release-staging\0.8.0\app`.
 
 Publish the staged payload with:
 
 ```powershell
-pwsh -File scripts/Publish.ps1 -OutputDirectory artifacts/release-staging/0.7.1/app -SkipArchive
+pwsh -File scripts/Publish.ps1 -OutputDirectory artifacts/release-staging/0.8.0/app -SkipArchive
 ```
 
 The publish script assembles the application, required runtime/native libraries, third-party notices/license texts, and **OfflineDocs**. It renders the Markdown documentation using PowerShell 7's `ConvertFrom-Markdown`. `-SkipArchive` leaves archive creation to the release-packaging script.
@@ -113,9 +115,9 @@ The publish script assembles the application, required runtime/native libraries,
 Once the staged payload is ready:
 
 ```powershell
-.\scripts\Build-Installer.ps1 -PayloadDirectory .\artifacts\release-staging\0.7.1\app -OutputDirectory .\artifacts\release\0.7.1 -Version 0.7.1
-.\scripts\Package-ThirdPartySources.ps1 -OutputDirectory .\artifacts\release\0.7.1 -Version 0.7.1
-.\scripts\Package-Release.ps1 -PayloadDirectory .\artifacts\release-staging\0.7.1\app -OutputDirectory .\artifacts\release\0.7.1 -Version 0.7.1 -AdditionalAsset .\artifacts\release\0.7.1\MagicMusicWall-0.7.1-ThirdParty-Sources.zip
+.\scripts\Build-Installer.ps1 -PayloadDirectory .\artifacts\release-staging\0.8.0\app -OutputDirectory .\artifacts\release\0.8.0 -Version 0.8.0
+.\scripts\Package-ThirdPartySources.ps1 -OutputDirectory .\artifacts\release\0.8.0 -Version 0.8.0
+.\scripts\Package-Release.ps1 -PayloadDirectory .\artifacts\release-staging\0.8.0\app -OutputDirectory .\artifacts\release\0.8.0 -Version 0.8.0 -AdditionalAsset .\artifacts\release\0.8.0\MagicMusicWall-0.8.0-ThirdParty-Sources.zip
 ```
 
 `Build-Installer.ps1` also accepts `-IsccPath` when the Inno compiler is installed in a nonstandard location. `Package-Release.ps1` accepts `-InstallerPath` for an already built installer and `-AdditionalAsset` for reviewed release companion files. It packages prepared inputs; it does not rebuild the application.
@@ -123,13 +125,13 @@ Once the staged payload is ready:
 Expected release files:
 
 ```text
-artifacts/release/0.7.1/
-  MagicMusicWall-0.7.1-Setup-x64.exe
-  MagicMusicWall-0.7.1-Setup-x64.exe.sha256
-  MagicMusicWall-0.7.1-Portable-x64.zip
-  MagicMusicWall-0.7.1-ThirdParty-Sources.zip
-  MagicMusicWall-0.7.1-ThirdParty-Sources.zip.sha256
-  MagicMusicWall-0.7.1-USB-Kit.zip
+artifacts/release/0.8.0/
+  MagicMusicWall-0.8.0-Setup-x64.exe
+  MagicMusicWall-0.8.0-Setup-x64.exe.sha256
+  MagicMusicWall-0.8.0-Portable-x64.zip
+  MagicMusicWall-0.8.0-ThirdParty-Sources.zip
+  MagicMusicWall-0.8.0-ThirdParty-Sources.zip.sha256
+  MagicMusicWall-0.8.0-USB-Kit.zip
   START-HERE.txt
   SHA256SUMS.txt
 ```

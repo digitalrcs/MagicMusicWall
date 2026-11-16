@@ -183,7 +183,7 @@ public sealed class MusicMapIndexTests
         Enumerable.Range(0, 12).Select(i => i == 9 ? 1d : 0d).ToArray(), 120, .8, .3, 800);
 
     [Theory]
-    [InlineData(MusicMapSimilarity.Metadata, 210)]
+    [InlineData(MusicMapSimilarity.Metadata, 255)]
     [InlineData(MusicMapSimilarity.Sound, 1000)]
     [InlineData(MusicMapSimilarity.Blended, 1000)]
     public void ConnectionsUseTheSameUnroundedScoresAndReasonsAsRelated(MusicMapSimilarity mode, double scale)

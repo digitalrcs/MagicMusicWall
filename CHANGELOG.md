@@ -1,5 +1,14 @@
 # Changes
 
+## 0.8.0
+
+- Add optional MusicBrainz library enrichment from the constellation's **MusicBrainz info** button, **MusicBrainz for this selection**, and **MusicBrainz library info…** in the song-information viewer.
+- Look up missing information in a batch, review uncertain recordings with editable artist/title/optional album searches and **Use selected match**, refresh already-saved recording/release IDs, or remove saved information. Completed saves remain when a run is cancelled or paused by a provider error.
+- Automatically save only a unique recording with matching artist/title, known durations within three seconds, and matching album when one is known. Ambiguous, partial or truncated results require review; a missing local album does not trigger an arbitrary album choice.
+- Keep MusicBrainz details separately in the app's library without rewriting media-file tags. Saved genres, community labels and instrument/performance credits contribute to constellation search and Metadata/Blended connections; local Sound analysis is unchanged.
+- Clear stale saved matches when a song's artist/title identity changes, or when its album changes and the match included a selected release. Recording-only matches survive an album change.
+- Start online requests only through explicit lookup actions, share a one-request-per-second MusicBrainz limit across the app, and retain source attribution and data-license information. Music files and local paths are not uploaded.
+
 ## 0.7.1
 
 - Replace the fixed constellation ring with an animated spring network: stronger similarity links pull music closer, and connections between neighbors reveal related groups.

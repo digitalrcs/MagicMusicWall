@@ -20,6 +20,8 @@ public sealed class MediaItem
     public double DurationSeconds { get; set; }
     public bool IsVideo { get; set; }
     public bool IsAvailable { get; set; } = true;
+    // Library-only enrichment; these values never replace or write the file's own tags.
+    public MusicBrainzInfo? MusicBrainz { get; set; }
 
     [JsonIgnore]
     public string FileName => System.IO.Path.GetFileName(Path);

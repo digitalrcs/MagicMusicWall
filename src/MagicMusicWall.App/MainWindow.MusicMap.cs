@@ -16,7 +16,8 @@ public partial class MainWindow
         if (_musicMap is not null) { _musicMap.Activate(); return; }
         _musicMapStamp = MusicMapStamp();
         _musicMap = new MusicMapWindow(BuildMusicMap, QueueFromMusicMap,
-            id => ShowSongInfo(_catalog.Document.Items.FirstOrDefault(item => item.Id == id)), AnalyzeMusicMap) { Owner = this };
+            id => ShowSongInfo(_catalog.Document.Items.FirstOrDefault(item => item.Id == id)), AnalyzeMusicMap,
+            ids => { ShowMusicBrainz(ids, _musicMap ?? (Window)this); return Task.CompletedTask; }) { Owner = this };
         _musicMap.Closed += (_, _) => _musicMap = null;
         _musicMap.Show();
     }
@@ -34,7 +35,7 @@ public partial class MainWindow
             Id = item.Id, Path = item.Path, Title = item.Title, Artist = item.Artist,
             Album = item.Album, Genre = item.Genre, Year = item.Year,
             TrackNumber = item.TrackNumber, DiscNumber = item.DiscNumber,
-            IsVideo = item.IsVideo, IsAvailable = item.IsAvailable
+            IsVideo = item.IsVideo, IsAvailable = item.IsAvailable, MusicBrainz = item.MusicBrainz
         }).ToArray();
         _musicMapStamp = MusicMapStamp();
         return await Task.Run(() => MusicMapIndex.Build(snapshot, MusicMapAudioScanner.LoadFeatures(App.DataDirectory, snapshot)));
@@ -58,6 +59,7 @@ public partial class MainWindow
 
     private async Task StopMusicMapAnalysis()
     {
+        if (_musicBrainzWindow is { } window) await window.ShutdownAsync();
         _musicAudioCancel?.Cancel();
         if (_musicAudioTask is { } task)
             try { await task; } catch (Exception ex) { LogCleanup(ex); }
@@ -93,6 +95,7 @@ public partial class MainWindow
             hash.Add(item.Id); hash.Add(item.Path); hash.Add(item.Title); hash.Add(item.Artist);
             hash.Add(item.Album); hash.Add(item.Genre); hash.Add(item.Year); hash.Add(item.IsVideo);
             hash.Add(item.TrackNumber); hash.Add(item.DiscNumber); hash.Add(item.IsAvailable);
+            hash.Add(item.MusicBrainz);
         }
         return hash.ToHashCode();
     }

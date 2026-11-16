@@ -41,7 +41,7 @@
      <TextBlock Text="Online metadata &amp; file tags" FontSize="22"/>
      <TextBlock Text="Right-click a song or video and choose Edit file tags. Search online, review the match, then choose which fields to write. Each save keeps a full backup beside the original file; allow space for a working copy and backup." Style="{StaticResource Help}"/>
      <TextBlock Text="MusicBrainz · Music" Style="{StaticResource Label}"/>
-     <TextBlock Text="Artist, title, album and release year suggestions. No API key is needed. You can also edit album artist, genre, track, disc and comments manually." Style="{StaticResource Help}"/>
+      <TextBlock Text="No API key is needed. Open Music constellation → MusicBrainz info to look up and save genres, community tags and available instrument credits for the map. Lookups start only when you choose them; saved results remain available offline. For original file tags, use Edit file tags and review the fields before writing." Style="{StaticResource Help}"/>
      <TextBlock Text="TMDB · Movie lookup" Style="{StaticResource Label}"/>
      <TextBlock Text="Optional: paste your TMDB API Read Access Token from your account's API settings. This is the long read-access token, not the shorter API key. It is encrypted for your Windows account when saved." Style="{StaticResource Help}"/>
      <PasswordBox x:Name="TmdbToken" MaxLength="4096" MinHeight="36" Padding="8" AutomationProperties.Name="TMDB API Read Access Token"/>

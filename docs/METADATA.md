@@ -2,7 +2,34 @@
 
 [Documentation home](README.md)
 
-Metadata means the information stored with a media file, such as its title, artist and album. Magic Music Wall can read those tags, look up possible matches online, and write selected changes after you review them.
+Metadata describes a song or video, such as its title, artist and album. Magic Music Wall reads file tags, can save additional MusicBrainz information in its own library, and can write selected file-tag changes after you review them. Saving library information and editing a media file are separate actions.
+
+## Save MusicBrainz information in your library
+
+Open **Music constellation → MusicBrainz info** for the whole music library. In the constellation's details, **MusicBrainz for this selection** limits the window to the selected artist, album or song. The song-information viewer also has **MusicBrainz library info…** for one song.
+
+Select a song in the list. The right-side **Find match** tab contains the search fields and recording candidates; **Saved info** shows the information already stored for that song. **Album for search (optional)** starts with the song's saved album and helps narrow versions. Clear or correct it if that album tag is wrong; editing search fields changes the lookup only.
+
+| Action | What it does |
+| --- | --- |
+| **Lookup missing** | Searches rows without saved MusicBrainz information. Strict, unique matches can be saved automatically; uncertain results stay **Needs review**. |
+| **Search selected song** | On **Find match**, searches using the editable artist/title and optional album fields. Compare candidate recording, album and duration before accepting a result. |
+| **Use selected match** | Saves the recording/release you reviewed to this app's library, then opens **Saved info**. |
+| **Refresh saved** | Refreshes already-saved rows in the current scope using their existing recording/release IDs. It does not select a new match. |
+| **Remove saved info** | On **Saved info**, removes the selected song's saved MusicBrainz information from the library. |
+| **Cancel** | Stops the active batch while keeping completed saves. |
+
+Automatic saving requires matching artist and title, known durations within three seconds, and a matching album when your library already has one. Exactly one distinct recording ID must pass those checks. Partial or truncated MusicBrainz result sets remain **Needs review**, even if one visible candidate appears suitable. If the library has no album, an automatic match stores recording information without choosing an arbitrary release; choose an album explicitly through candidate review when needed. Similar names, alternate versions, unknown durations and multiple qualifying recordings need your review.
+
+**Lookup missing** skips saved rows, so you can rerun it after cancellation. Unresolved rows remain missing and may be searched again. **Refresh saved** updates only already-saved rows; to correct a wrong match, use **Find match → Search selected song** and review another candidate. A provider busy/error response pauses the batch and keeps completed saves. MusicBrainz requests share a one-request-per-second limit across the app, and a song can need several requests.
+
+Saved information includes available recording/artist/album details, genres, community labels, instrument/performance credits, source links and retrieval information. It is stored with each library item in `library.json`, separately from its original file tags. The constellation uses these saved genres, labels and credits in **Metadata** and **Blended** connections and search; **Sound** continues to use local audio features. These community descriptions can be incomplete or debatable and are not audio-derived facts. Missing instrument credits do not establish that an instrument is absent. Follow the displayed source links when checking a result.
+
+If a file-tag edit or rescan changes a song's artist/title identity, its saved MusicBrainz match is cleared. An album change, including an album override, clears a saved match that included a selected release; recording-only matches are retained. Review the changed song or run **Lookup missing** to save a suitable match again. Editing the search fields alone does not change the song's library identity or tags.
+
+Opening the app, constellation or MusicBrainz window does not start a lookup. Starting **Lookup missing**, **Refresh saved**, **Search selected song** or accepting a candidate can make online requests. Searches send artist/title text and the album text when provided; detailed lookups use MusicBrainz IDs. Duration comparisons happen locally; no music file or local path is uploaded. Saving or removing this information does not write media-file tags, and the saved results remain usable offline.
+
+MusicBrainz contributors supply the metadata. [Core MusicBrainz data is CC0; supplementary data, including tags and genre associations, uses CC BY-NC-SA 3.0](https://musicbrainz.org/doc/MusicBrainz_Database). See the [MusicBrainz data-license page](https://musicbrainz.org/doc/About/Data_License) for the source terms. Those provider terms apply to the supplied metadata independently of this application's license.
 
 ## Find information without changing a file
 
@@ -79,15 +106,15 @@ A locked, read-only, missing or unsupported file cannot be saved. Some network s
 
 ## Online sources and privacy
 
-Online searches happen only when requested. They send the artist/title text to the selected provider; media files and local paths are not uploaded. These are source-based lookups, not AI-generated facts. Provider coverage, availability and response times vary.
+Online searches happen only when requested. They send search text to the selected provider, including artist/title and an optional album for MusicBrainz library searches; media files and local paths are not uploaded. These are source-based lookups, not AI-generated facts. Provider coverage, availability and response times vary.
 
 | Provider | Use |
 | --- | --- |
-| [MusicBrainz](https://musicbrainz.org/doc/MusicBrainz_API) | Music recordings, artist/album names and release dates. No key is required. |
+| [MusicBrainz](https://musicbrainz.org/doc/MusicBrainz_API) | Music recordings, artist/album names, release dates, and optional saved genres, community labels and instrument/performance credits. No key is required. |
 | [TMDB](https://developer.themoviedb.org/docs/authentication-application) | Optional movie metadata with your token. |
 | [LRCLIB](https://lrclib.net/docs) | Optional lyric matches. |
 | [Wikipedia / MediaWiki](https://www.mediawiki.org/wiki/Extension:TextExtracts) | Article excerpts with source/contributor attribution. |
 
-The phone/web viewers are read-only. File-tag editing is performed in the Windows app; its updated library appears in the remote afterward. No background or bulk tag rewriting is performed.
+The phone/web viewers are read-only. MusicBrainz library enrichment and file-tag editing are performed in the Windows app; its updated library appears in the remote afterward. No background or bulk tag rewriting is performed.
 
 [Third-party notices](../THIRD-PARTY-NOTICES.md) describe provider content and component licenses. This product uses the TMDB API but is not endorsed or certified by TMDB.

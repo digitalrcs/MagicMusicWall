@@ -6,13 +6,23 @@ namespace MagicMusicWall.Core;
 public enum MusicMapKind { Artist, Album, Song }
 
 public sealed record MusicMapEntity(string Id, MusicMapKind Kind, string Name, string Artist,
-    string Album, IReadOnlyList<string> TrackIds, IReadOnlyList<string> Genres, IReadOnlyList<int> Decades);
+    string Album, IReadOnlyList<string> TrackIds, IReadOnlyList<string> Genres, IReadOnlyList<int> Decades)
+{
+    public IReadOnlyList<string> Keywords { get; init; } = [];
+    public IReadOnlyList<string> Instruments { get; init; } = [];
+    public IReadOnlyList<string> Credits { get; init; } = [];
+    public IReadOnlyList<string> MusicBrainzGenres { get; init; } = [];
+    public IReadOnlyList<string> MusicBrainzTags { get; init; } = [];
+    public int MusicBrainzTrackCount { get; init; }
+}
 public sealed record MusicMapMatch(MusicMapEntity Entity, int Score, string Reason);
 public sealed record MusicMapConnection(string SourceId, string TargetId, double Strength, string Reason);
 
 /// <summary>A local library snapshot with metadata relationships and optional measured audio descriptors.</summary>
 public sealed class MusicMapIndex
 {
+    // Genre 120 + artist 35 + album 45 + era 10 + credited instruments 30 + community tags 15.
+    private const double MaximumMetadataScore = 255;
     private readonly Dictionary<string, MusicMapEntity> _byId;
     private readonly Dictionary<string, Identity> _identities;
     private readonly Dictionary<string, AnalyzedEntity> _audio;
@@ -22,6 +32,7 @@ public sealed class MusicMapIndex
     /// <summary>Number of unique music tracks with at least one usable genre tag.</summary>
     public int TaggedTrackCount { get; }
     public int AnalyzedTrackCount { get; }
+    public int EnrichedTrackCount { get; }
 
     private MusicMapIndex(List<MusicMapEntity> entities, Dictionary<string, Identity> identities, Track[] tracks,
         IReadOnlyDictionary<string, AudioFeatures>? audio)
@@ -33,6 +44,7 @@ public sealed class MusicMapIndex
         Genres = Labels(tracks.SelectMany(x => x.Genres));
         TrackCount = tracks.Length;
         TaggedTrackCount = tracks.Count(x => x.Genres.Count > 0);
+        EnrichedTrackCount = tracks.Count(x => x.Enriched);
         var measured = new Dictionary<string, AudioFeatures>(StringComparer.Ordinal);
         if (audio is not null)
             foreach (var track in tracks)
@@ -63,7 +75,12 @@ public sealed class MusicMapIndex
             var name = kind switch { MusicMapKind.Artist => artist, MusicMapKind.Album => album, _ => first.Title };
             entities.Add(new(id, kind, name, artist, album,
                 Array.AsReadOnly(group.Select(x => x.Id).ToArray()), Labels(group.SelectMany(x => x.Genres)),
-                Array.AsReadOnly(group.Where(x => x.Decade.HasValue).Select(x => x.Decade!.Value).Distinct().Order().ToArray())));
+                Array.AsReadOnly(group.Where(x => x.Decade.HasValue).Select(x => x.Decade!.Value).Distinct().Order().ToArray()))
+            {
+                Keywords = Labels(group.SelectMany(x => x.Keywords)), Instruments = Labels(group.SelectMany(x => x.Instruments)),
+                Credits = Labels(group.SelectMany(x => x.Credits)), MusicBrainzGenres = Labels(group.SelectMany(x => x.MusicBrainzGenres)),
+                MusicBrainzTags = Labels(group.SelectMany(x => x.MusicBrainzTags)), MusicBrainzTrackCount = group.Count(x => x.Enriched)
+            });
             identities.Add(id, new(first.KnownArtist ? first.ArtistKey : null,
                 kind != MusicMapKind.Artist && first.KnownAlbum ? first.AlbumKey : null));
         }
@@ -113,7 +130,7 @@ public sealed class MusicMapIndex
                 if (entities[i].Kind != entities[j].Kind) continue;
                 var (rank, reason) = PairScore(entities[i], entities[j], mode);
                 if (rank > 0) links.Add(new(entities[i].Id, entities[j].Id,
-                    Math.Clamp(rank / (mode == MusicMapSimilarity.Metadata ? 210 : 1000), 0, 1), reason));
+                    Math.Clamp(rank / (mode == MusicMapSimilarity.Metadata ? MaximumMetadataScore : 1000), 0, 1), reason));
             }
         return links;
     }
@@ -129,7 +146,9 @@ public sealed class MusicMapIndex
         if (commonGenres.Length > 0)
         {
             score += 100 + 10 * (commonGenres.Length - 1);
-            reasons.Add("Shared genre: " + string.Join(", ", commonGenres));
+            var onlineGenre = commonGenres.Any(genre => source.MusicBrainzGenres.Contains(genre, StringComparer.OrdinalIgnoreCase)
+                || candidate.MusicBrainzGenres.Contains(genre, StringComparer.OrdinalIgnoreCase));
+            reasons.Add("Shared genre: " + string.Join(", ", commonGenres) + (onlineGenre ? " (includes MusicBrainz genres)" : ""));
         }
         var candidateIdentity = _identities[candidate.Id];
         if (source.Kind != MusicMapKind.Artist && sourceIdentity.ArtistKey is not null && sourceIdentity.ArtistKey == candidateIdentity.ArtistKey)
@@ -142,6 +161,21 @@ public sealed class MusicMapIndex
             score += 10;
             reasons.Add("Shared era: " + string.Join(", ", commonDecades.Select(x => x + "s")));
         }
+        var instruments = source.Instruments.Intersect(candidate.Instruments, StringComparer.OrdinalIgnoreCase).Take(3).ToArray();
+        if (instruments.Length > 0)
+        {
+            score += 20 + 5 * (instruments.Length - 1);
+            reasons.Add("Shared credited instrument (MusicBrainz): " + string.Join(", ", instruments));
+        }
+        // Tags duplicate genres in the API; do not count the same genre/instrument twice.
+        var tags = source.MusicBrainzTags.Intersect(candidate.MusicBrainzTags, StringComparer.OrdinalIgnoreCase)
+            .Except(source.Genres.Concat(candidate.Genres).Concat(source.Instruments).Concat(candidate.Instruments), StringComparer.OrdinalIgnoreCase)
+            .Take(3).ToArray();
+        if (tags.Length > 0)
+        {
+            score += 5 * tags.Length;
+            reasons.Add("Shared community tag (MusicBrainz): " + string.Join(", ", tags));
+        }
         double rank = score;
         if (mode != MusicMapSimilarity.Metadata)
         {
@@ -149,14 +183,14 @@ public sealed class MusicMapIndex
             if (sourceAudio is not null && candidateAudio is not null)
             {
                 var resemblance = 1 / (1 + AudioDistance(sourceAudio, candidateAudio));
-                rank = mode == MusicMapSimilarity.Sound ? 1000 * resemblance : 1000 * (.7 * resemblance + .3 * Math.Min(1, score / 210.0));
+                rank = mode == MusicMapSimilarity.Sound ? 1000 * resemblance : 1000 * (.7 * resemblance + .3 * Math.Min(1, score / MaximumMetadataScore));
                 if (mode == MusicMapSimilarity.Sound) reasons.Clear();
                 reasons.Insert(0, $"Estimated sound resemblance (analyzed {sourceAudio.Summary.AnalyzedTracks}/{sourceAudio.Summary.TotalTracks} and {candidateAudio.Summary.AnalyzedTracks}/{candidateAudio.Summary.TotalTracks} tracks)");
             }
             else if (mode == MusicMapSimilarity.Sound) return (0, "");
             else
             {
-                rank = 1000 * .3 * Math.Min(1, score / 210.0);
+                rank = 1000 * .3 * Math.Min(1, score / MaximumMetadataScore);
                 reasons.Insert(0, "Metadata only: sound analysis unavailable for one or both selections");
             }
         }
@@ -233,6 +267,7 @@ public sealed class MusicMapIndex
 
     private static Track Snapshot(MediaItem item)
     {
+        var online = item.MusicBrainz is { } info && Guid.TryParse(info.RecordingId, out var recordingId) && recordingId != Guid.Empty ? info : null;
         var path = Clean(item.Path).Replace('\\', '/');
         var slash = path.LastIndexOf('/');
         var folder = slash >= 0 ? path[..slash] : "";
@@ -240,6 +275,8 @@ public sealed class MusicMapIndex
         var folderKey = folder.Length > 0 ? Key(folder) : "track:" + item.Id;
         var artist = Clean(item.Artist);
         var album = Clean(item.Album);
+        if (Missing(artist, "unknown artist") && online is not null) artist = Clean(online.Artist);
+        if (Missing(album, "unknown album") && online is not null) album = Clean(online.Album);
         var knownArtist = !Missing(artist, "unknown artist");
         var knownAlbum = !Missing(album, "unknown album");
         var artistKey = knownArtist ? "tag:" + Key(artist) : "folder:" + folderKey;
@@ -247,14 +284,26 @@ public sealed class MusicMapIndex
         if (!knownArtist) artist = folderName.Length > 0 ? "Unknown artist · " + folderName : "Unknown artist";
         if (!knownAlbum) album = folderName.Length > 0 ? "Unlabeled album · " + folderName : "Unlabeled album";
         var title = Clean(item.Title);
+        if (title.Length == 0 && online is not null) title = Clean(online.Title);
         if (title.Length == 0) title = path[(slash + 1)..];
         if (title.Length == 0) title = "Untitled song";
-        var genres = Labels(Clean(item.Genre).Split([';', '|'], StringSplitOptions.RemoveEmptyEntries)
+        var onlineGenres = SafeLabels(online?.Genres);
+        var tags = SafeLabels(online?.Tags);
+        var instruments = SafeLabels(online?.Instruments);
+        var credits = SafeLabels(online?.Credits);
+        var genres = Labels(Clean(item.Genre).Split([';', '|'], StringSplitOptions.RemoveEmptyEntries).Concat(onlineGenres)
             .Select(Clean).Where(x => !Missing(x, "unknown genre") && !x.Equals("unclassified", StringComparison.OrdinalIgnoreCase)));
         int? decade = item.Year is > 0 and <= 9999 ? (int)(item.Year / 10 * 10) : null;
+        if (decade is null && online is not null && online.FirstReleaseDate is { Length: >= 4 } date
+            && int.TryParse(date.AsSpan(0, 4), out var year) && year is > 0 and <= 9999) decade = year / 10 * 10;
+        var keywords = Labels(tags.Concat(instruments).Concat(credits).Concat(onlineGenres)
+            .Concat(online is null ? [] : new[] { Clean(online.Title), Clean(online.Artist), Clean(online.Album) }).Where(x => x.Length > 0));
         return new(item.Id, path, title, artist, album, artistKey, albumKey, knownArtist, knownAlbum,
-            genres, decade, item.DiscNumber, item.TrackNumber);
+            genres, decade, item.DiscNumber, item.TrackNumber, keywords, instruments, credits, onlineGenres, tags, online is not null);
     }
+
+    private static IReadOnlyList<string> SafeLabels(IEnumerable<string>? values) => Labels((values ?? []).Take(64)
+        .Select(Clean).Where(x => x.Length is > 0 and <= 512 && !x.Any(char.IsControl)));
 
     private static bool Missing(string value, string label) => value.Length == 0 || value.Equals(label, StringComparison.OrdinalIgnoreCase)
         || value.Equals("unknown", StringComparison.OrdinalIgnoreCase) || value.Equals("none", StringComparison.OrdinalIgnoreCase)
@@ -268,5 +317,7 @@ public sealed class MusicMapIndex
         Encoding.UTF8.GetBytes(string.Concat(parts.Select(x => x.Length + ":" + x)))));
     private sealed record Identity(string? ArtistKey, string? AlbumKey);
     private sealed record Track(string Id, string Path, string Title, string Artist, string Album, string ArtistKey, string AlbumKey,
-        bool KnownArtist, bool KnownAlbum, IReadOnlyList<string> Genres, int? Decade, uint Disc, uint Number);
+        bool KnownArtist, bool KnownAlbum, IReadOnlyList<string> Genres, int? Decade, uint Disc, uint Number,
+        IReadOnlyList<string> Keywords, IReadOnlyList<string> Instruments, IReadOnlyList<string> Credits,
+        IReadOnlyList<string> MusicBrainzGenres, IReadOnlyList<string> MusicBrainzTags, bool Enriched);
 }
