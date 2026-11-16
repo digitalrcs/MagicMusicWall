@@ -1,5 +1,10 @@
 # Changes
 
+## 0.9.4
+
+- Move AI search activity into a temporary owned popup that closes on completion, cancellation or failure. Closing the popup cancels the search.
+- Give the AI assistant one page scrollbar for controls and results; remove the fixed split sections and internal list scrollbars.
+
 ## 0.9.3
 
 - Show an animated progress bar and prominent AI search status panel, with distinct working and stopping states.

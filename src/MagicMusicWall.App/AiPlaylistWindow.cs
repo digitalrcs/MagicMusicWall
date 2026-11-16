@@ -11,7 +11,7 @@ namespace MagicMusicWall.App;
 internal sealed class AiPlaylistWindow : Window
 {
     private readonly TextBox _question = new() { Text = "Suggest relaxing songs for dinner", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Height = 80 };
-    private readonly ListBox _scope = new() { DisplayMemberPath = "Name", MaxHeight = 115, MinWidth = 0 };
+    private readonly ListBox _scope = new() { DisplayMemberPath = "Name", MinWidth = 0 };
     private readonly CheckBox _first = new() { Content = "Stop when enough matches are found", IsChecked = true, Margin = new(0, 8, 0, 10) };
     private readonly ObservableCollection<Row> _rows = [];
     private readonly TextBlock _selectionSummary = new() { TextWrapping = TextWrapping.Wrap };
@@ -20,9 +20,8 @@ internal sealed class AiPlaylistWindow : Window
     private readonly Func<IReadOnlyList<string>, IReadOnlyList<string>?> _pick;
     private readonly TextBox _limit = new() { Text = "20", Width = 88, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
     private readonly TextBlock _status = new() { TextWrapping = TextWrapping.Wrap, Margin = new(0, 10, 0, 10) };
-    private readonly ProgressBar _activity = new() { Height = 6, Visibility = Visibility.Collapsed, Margin = new(0, 10, 0, 0) };
-    private readonly TextBlock _activityTitle = new() { Text = "Search status", FontWeight = FontWeights.SemiBold, FontSize = 16 };
-    private readonly Border _statusBox = new() { BorderThickness = new(1.5), CornerRadius = new(8), Padding = new(12), Margin = new(0, 8, 0, 12) };
+    private Window? _progressWindow;
+    private TextBlock? _progressTitle;
     private readonly Button _recommendButton;
     private readonly Button _recommendPlayButton;
     private readonly Button _cancelButton;
@@ -44,12 +43,27 @@ internal sealed class AiPlaylistWindow : Window
         _settings = settings; _inventory = inventory; _apply = apply;
         Title = "AI playlist assistant"; Width = 940; Height = 840; MinWidth = 760; MinHeight = 700;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        var root = new DockPanel { Margin = new(24) }; Content = root;
-        var top = new StackPanel();
-        var topScroll = new ScrollViewer { Content = top, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
-        DockPanel.SetDock(topScroll, Dock.Top); root.Children.Add(topScroll);
-        // Keep results and queue actions reachable on smaller screens and with larger text.
-        root.SizeChanged += (_, _) => topScroll.MaxHeight = Math.Max(240, root.ActualHeight - 300);
+        var top = new StackPanel { Margin = new(24) };
+        var pageScroll = new ScrollViewer
+        {
+            Content = top, VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, CanContentScroll = false
+        };
+        Content = pageScroll;
+        // The page owns scrolling. Scope and results expand with their contents.
+        ScrollViewer.SetVerticalScrollBarVisibility(_scope, ScrollBarVisibility.Disabled);
+        ScrollViewer.SetHorizontalScrollBarVisibility(_scope, ScrollBarVisibility.Disabled);
+        ScrollViewer.SetVerticalScrollBarVisibility(_results, ScrollBarVisibility.Disabled);
+        ScrollViewer.SetHorizontalScrollBarVisibility(_results, ScrollBarVisibility.Disabled);
+        ScrollViewer.SetCanContentScroll(_results, false);
+        // ListBox templates still contain a ScrollViewer: route the wheel to the page.
+        foreach (var list in new[] { _scope, _results })
+            list.PreviewMouseWheel += (_, e) =>
+            {
+                var step = SystemParameters.WheelScrollLines < 0 ? pageScroll.ViewportHeight : SystemParameters.WheelScrollLines * 16;
+                pageScroll.ScrollToVerticalOffset(pageScroll.VerticalOffset - e.Delta / 120d * step);
+                e.Handled = true;
+            };
         top.Children.Add(new TextBlock { Text = "Ask your music library", FontSize = 26 });
         top.Children.Add(new TextBlock { Text = "Try: songs from the 80's · gentle guitar and relaxing rhythms · dinner music", TextWrapping = TextWrapping.Wrap, Margin = new(0, 8, 0, 10) });
         var searchSection = new Border
@@ -109,7 +123,8 @@ internal sealed class AiPlaylistWindow : Window
         _recommendPlayButton = AddButton(buttons, "Recommend & play", () => Recommend(true));
         _cancelButton = AddButton(buttons, "Cancel", () =>
         {
-            _cancel?.Cancel(); _activityTitle.Text = "Stopping search…";
+            _cancel?.Cancel();
+            if (_progressTitle is not null) _progressTitle.Text = "Stopping search…";
             if (_cancelButton is { } cancelButton) cancelButton.IsEnabled = false;
             return Task.CompletedTask;
         });
@@ -122,18 +137,9 @@ internal sealed class AiPlaylistWindow : Window
         };
         explanation.SetResourceReference(Border.BackgroundProperty, "PanelBrush");
         top.Children.Add(explanation);
-        _statusBox.SetResourceReference(Border.BackgroundProperty, "PanelBrush");
-        _statusBox.BorderBrush = new SolidColorBrush(Color.FromRgb(0x85, 0x8D, 0xA3));
-        _activity.SetResourceReference(Control.ForegroundProperty, "AccentBrush");
-        _activity.SetResourceReference(Control.BackgroundProperty, "BackgroundBrush");
-        System.Windows.Automation.AutomationProperties.SetName(_activity, "AI search in progress");
-        var statusContent = new StackPanel(); _statusBox.Child = statusContent;
-        statusContent.Children.Add(_activityTitle); statusContent.Children.Add(_activity); statusContent.Children.Add(_status);
-        _status.Margin = new(0, 8, 0, 0);
-        _status.Text = "Ready. Enter a request and choose Recommend to start.";
-        // Keep activity and progress visible while the search controls scroll.
-        DockPanel.SetDock(_statusBox, Dock.Top); root.Children.Add(_statusBox);
-        DockPanel.SetDock(_actions, Dock.Bottom); root.Children.Add(_actions);
+        _status.Text = "";
+        top.Children.Add(_status);
+        top.Children.Add(_actions);
         AddButton(_actions, "Add selected to queue", () => Apply(false));
         AddButton(_actions, "Play selected", () => Apply(true));
         AddButton(_actions, "Select all", () => { _results.SelectAll(); return Task.CompletedTask; });
@@ -147,7 +153,7 @@ internal sealed class AiPlaylistWindow : Window
         text.SetBinding(TextBlock.TextProperty, new Binding("Display")); text.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
         _results.ItemTemplate = new DataTemplate { VisualTree = text };
         _results.ItemsSource = _rows;
-        root.Children.Add(_results);
+        top.Children.Add(_results);
         Closed += (_, _) => { _closed = true; _cancel?.Cancel(); };
     }
     private Button AddButton(Panel panel, string label, Func<Task> action)
@@ -166,11 +172,50 @@ internal sealed class AiPlaylistWindow : Window
     }
     private void SetSearching(bool searching)
     {
-        _activity.IsIndeterminate = searching;
-        _activity.Visibility = searching ? Visibility.Visible : Visibility.Collapsed;
-        _activityTitle.Text = searching ? "AI is searching your music…" : "Search status";
-        if (searching) _statusBox.SetResourceReference(Border.BorderBrushProperty, "AccentBrush");
-        else _statusBox.BorderBrush = new SolidColorBrush(Color.FromRgb(0x85, 0x8D, 0xA3));
+        if (searching)
+        {
+            var progress = new ProgressBar { Height = 6, IsIndeterminate = true, Margin = new(0, 12, 0, 12) };
+            progress.SetResourceReference(Control.ForegroundProperty, "AccentBrush");
+            progress.SetResourceReference(Control.BackgroundProperty, "BackgroundBrush");
+            System.Windows.Automation.AutomationProperties.SetName(progress, "AI search in progress");
+            _progressTitle = new TextBlock { Text = "AI is searching your music…", FontSize = 18, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap };
+            var detail = new TextBlock { TextWrapping = TextWrapping.Wrap, Margin = new(0, 0, 0, 12) };
+            detail.SetBinding(TextBlock.TextProperty, new Binding(nameof(TextBlock.Text)) { Source = _status });
+            var content = new StackPanel { Margin = new(20) };
+            content.Children.Add(_progressTitle); content.Children.Add(progress); content.Children.Add(detail);
+            var cancel = new Button { Content = "Cancel search", HorizontalAlignment = HorizontalAlignment.Right };
+            cancel.Click += (_, _) =>
+            {
+                _cancel?.Cancel();
+                if (_progressTitle is not null) _progressTitle.Text = "Stopping search…";
+                cancel.IsEnabled = false; _cancelButton.IsEnabled = false;
+            };
+            content.Children.Add(cancel);
+            var popup = new Window
+            {
+                Title = "Searching your music", Owner = this, Width = 460, SizeToContent = SizeToContent.Height,
+                ResizeMode = ResizeMode.NoResize, WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                ShowInTaskbar = false, Content = content
+            };
+            Ui.Theme(popup);
+            popup.Closed += (_, _) =>
+            {
+                progress.IsIndeterminate = false;
+                if (ReferenceEquals(_progressWindow, popup))
+                {
+                    _progressWindow = null; _progressTitle = null;
+                    _cancel?.Cancel(); // Closing the popup means stop, never play partial results.
+                }
+            };
+            _progressWindow = popup;
+            popup.Show();
+        }
+        else
+        {
+            var popup = _progressWindow;
+            _progressWindow = null; _progressTitle = null;
+            popup?.Close();
+        }
         _recommendButton.IsEnabled = _recommendPlayButton.IsEnabled = !searching;
         _cancelButton.IsEnabled = searching;
     }
@@ -186,10 +231,10 @@ internal sealed class AiPlaylistWindow : Window
         _status.Text = $"Preparing library for {settings.AiProvider}…";
         _rows.Clear(); _actions.IsEnabled = false;
         using var cancel = new CancellationTokenSource(); _cancel = cancel;
-        SetSearching(true);
         _scope.IsEnabled = _choose.IsEnabled = _first.IsEnabled = _question.IsEnabled = _limit.IsEnabled = false;
         try
         {
+            SetSearching(true);
             var songs = await _inventory(scope, chosen);
             cancel.Token.ThrowIfCancellationRequested();
             if (songs.Length == 0) { _status.Text = "No available music in this scope."; return; }
