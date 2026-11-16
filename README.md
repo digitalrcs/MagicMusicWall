@@ -26,6 +26,10 @@ The installer is unsigned. Clean Windows installation and ARM emulation have not
 
 ## Start with your music
 
+**New here? Follow the [first-use walkthrough](docs/GETTING-STARTED.md)** from installation to your first playlist and phone connection. See [common questions](docs/FAQ.md) for what the app does and where it saves information.
+
+Download **Setup-x64.exe** from the release assets to install. GitHub's **Source code (zip)** download is for developers, not a ready-to-run player.
+
 1. Connect your stereo or headphones in Windows, then choose the device under **Listening on**.
 2. Click **Add folder** or **Add files**. You can add local storage, a connected USB drive, or an accessible network share.
 3. Open a folder to browse its contents. Click a song name or **+ Queue** to add just that song to **Up next**.
@@ -65,6 +69,8 @@ Keep the PC, application and source drives available. Share the passphrase or qu
 
 | Topic | Guide |
 | --- | --- |
+| First installation, first song and first playlist | [Get started](docs/GETTING-STARTED.md) |
+| Common questions and feature limits | [FAQ](docs/FAQ.md) |
 | Installing, USB, updating and uninstalling | [Windows installer and USB](docs/WINDOWS-INSTALLER.md) |
 | Folders, searching, queue, playlists and video | [User guide](docs/USER-GUIDE.md) |
 | Connected artists, albums and songs | [Music constellation](docs/MUSIC-MAP.md) |
@@ -74,7 +80,7 @@ Keep the PC, application and source drives available. Share the passphrase or qu
 | Building and packaging the application | [Developer guide](docs/BUILDING.md) |
 | Release history | [Changelog](CHANGELOG.md) |
 
-The same guides and screenshots are included in **OfflineDocs/index.html** in the Windows packages. Screenshots use synthetic demonstration content.
+Windows packages include an offline snapshot of the guides and screenshots in **OfflineDocs/index.html**. GitHub has the latest documentation updates, including the new first-use walkthrough and FAQ; already-downloaded packages retain their bundled snapshot. Screenshots use synthetic demonstration content.
 
 ## Source and feedback
 

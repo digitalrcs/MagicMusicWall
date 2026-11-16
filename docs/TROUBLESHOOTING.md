@@ -81,6 +81,8 @@ Providers may have no match, be offline, or ask you to wait because of rate limi
 
 ## Tags will not save
 
+For missing or uncertain MusicBrainz information in the constellation, use the separate steps below; library enrichment does not write file tags.
+
 - Select at least one changed field, then review the save confirmation.
 - Check the [supported formats](METADATA.md#formats-and-backups). MKV/WebM/AVI are read-only in this editor.
 - Reconnect the drive and check that the file and folder are writable.
@@ -90,6 +92,20 @@ Providers may have no match, be offline, or ask you to wait because of rate limi
 - If a selected tag does not round-trip correctly for that container, saving stops and keeps the original.
 
 Successful writes display the original-file backup path. If the file was saved but the library refresh failed, preserve that backup, restore access to the library data folder, and rescan. See the [backup restoration steps](METADATA.md#formats-and-backups).
+
+## The constellation selects the wrong music or shows few connections
+
+Version 0.8.1 focuses on the current track first when opening or reopening the constellation. A different highlighted queue item does not override the current track. With no current music, it tries selected queue/library music, a selected/open folder, then the first queued song. Click **Music constellation** in the main player again to refocus; it does not continuously jump while you explore. If there is no usable context, the alphabetical fallback is expected.
+
+Clear map search/genre filters and choose **All music** if results seem missing. Use **Metadata** or **Blended** before sound analysis; **Sound** needs analyzed audio on both sides of a connection. Check the coverage line. Missing tags and incomplete MusicBrainz coverage can leave few relationships. A rebuild does not automatically fetch online information or analyze sound. See [the three separate scan actions](GETTING-STARTED.md).
+
+## MusicBrainz says Needs review or stops with a busy message
+
+**Needs review** is not a failed save. Automatic matching requires a unique recording, matching artist/title, known duration within three seconds, and matching album when available. Incomplete search results and alternate versions also require review.
+
+Select the row, open **Find match**, check the artist/title and optional album, then choose **Search selected song**. Clear an incorrect album filter if needed. Compare versions before **Use selected match**. View stored information on **Saved info**; **Remove saved info** clears the app's enrichment without editing the media file.
+
+If MusicBrainz reports busy or rate limited, wait for the displayed interval and retry later. Requests are paced, but the provider can still be temporarily unavailable. Completed saves remain; **Lookup missing** skips saved songs and **Refresh saved** updates previously chosen IDs. No playback or full library rescan is needed to retry. [Matching and privacy details](METADATA.md#save-musicbrainz-information-in-your-library).
 
 ## Recover library data
 
