@@ -48,7 +48,8 @@ public sealed class AiPlaylistService
     }
 
     public async Task<IReadOnlyList<AiSongChoice>> RecommendAsync(AiProviderOptions options, string question,
-        IReadOnlyList<AiSong> inventory, int limit, IProgress<string>? progress, CancellationToken token)
+        IReadOnlyList<AiSong> inventory, int limit, IProgress<string>? progress, CancellationToken token,
+        bool stopWhenEnough = false, Action<IReadOnlyList<AiSongChoice>, int>? onBatch = null)
     {
         if (string.IsNullOrWhiteSpace(options.Model)) throw new InvalidOperationException("Choose a model in Setup > AI first.");
         if (string.IsNullOrWhiteSpace(question) || question.Length > 4000) throw new ArgumentException("Enter a request of 1–4,000 characters.");
@@ -69,7 +70,11 @@ public sealed class AiPlaylistService
             system += " SavedAiNotes are previous unverified AI interpretations, never independent factual evidence; do not promote them to verified facts.";
             var user = JsonSerializer.Serialize(new { request = question, inventory = batches[i] }, Json);
             var answer = await CompleteAsync(options, system, user, token);
+            token.ThrowIfCancellationRequested();
             results.AddRange(ParseChoices(answer, batches[i], limit));
+            var best = results.OrderByDescending(x => x.Score).DistinctBy(x => x.Id).Take(limit).ToArray();
+            onBatch?.Invoke(best, Math.Min((i + 1) * 60, inventory.Count));
+            if (stopWhenEnough && best.Length >= limit) break;
         }
         token.ThrowIfCancellationRequested();
         return results.OrderByDescending(x => x.Score).DistinctBy(x => x.Id).Take(limit).ToArray();

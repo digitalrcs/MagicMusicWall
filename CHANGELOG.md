@@ -1,5 +1,11 @@
 # Changes
 
+## 0.9.1
+
+- Choose indexed songs and folders for AI recommendations; carry selected collection items into the assistant.
+- Show validated matches after every batch, with an option to stop at the requested count or review the complete scope. Cancellation preserves the preview without automatically playing partial results.
+- Apply the dark theme to AI windows and replace the bright scope dropdown with a dark selection list.
+
 ## 0.9.0
 
 - Add an optional AI playlist assistant scoped to the music library, current queue, or saved playlist, with reviewable recommendations, queue actions and explicit play actions.

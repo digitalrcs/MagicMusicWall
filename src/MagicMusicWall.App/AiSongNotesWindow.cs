@@ -9,6 +9,7 @@ internal sealed class AiSongNotesWindow : Window
 {
     public AiSongNotesWindow(MediaItem item, Func<AppPreferences> settings, Action<Window> webLookup)
     {
+        Ui.Theme(this);
         Title = "AI song notes"; Width = 760; Height = 650; MinWidth = 520; MinHeight = 420;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         var root = new DockPanel { Margin = new(22) }; Content = root;

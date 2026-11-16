@@ -12,9 +12,23 @@ public partial class MainWindow
         if (_closing || !CanEdit()) return;
         if (_aiPlaylist is not null) { _aiPlaylist.Activate(); return; }
         _aiPlaylist = new AiPlaylistWindow(() => Preferences, _catalog.Document.Playlists,
-            (PlaylistsList.SelectedItem as MusicPlaylist)?.Id, AiInventory, ApplyAiSongs, (id, owner) => ShowAiNotes(id, owner)) { Owner = this };
+            (PlaylistsList.SelectedItem as MusicPlaylist)?.Id, AiInventory, ApplyAiSongs, (id, owner) => ShowAiNotes(id, owner), SelectedAiIds(), PickAiSongs) { Owner = this };
         _aiPlaylist.Closed += (_, _) => _aiPlaylist = null;
         _aiPlaylist.Show();
+    }
+    private IReadOnlyList<string> SelectedAiIds()
+    {
+        var ids = Selection().Where(x => !x.IsVideo).Select(x => x.Id).ToHashSet();
+        foreach (var folder in MediaGrid.SelectedItems.OfType<FolderEntry>())
+            foreach (var song in FolderBrowser.Browse(_catalog.Document.Folders, _catalog.Document.Items.Where(x => !x.IsVideo), folder.Path).Descendants)
+                ids.Add(song.Id);
+        return ids.ToArray();
+    }
+    private IReadOnlyList<string>? PickAiSongs(IReadOnlyList<string> selected)
+    {
+        var picker = new AiLibraryPicker(_catalog.Document.Folders, _catalog.Document.Items.Where(x => !x.IsVideo && x.IsAvailable).ToArray(), selected)
+            { Owner = _aiPlaylist ?? (Window)this };
+        return picker.ShowDialog() == true ? picker.SelectedIds : null;
     }
     private void ShowAiNotes(string id, Window owner)
     {
@@ -22,13 +36,13 @@ public partial class MainWindow
         if (item is null) return;
         new AiSongNotesWindow(item, () => Preferences, window => ShowMusicBrainz([id], window)) { Owner = owner }.ShowDialog();
     }
-    private async Task<AiSong[]> AiInventory(string? scope)
+    private async Task<AiSong[]> AiInventory(string? scope, IReadOnlyList<string> selectedIds)
     {
         if (_scanning || _metadataWriting) throw new InvalidOperationException("Wait for the library update to finish.");
         var items = _catalog.Document.Items.Where(x => !x.IsVideo && x.IsAvailable).ToArray();
         if (scope is not null)
         {
-            var ids = scope == "$queue" ? _queue.Select(x => x.Id).ToHashSet()
+            var ids = scope == "$selection" ? selectedIds.ToHashSet() : scope == "$queue" ? _queue.Select(x => x.Id).ToHashSet()
                 : (_catalog.Document.Playlists.FirstOrDefault(x => x.Id == scope)?.ItemIds ?? []).ToHashSet();
             items = items.Where(x => ids.Contains(x.Id)).ToArray();
         }

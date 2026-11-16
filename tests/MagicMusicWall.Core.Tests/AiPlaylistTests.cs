@@ -46,10 +46,13 @@ public sealed class AiPlaylistTests
         Assert.Throws<InvalidOperationException>(() => AiPlaylistService.Endpoint(Local with { BaseUrl = "http://user:pass@localhost/v1" }, "models"));
         Assert.Equal("http://localhost:1234/v1/models", AiPlaylistService.Endpoint(Local, "models").AbsoluteUri);
     }
-    [Fact]
-    public async Task EveryBatchIsReviewedAndGlobalLimitApplied()
+    [Theory]
+    [InlineData(false, 3)]
+    [InlineData(true, 2)]
+    public async Task BatchesStreamAndStopAtRequestedCount(bool stopWhenEnough, int expectedCalls)
     {
         var calls = 0;
+        var snapshots = new List<(int Count, int Reviewed)>();
         using var http = new HttpClient(new Handler(async (request, token) =>
         {
             calls++;
@@ -57,11 +60,19 @@ public sealed class AiPlaylistTests
             using var json = JsonDocument.Parse(body);
             using var user = JsonDocument.Parse(json.RootElement.GetProperty("messages")[1].GetProperty("content").GetString()!);
             var id = user.RootElement.GetProperty("inventory")[0].GetProperty("id").GetString();
-            var answer = JsonSerializer.Serialize(new { songs = new[] { new { id, reason = "Tagged year 1985", score = .8 } } });
+            var answer = JsonSerializer.Serialize(new { songs = new[] { new { id, reason = "Tagged year 1985", score = calls * .2 } } });
             return new(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(new { choices = new[] { new { finish_reason = "stop", message = new { content = answer } } } }), Encoding.UTF8, "application/json") };
         }));
-        var result = await new AiPlaylistService(http).RecommendAsync(Local, "80s songs", Enumerable.Range(0, 121).Select(x => Song(x.ToString())).ToArray(), 2, null, default);
-        Assert.Equal(3, calls); Assert.Equal(2, result.Count);
+        var result = await new AiPlaylistService(http).RecommendAsync(Local, "80s songs", Enumerable.Range(0, 121).Select(x => Song(x.ToString())).ToArray(), 2, null, default, stopWhenEnough, (matches, reviewed) =>
+            {
+                Assert.Equal(calls, snapshots.Count + 1);
+                snapshots.Add((matches.Count, reviewed));
+            });
+        Assert.Equal(expectedCalls, calls); Assert.Equal(2, result.Count);
+        Assert.Equal(expectedCalls, snapshots.Count);
+        Assert.Equal((1, 60), snapshots[0]);
+        Assert.Equal(stopWhenEnough ? "60" : "120", result[0].Id);
+        Assert.Equal(stopWhenEnough ? 120 : 121, snapshots[^1].Reviewed);
     }
     [Fact]
     public async Task CancellationDoesNotReturnPartialResults()

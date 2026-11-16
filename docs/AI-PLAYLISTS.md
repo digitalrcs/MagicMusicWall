@@ -1,6 +1,6 @@
 # AI playlists and saved song notes
 
-Available in version 0.9.0 and later.
+AI features are available from 0.9.0. The song/folder picker, incremental results and early-stop option require 0.9.1 or later.
 
 The assistant recommends music already in your library. It does not download songs, use Spotify, or send audio files for listening. AI is optional; ordinary playback works without it.
 
@@ -20,18 +20,18 @@ Keys are encrypted using Windows protection for the current Windows account. Lea
 ## Ask for a playlist
 
 1. Click **AI playlist assistant** in the player's sidebar.
-2. Choose **Entire music library**, **Current queue**, or a saved playlist.
+2. Choose **Entire music library**, **Current queue**, a saved playlist, or **Selected songs / folders**. Click **Choose songs / folders…** to check songs or whole folders (including subfolders) from your indexed library. Use **Open** to enter a folder, **Up** to go back, or search across titles/artists/albums. The picker never browses unimported disk contents. Selected collection songs/folders are carried into the assistant when it opens.
 3. Enter a request, for example:
    - `Find songs with gentle guitar and relaxing rhythms.`
    - `Choose only songs tagged with a release year in the 1980s.`
    - `Suggest quiet songs from this playlist for dinner.`
 4. Set **Max songs** (1–100).
-5. Click **Recommend** to review a list without changing playback.
+5. Leave **Stop when enough matches are found** checked for an early finish, or uncheck it to review the whole scope and keep the best matches. Click **Recommend** to review a list without changing playback.
 6. Review the reasons. All results are initially selected. Select the songs you want, then choose **Add selected to queue** or **Play selected**.
 
 **Recommend & play** explicitly requests immediate playback after a complete, successful review and replaces the queue. **Play selected** also replaces the queue. Normal player shuffle and output settings still apply. A textual request that says "play" does not bypass the Recommend preview button. Save the resulting queue as a playlist with the existing playlist controls.
 
-Every available music entry in the chosen scope is reviewed in batches of up to 60. Large libraries can take a long time and cloud providers may charge for many requests. Progress identifies the current batch. **Cancel** or closing the window stops the request; partial recommendations are not played. Batch scores are AI judgments, not a calibrated measure of similarity.
+The chosen scope is reviewed in batches of up to 60. Matches appear in the list after each completed batch. In early-stop mode, review ends when the requested number of distinct matches has been found (or the scope is exhausted). Full-review mode can replace earlier matches with higher-scoring results. Large libraries can take a long time and cloud providers may charge for many requests. Progress identifies the current batch. **Cancel** stops the request and keeps completed matches visible for manual review/queueing. Closing the window also cancels. Neither action automatically plays partial results. Playback actions are disabled while a review is running. Batch scores are AI judgments, not a calibrated measure of similarity.
 
 The app rejects unknown song IDs, removes duplicate recommendations and rechecks availability before queueing. It cannot guarantee the model's musical judgments or interpretation of your request. If nothing matches, an empty list is valid.
 
