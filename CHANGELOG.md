@@ -1,5 +1,10 @@
 # Changes
 
+## 0.8.1
+
+- Focus the constellation on the current music, selected queue/library item or indexed folder, with the first queued song as a fallback. Reopening refocuses the map; changing Artist/Album/Song view preserves the musical selection.
+- Keep pending selection while the map builds, without changing playback or the queue.
+
 ## 0.8.0
 
 - Add optional MusicBrainz library enrichment from the constellation's **MusicBrainz info** button, **MusicBrainz for this selection**, and **MusicBrainz library info…** in the song-information viewer.

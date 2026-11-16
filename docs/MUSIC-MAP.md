@@ -96,3 +96,5 @@ Library rescanning and sound analysis are separate operations. After adding or c
 Building or refreshing the constellation does not change the playback queue. Mapping an unavailable file does not make it playable: reconnect its drive or share before queuing it for playback.
 
 For better connections, add and review MusicBrainz information or correct your file tags using the [metadata guide](METADATA.md). Saving or removing library information refreshes the constellation; file-tag changes made outside the app require a rescan.
+
+Opening or reopening the constellation focuses on the current music, then the selected queue/library item, selected/open indexed folder, or first queued song. Artist/Album/Song view changes preserve the musical selection. Folder focus limits the map to its indexed music. With no available context, the alphabetical list remains the fallback.

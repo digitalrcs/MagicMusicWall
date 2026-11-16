@@ -13,13 +13,33 @@ public partial class MainWindow
     private void MusicMap_Click(object sender, RoutedEventArgs e)
     {
         if (_closing || !CanEdit()) return;
-        if (_musicMap is not null) { _musicMap.Activate(); return; }
+        if (_musicMap is not null) { FocusMusicMap(); _musicMap.Activate(); return; }
         _musicMapStamp = MusicMapStamp();
         _musicMap = new MusicMapWindow(BuildMusicMap, QueueFromMusicMap,
             id => ShowSongInfo(_catalog.Document.Items.FirstOrDefault(item => item.Id == id)), AnalyzeMusicMap,
             ids => { ShowMusicBrainz(ids, _musicMap ?? (Window)this); return Task.CompletedTask; }) { Owner = this };
         _musicMap.Closed += (_, _) => _musicMap = null;
+        FocusMusicMap();
         _musicMap.Show();
+    }
+
+    private void FocusMusicMap()
+    {
+        bool Usable(MediaItem? item) => item is { IsVideo: false } && _catalog.Document.Items.Any(x => x.Id == item.Id && !x.IsVideo);
+        var track = new[] { _current, QueueList.SelectedItem as MediaItem, MediaGrid.SelectedItem as MediaItem }.FirstOrDefault(Usable);
+        if (track is not null) { _musicMap?.FocusTracks([track.Id]); return; }
+        var folder = (MediaGrid.SelectedItem as FolderEntry)?.Path ?? _folderPath;
+        if (folder is not null)
+        {
+            try
+            {
+                var page = FolderBrowser.Browse(_catalog.Document.Folders, _catalog.Document.Items.Where(x => !x.IsVideo), folder);
+                if (page.Descendants.Count > 0) { _musicMap?.FocusTracks(page.Descendants.Select(x => x.Id).ToArray(), page.Title); return; }
+            }
+            catch (ArgumentException) { /* A removed folder can fall back to the queue. */ }
+        }
+        track = _queue.FirstOrDefault(Usable);
+        if (track is not null) _musicMap?.FocusTracks([track.Id]);
     }
 
     private async Task<MusicMapIndex> BuildMusicMap(bool rescan)

@@ -50,6 +50,30 @@ internal sealed partial class MusicMapWindow : Window
     private HashSet<string>? _scope;
     private string? _scopeId;
     private MusicMapEntity? _selected;
+    private (string[] Ids, string? Folder)? _pendingFocus;
+
+    public void FocusTracks(IReadOnlyList<string> ids, string? folder = null)
+    {
+        if (_closed || ids.Count == 0) return;
+        _pendingFocus = (ids.ToArray(), folder);
+        if (_index is not null && !_busy) ApplyPendingFocus();
+    }
+
+    private void ApplyPendingFocus()
+    {
+        if (_index is null || _pendingFocus is not { } focus) return;
+        _pendingFocus = null;
+        var kind = _kind.SelectedItem is MusicMapKind value ? value : MusicMapKind.Artist;
+        var target = focus.Ids.Select(id => _index.Entities.FirstOrDefault(e => e.Kind == kind && e.TrackIds.Contains(id))).FirstOrDefault(e => e is not null);
+        if (target is null) return;
+        _history.Clear();
+        Reveal(target, false);
+        if (focus.Folder is not null)
+        {
+            _scope = focus.Ids.ToHashSet(StringComparer.Ordinal); _scopeId = null; _scopeLabel.Text = focus.Folder;
+            Filter();
+        }
+    }
     private int _page;
     private bool _busy, _closed, _updating;
     private Point? _dragStart;
@@ -180,7 +204,17 @@ internal sealed partial class MusicMapWindow : Window
         Grid.SetRow(body, 3); root.Children.Add(body);
         Grid.SetRow(_status, 4); root.Children.Add(_status); Content = root;
         _updating = true; _kind.SelectedItem = MusicMapKind.Artist; _similarity.SelectedItem = MusicMapSimilarity.Blended; _genre.ItemsSource = new[] { "All genres" }; _genre.SelectedIndex = 0; _updating = false;
-        _kind.SelectionChanged += (_, _) => { if (!_updating) Filter(); };
+        _kind.SelectionChanged += (_, _) =>
+        {
+            if (_updating) return;
+            var track = _selected?.TrackIds.FirstOrDefault();
+            Filter();
+            if (track is not null && _index is not null)
+            {
+                var entity = _filtered.FirstOrDefault(e => e.TrackIds.Contains(track));
+                if (entity is not null) { _selected = entity; _page = _filtered.IndexOf(entity) / PageSize; DrawMap(); }
+            }
+        };
         _genre.SelectionChanged += (_, _) => { if (!_updating) Filter(); };
         _similarity.SelectionChanged += (_, _) => { if (!_updating) DrawMap(); };
         _search.TextChanged += (_, _) => { if (!_updating) { _searchTimer.Stop(); _searchTimer.Start(); } };
@@ -224,7 +258,7 @@ internal sealed partial class MusicMapWindow : Window
             _status.Text = "Map ready. Click a name to explore, or drag it to feel its connections. Queue actions append songs without changing playback.";
         }
         catch (Exception ex) { if (!_closed) _status.Text = "Map could not be rebuilt: " + ex.Message; }
-        finally { if (!_closed) SetBusy(false); }
+        finally { if (!_closed) { SetBusy(false); ApplyPendingFocus(); } }
     }
 
     private MusicMapSimilarity Similarity => _similarity.SelectedItem is MusicMapSimilarity mode ? mode : MusicMapSimilarity.Blended;
