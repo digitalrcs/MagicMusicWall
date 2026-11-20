@@ -1,5 +1,9 @@
 # Changes
 
+## 0.9.10
+
+- Add click-to-seek and a live formatted time preview while dragging the playback slider. Show duration-based time marks below the bar and cancel abandoned or stale-track drags safely.
+
 ## 0.9.9
 
 - Apply Shuffle to an already-playing queue for desktop Next, remote Next and automatic song advancement. Choose from remaining queue entries without repeats in the current pass; keep visible queue order aligned with playback history.

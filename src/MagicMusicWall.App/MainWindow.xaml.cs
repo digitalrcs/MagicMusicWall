@@ -514,20 +514,19 @@ public partial class MainWindow : Window
     {
         if (_closing) return;
         _updatingTime = true;
+        if (_seeking && (_seekVersion != _playVersion || !_player.IsSeekable)) SeekSlider.CancelSeek();
         var length = Math.Max(1, _player.Length);
-        SeekSlider.Maximum = length;
+        if (!_seeking) SeekSlider.Maximum = length;
         if (!_seeking) SeekSlider.Value = Math.Max(0, _player.Time);
         SeekSlider.IsEnabled = _player.IsSeekable;
-        ElapsedText.Text = FormatTime(_player.Time); DurationText.Text = FormatTime(_player.Length);
+        ElapsedText.Text = FormatTime(_seeking ? (long)SeekSlider.Value : _player.Time); DurationText.Text = FormatTime(_player.Length);
+        UpdateSeekMarks();
         PauseButton.Content = _player.IsPlaying ? "Ⅱ" : "▶";
         VolumeText.Text = _player.Mute ? "Muted" : $"{_settings.Volume}%";
         _updatingTime = false;
         _ = CheckAudioRoute();
         RefreshVisualizerCapture();
     }
-    private void Seek_Begin(object sender, MouseButtonEventArgs e) => _seeking = true;
-    private void Seek_End(object sender, MouseButtonEventArgs e) { _seeking = false; if (_player.IsSeekable) _player.Time = (long)SeekSlider.Value; }
-    private void Seek_Changed(object sender, RoutedPropertyChangedEventArgs<double> e) { if (_ready && !_updatingTime && !_seeking && SeekSlider.IsKeyboardFocusWithin && _player.IsSeekable) _player.Time = (long)e.NewValue; }
     private async void Volume_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (!_ready) return;
@@ -595,6 +594,7 @@ public partial class MainWindow : Window
         if (_closing) return;
         if (_metadataWriting) { Status("Please wait for the file tags to finish saving."); return; }
         if (_scanning) { _scanCancel?.Cancel(); Status("Cancelling the scan. Close again after it finishes."); return; }
+        SeekSlider.CancelSeek();
         StopVisuals();
         _closing = true; _timer.Stop(); _saveTimer.Stop(); ++_playVersion; IsEnabled = false;
         try

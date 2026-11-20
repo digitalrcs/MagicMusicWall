@@ -15,6 +15,15 @@ internal static class Program
         var visual = new PlaybackVisualizer();
         T Field<T>(string name) => (T)typeof(PlaybackVisualizer).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(visual)!;
         void Check(bool value, string message) { if (!value) throw new Exception(message); }
+        var seek = new PlaybackSeekSlider { Minimum = 0, Maximum = 240000, Value = 60000, Width = 400, Height = 32 };
+        seek.BeginInit(); seek.EndInit();
+        seek.Measure(new Size(400, 32)); seek.Arrange(new Rect(0, 0, 400, 32)); seek.ApplyTemplate(); seek.UpdateLayout();
+        var track = (System.Windows.Controls.Primitives.Track)seek.Template.FindName("PART_Track", seek);
+        Check(track is not null, "Seek slider has no track template");
+        double At(double x) => Math.Clamp(track!.ValueFromPoint(new Point(x, track.ActualHeight / 2)), seek.Minimum, seek.Maximum);
+        Check(At(0) == 0 && At(track!.ActualWidth) == 240000 && Math.Abs(At(track.ActualWidth / 2) - 120000) < 1,
+            "Click-to-seek mapping does not match track times");
+        Check(PlaybackSeekSlider.TimeLabel(93000) == "1:33" && PlaybackSeekSlider.TimeLabel(3723000) == "1:02:03", "Seek tooltip time format");
         visual.Power = 0.5;
         double softResponse = visual.Response(0.2);
         visual.Power = 3;

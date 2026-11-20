@@ -6,5 +6,6 @@
   <ItemGroup>
     <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
     <Compile Include="../../src/MagicMusicWall.App/PlaybackVisualizer*.cs" Link="%(Filename)%(Extension)" />
+    <Compile Include="../../src/MagicMusicWall.App/PlaybackSeekSlider.cs" Link="PlaybackSeekSlider.cs" />
   </ItemGroup>
 </Project>

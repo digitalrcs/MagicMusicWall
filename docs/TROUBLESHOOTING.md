@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Applies to Magic Music Wall **0.9.9**.
+Applies to Magic Music Wall **0.9.10**.
 
 [Documentation home](README.md)
 
@@ -125,4 +125,4 @@ Select **Playing music · visuals** and raise the vertical **Visual power** slid
 
 ## Shuffle still plays in order
 
-Use version 0.9.9 or later. Earlier releases shuffled newly started lists but did not apply the checkbox to an already-playing queue. Turn on **Shuffle**, then press **Next** or let the current song finish. The player chooses randomly from remaining entries and moves the chosen entry into the next visible queue position. It can occasionally pick the entry that was already next. If only one unplayed entry remains, it must play that entry. Enable **Repeat queue** for another pass; disabling Shuffle resumes the visible queue order. Desktop Next, automatic advancement and web-remote Control PC Next use the same selection logic. Browser-only playback uses its own queue.
+Use version 0.9.10 or later. Earlier releases shuffled newly started lists but did not apply the checkbox to an already-playing queue. Turn on **Shuffle**, then press **Next** or let the current song finish. The player chooses randomly from remaining entries and moves the chosen entry into the next visible queue position. It can occasionally pick the entry that was already next. If only one unplayed entry remains, it must play that entry. Enable **Repeat queue** for another pass; disabling Shuffle resumes the visible queue order. Desktop Next, automatic advancement and web-remote Control PC Next use the same selection logic. Browser-only playback uses its own queue.

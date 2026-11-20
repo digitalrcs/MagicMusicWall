@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **0.9.9**.
+Applies to Magic Music Wall **0.9.10**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
@@ -18,6 +18,8 @@ Click **Library tools** at the bottom left to hide or show the tool buttons and 
 The device's name in the list does not by itself prove that a Bluetooth connection is healthy. If sound is choppy or absent, use the [audio troubleshooting steps](TROUBLESHOOTING.md#no-sound-or-the-wrong-output).
 
 ## Add music and play it
+
+**Playback timeline:** click anywhere on the bottom playback bar to jump there, or drag while watching the time preview. Release to seek; press Escape to cancel a drag. Time marks below the bar adapt to the song/video length and window width. Arrow keys move five seconds and Page Up/Down move fifteen seconds. Seeking is unavailable for media that cannot seek.
 
 **Shuffle:** turning on Shuffle during playback takes effect on the next song, including desktop Next, web-remote Next and automatic advancement. A random remaining entry moves into the next queue position, leaving already-played entries in place. Repeat starts another pass when the queue ends. Turning Shuffle off resumes the visible queue order. If only one unplayed entry remains, that is the next song; Shuffle does not replay earlier entries unless Repeat is on.
 
