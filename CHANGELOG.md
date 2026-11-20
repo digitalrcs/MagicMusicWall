@@ -1,5 +1,9 @@
 # Changes
 
+## 0.9.8
+
+- Make Visual power fill the available panel height, enlarge its handle, and use 0.01 steps with two-decimal feedback and precise + / − buttons. Track clicks move by 0.05 instead of 0.5.
+
 ## 0.9.7
 
 - Add a vertical Visual power slider beside the animation, from 0.5× to 3.0× with a stronger 1.6× default. Remember the setting and apply it to all ten visuals without changing audio volume.

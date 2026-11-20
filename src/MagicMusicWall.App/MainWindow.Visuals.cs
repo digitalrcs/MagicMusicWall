@@ -29,11 +29,15 @@ public partial class MainWindow
     {
         if (MusicVisual is null || VisualPowerText is null) return;
         MusicVisual.Power = e.NewValue;
-        VisualPowerText.Text = $"{MusicVisual.Power:0.0}×";
+        VisualPowerText.Text = $"{MusicVisual.Power:0.00}×";
         if (!_visualsInitialized) return;
         _settings.VisualizationPower = MusicVisual.Power;
         ScheduleSettingsSave();
     }
+    private void VisualPowerDown_Click(object sender, RoutedEventArgs e) => AdjustVisualPower(-0.01);
+    private void VisualPowerUp_Click(object sender, RoutedEventArgs e) => AdjustVisualPower(0.01);
+    private void AdjustVisualPower(double step) => VisualPowerSlider.Value =
+        Math.Clamp(Math.Round(VisualPowerSlider.Value + step, 2), VisualPowerSlider.Minimum, VisualPowerSlider.Maximum);
     private void ToolsExpansion_Changed(object sender, RoutedEventArgs e)
     {
         if (!_ready) return;
