@@ -91,7 +91,7 @@ $manifestPath = Join-Path $cacheDirectory 'manifest.json'
 } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
 $bundleFiles += $manifestPath
 
-$noticeNames = @('NAudio-LICENSE.txt', 'LibVLCSharp-3.10.2-LICENSE.txt', 'TagLibSharp-2.3.0-COPYING.txt', 'QRCoder-LICENSE.txt',
+$noticeNames = @('Franky-Art-LICENSE.txt', 'NAudio-LICENSE.txt', 'LibVLCSharp-3.10.2-LICENSE.txt', 'TagLibSharp-2.3.0-COPYING.txt', 'QRCoder-LICENSE.txt',
     'VLC-3.0.24-COPYING.txt', 'VLC-3.0.24-COPYING.LIB.txt', 'SOURCES.md', 'REDISTRIBUTION.md')
 foreach ($name in $noticeNames) {
     $sourcePath = Join-Path (Join-Path $projectRoot 'licenses') $name

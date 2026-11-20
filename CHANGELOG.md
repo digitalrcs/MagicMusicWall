@@ -1,5 +1,11 @@
 # Changes
 
+## 0.9.6
+
+- Add Franky sings: adapt the original ESP32 Franky frog with an audio-driven singing mouth, body bounce and floating notes.
+- Add Fine spectrum with 192 distinct frequency bands and thin bars, keeping the existing Spectrum unchanged.
+- Increase mountain peak movement and shorten its release so it reacts more clearly between musical beats.
+
 ## 0.9.5
 
 - Collapse sidebar tool buttons vertically to give playlists more room; remember the expanded state.

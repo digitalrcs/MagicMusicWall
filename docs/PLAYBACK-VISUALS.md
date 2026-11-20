@@ -1,4 +1,4 @@
-# Playback visuals (version 0.9.5)
+# Playback visuals (version 0.9.6)
 
 ## More room for playlists
 
@@ -20,6 +20,12 @@ Click **Library tools** at the bottom of the left sidebar. The tool buttons fold
 | Nebula | A swirling field of glowing particles |
 | Mountain range | Layered frequency ridges |
 | Light tunnel | A moving geometric tunnel with reactive rings |
+| Fine spectrum | 192 thin bars covering distinct frequency ranges; the original 64-bar Spectrum stays unchanged |
+| Franky sings | Franky the frog opens his mouth, bobs and releases musical notes in response to audio energy |
+
+Version 0.9.6 also makes **Mountain range** more responsive, with taller peaks and a faster fall between beats. Franky's singing follows the sound level, not lyrics or isolated vocals; instruments can make him sing too. Silence closes his mouth and fades the notes.
+
+Franky's vector character is adapted from DigitalRCS's original [ESP32 Franky artwork](https://github.com/digitalrcs/DigitalRCS-Local-LLM-Chatbot/blob/49ebf8f5154b56816bfa25a2c88956f1c9f4cd05/scripts/generate_frog.py), preserving his colors and face shapes with a new animated singing mouth. The original MIT license is included as `licenses/Franky-Art-LICENSE.txt`.
 
 Select **Music list** to return to your folders and files. Your browsing position, queue and playback remain in place. The app remembers your visual style; it starts on the music list.
 

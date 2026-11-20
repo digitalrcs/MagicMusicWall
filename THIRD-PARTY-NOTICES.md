@@ -15,6 +15,8 @@ The Windows distributions keep managed/native dependencies separate so they can 
 
 ## Optional online information
 
+Franky's vector character is adapted from DigitalRCS's MIT-licensed Franky ESP32 project (`scripts/generate_frog.py`, revision `49ebf8f5154b56816bfa25a2c88956f1c9f4cd05`). Its colors and face geometry are reused with new sound-reactive animation. See `licenses/Franky-Art-LICENSE.txt`; the original project is https://github.com/digitalrcs/DigitalRCS-Local-LLM-Chatbot.
+
 These services are queried on demand; their content is separate from the application's software licenses. The package does not bundle a lyrics collection or Wikipedia articles.
 
 | Provider | Use and content notice | Official references |

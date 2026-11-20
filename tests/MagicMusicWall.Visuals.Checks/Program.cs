@@ -1,0 +1,53 @@
+using System.IO;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using MagicMusicWall.App;
+
+internal static class Program
+{
+    [STAThread]
+    private static void Main(string[] args)
+    {
+        var output = Path.GetFullPath(args.FirstOrDefault() ?? "artifacts/visuals-check");
+        Directory.CreateDirectory(output);
+        var visual = new PlaybackVisualizer();
+        T Field<T>(string name) => (T)typeof(PlaybackVisualizer).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(visual)!;
+        void Check(bool value, string message) { if (!value) throw new Exception(message); }
+        Check(PlaybackVisualizer.Modes[0] == "Spectrum" && PlaybackVisualizer.Modes[6] == "Mountain range" && PlaybackVisualizer.Modes[7] == "Light tunnel", "Existing saved mode indexes changed");
+        Check(PlaybackVisualizer.FineEdge(0) == 1 && PlaybackVisualizer.FineEdge(192) == 1024, "Spectrum coverage");
+        for (int b = 0; b < 192; b++) Check(PlaybackVisualizer.FineEdge(b + 1) > PlaybackVisualizer.FineEdge(b), "Repeated spectrum bins");
+        var samples = Field<float[]>("_samples");
+        // A 1,500 Hz tone occupies FFT bin64 exactly at 48kHz / 2048.
+        for (int i = 0; i < samples.Length; i++) samples[i] = (float)(0.08 * Math.Sin(2 * Math.PI * 64 * i / samples.Length));
+        for (int i = 0; i < 10; i++) visual.AnalyzeSamples(true);
+        var fine = Field<double[]>("_fineBands");
+        int peak = Array.IndexOf(fine, fine.Max());
+        Check(PlaybackVisualizer.FineEdge(peak) <= 64 && PlaybackVisualizer.FineEdge(peak + 1) > 64, "Tone mapped to wrong frequency");
+        Check(Field<double>("_mouth") > 0.3, "Frog does not sing with signal");
+        void Render(int mode, string name)
+        {
+            visual.Mode = mode;
+            visual.Measure(new Size(840, 400)); visual.Arrange(new Rect(0, 0, 840, 400));
+            visual.InvalidateVisual(); visual.UpdateLayout();
+            var image = new RenderTargetBitmap(840, 400, 96, 96, PixelFormats.Pbgra32);
+            image.Render(visual);
+            var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
+            using var stream = File.Create(Path.Combine(output, name)); encoder.Save(stream);
+        }
+        Render(9, "franky-singing.png"); Render(8, "fine-spectrum.png");
+        var mountain = Field<double[]>("_mountainBands");
+        int band = Array.IndexOf(mountain, mountain.Max());
+        double before = mountain[band];
+        Check(0.4 * Math.Pow(before, 0.8) > 0.18 * before, "Mountain did not increase motion for tone");
+        Check(0.4 * Math.Pow(0.1, 0.8) > 0.18 * 0.1, "Quiet mountain peaks were reduced");
+        Array.Clear(samples); visual.AnalyzeSamples(false);
+        Check(mountain[band] <= before * 0.551, "Mountain release is too slow");
+        for (int i = 0; i < 45; i++) visual.AnalyzeSamples(false);
+        Check(Field<double>("_mouth") < 0.001 && fine.Max() < 0.001, "Silence leaves singing or spectrum energy");
+        Render(9, "franky-idle.png");
+        for (int mode = 0; mode < PlaybackVisualizer.Modes.Length; mode++) Render(mode, $"mode-{mode}.png");
+        Console.WriteLine("PASS: saved mode indexes, 192 distinct frequency bands, tone frequency, singing/silence, mountain gain/release, all 10 render paths.");
+    }
+}

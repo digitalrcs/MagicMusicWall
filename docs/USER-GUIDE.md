@@ -4,7 +4,7 @@
 
 ## Make room and watch your music
 
-Click **Library tools** at the bottom left to hide or show the tool buttons and give playlists more space. Above the center collection, choose **Playing music · visuals** and select a style. Choose **Music list** to return to browsing. The [playback visuals guide](PLAYBACK-VISUALS.md) explains all eight modes, audio outputs, and reconnecting.
+Click **Library tools** at the bottom left to hide or show the tool buttons and give playlists more space. Above the center collection, choose **Playing music · visuals** and select a style. Choose **Music list** to return to browsing. The [playback visuals guide](PLAYBACK-VISUALS.md) explains all ten modes, audio outputs, and reconnecting.
 
 ## Connect a speaker or stereo
 
