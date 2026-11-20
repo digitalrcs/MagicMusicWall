@@ -393,9 +393,7 @@ public partial class MainWindow : Window
         Dispatcher.BeginInvoke(async () =>
         {
             if (_closing || _queueChanging || version != _playVersion || _player.State != VLCState.Ended) return;
-            if (_queueIndex + 1 < _queue.Count) await PlayIndex(_queueIndex + 1);
-            else if (RepeatBox.IsChecked == true && _queue.Count > 0) await PlayIndex(0);
-            else { PauseButton.Content = "▶"; Status("Queue finished."); }
+            if (!await AdvanceQueue()) { PauseButton.Content = "▶"; Status("Queue finished."); }
         });
     }
     private void Player_Error(object? sender, EventArgs e) => Dispatcher.BeginInvoke(() => { if (!_closing) Status("Playback failed. Check the file, audio device, or casting connection."); });
@@ -425,7 +423,17 @@ public partial class MainWindow : Window
         if (!_player.IsPlaying && !await PrepareAudioResume()) return;
         await Playback(() => { _player.Pause(); return true; });
     }
-    private async void Next_Click(object sender, RoutedEventArgs e) { if (_queueChanging || _closing) return; if (_queueIndex + 1 < _queue.Count) await PlayIndex(_queueIndex + 1); else if (_queue.Count > 0 && RepeatBox.IsChecked == true) await PlayIndex(0); }
+    private async Task<bool> AdvanceQueue()
+    {
+        // False means exhausted; route warnings must not be overwritten with
+        // "Queue finished" when a device temporarily prevents advancement.
+        if (_queueChanging || _closing || !CastReadyForNewPlayback() || !LocalAudioReady()) return true;
+        int next = QueueAdvance.Next(_queue, _queueIndex, ShuffleBox.IsChecked == true, RepeatBox.IsChecked == true);
+        if (next < 0) return false;
+        await PlayIndex(next);
+        return true;
+    }
+    private async void Next_Click(object sender, RoutedEventArgs e) => await AdvanceQueue();
     private async void Previous_Click(object sender, RoutedEventArgs e) { if (_queueChanging || _closing) return; if (_player.Time > 3000 && _player.IsSeekable) _player.Time = 0; else if (_queue.Count > 0) await PlayIndex(Math.Max(0, _queueIndex - 1)); }
     private async void Queue_DoubleClick(object sender, MouseButtonEventArgs e) { if (!_queueChanging && !_closing && QueueList.SelectedIndex >= 0) await PlayIndex(QueueList.SelectedIndex); }
     private async void ClearQueue_Click(object sender, RoutedEventArgs e)

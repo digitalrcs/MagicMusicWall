@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **0.9.8**.
+Applies to Magic Music Wall **0.9.9**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
@@ -18,6 +18,8 @@ Click **Library tools** at the bottom left to hide or show the tool buttons and 
 The device's name in the list does not by itself prove that a Bluetooth connection is healthy. If sound is choppy or absent, use the [audio troubleshooting steps](TROUBLESHOOTING.md#no-sound-or-the-wrong-output).
 
 ## Add music and play it
+
+**Shuffle:** turning on Shuffle during playback takes effect on the next song, including desktop Next, web-remote Next and automatic advancement. A random remaining entry moves into the next queue position, leaving already-played entries in place. Repeat starts another pass when the queue ends. Turning Shuffle off resumes the visible queue order. If only one unplayed entry remains, that is the next song; Shuffle does not replay earlier entries unless Repeat is on.
 
 1. Click **Add folder** and choose a folder such as `D:\Music`, or click **Add files** to add particular songs. The app catalogs your choices; files remain in their original locations.
 2. In **Folders**, click a folder name to enter it. Opening a folder adds nothing to the playback queue.

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.9.9
+
+- Apply Shuffle to an already-playing queue for desktop Next, remote Next and automatic song advancement. Choose from remaining queue entries without repeats in the current pass; keep visible queue order aligned with playback history.
+
 ## 0.9.8
 
 - Drive Franky's mouth from the 300–3,400 Hz vocal-presence range while floating notes and body bounce continue to follow the full mix. This is frequency filtering, not isolated vocals.

@@ -186,8 +186,7 @@ public partial class MainWindow
                 await Playback(() => { if (_player.IsSeekable) _player.Time = Math.Clamp(command.PositionMs!.Value, 0, Math.Max(0, _player.Length)); return true; });
                 break;
             case "next":
-                if (_queueIndex + 1 < _queue.Count) await PlayIndex(_queueIndex + 1);
-                else if (_queue.Count > 0 && RepeatBox.IsChecked == true) await PlayIndex(0);
+                await AdvanceQueue();
                 break;
             case "previous":
                 if (_player.Time > 3000 && _player.IsSeekable) await Playback(() => { _player.Time = 0; return true; });
