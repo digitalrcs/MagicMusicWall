@@ -122,3 +122,7 @@ When asking for help, include the app version, Windows version, action you took,
 ## Visuals feel weak or Franky holds his mouth open
 
 Select **Playing music · visuals** and raise the vertical **Visual power** slider beside the animation. It ranges from 0.5× to 3.0× and defaults to 1.6×. It affects animation only; adjust playback loudness with the separate Volume control. Franky follows changes in relative loudness and closes quickly between beats. Constant audio can still hold a steady mouth shape; this is not lyric lip-sync. If nothing moves, confirm local PC playback is active, check the live-output label and try **Reconnect visuals**. Casting and browser-only audio do not feed these desktop visuals.
+
+## Shuffle still plays in order
+
+Use version 0.9.9 or later. Earlier releases shuffled newly started lists but did not apply the checkbox to an already-playing queue. Turn on **Shuffle**, then press **Next** or let the current song finish. The player chooses randomly from remaining entries and moves the chosen entry into the next visible queue position. It can occasionally pick the entry that was already next. If only one unplayed entry remains, it must play that entry. Enable **Repeat queue** for another pass; disabling Shuffle resumes the visible queue order. Desktop Next, automatic advancement and web-remote Control PC Next use the same selection logic. Browser-only playback uses its own queue.

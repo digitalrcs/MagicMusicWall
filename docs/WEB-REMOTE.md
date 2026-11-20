@@ -78,3 +78,7 @@ Browser streams use separate temporary links for individual files. Anyone holdin
 The remote uses local HTTP and is intended for a trusted LAN. Choose a passphrase you do not use for other accounts. The app does not configure HTTPS, expose arbitrary disk browsing, change your router, or provide internet hosting.
 
 If the page will not connect, see [remote troubleshooting](TROUBLESHOOTING.md#the-phone-page-will-not-open).
+
+## Shuffle when controlling the PC
+
+When **Shuffle** is enabled in the desktop player, the web remote's **Control PC → Next** chooses from the remaining desktop queue entries, just like the desktop Next button. The currently playing song is not restarted when Shuffle is toggled. This does not change the independent **Listen / watch here** queue.
