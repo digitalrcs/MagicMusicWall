@@ -64,9 +64,9 @@ public sealed partial class PlaybackVisualizer
             Line(dc, Enumerable.Range(-34, 69).Select(k => new Point(160 + k, 138 + 13 * (1 - Math.Pow(k / 34.0, 2)))), FrogDark, 4);
         else
         {
-            double opening = 3 + _mouth * 24;
-            Ellipse(160, 144, 28 + _mouth * 10, opening, FrogDark);
-            Ellipse(160, 144 + opening * 0.52, 16 + _mouth * 3, opening * 0.28, FrogPink);
+            double opening = 2 + _mouth * 28;
+            Ellipse(160, 145, 25 + _mouth * 14, opening, FrogDark);
+            Ellipse(160, 145 + opening * 0.52, 16 + _mouth * 3, opening * 0.28, FrogPink);
         }
         dc.Pop(); dc.Pop(); dc.Pop(); dc.Pop();
     }

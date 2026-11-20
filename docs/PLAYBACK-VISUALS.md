@@ -1,4 +1,6 @@
-# Playback visuals (version 0.9.6)
+# Playback visuals (version 0.9.7)
+
+Applies to Magic Music Wall **0.9.7**.
 
 ## More room for playlists
 
@@ -23,11 +25,15 @@ Click **Library tools** at the bottom of the left sidebar. The tool buttons fold
 | Fine spectrum | 192 thin bars covering distinct frequency ranges; the original 64-bar Spectrum stays unchanged |
 | Franky sings | Franky the frog opens his mouth, bobs and releases musical notes in response to audio energy |
 
-Version 0.9.6 also makes **Mountain range** more responsive, with taller peaks and a faster fall between beats. Franky's singing follows the sound level, not lyrics or isolated vocals; instruments can make him sing too. Silence closes his mouth and fades the notes.
+Version 0.9.7 also makes **Mountain range** more responsive, with taller peaks and a faster fall between beats. Franky's singing follows the sound level, not lyrics or isolated vocals; instruments can make him sing too. Silence closes his mouth and fades the notes.
 
 Franky's vector character is adapted from DigitalRCS's original [ESP32 Franky artwork](https://github.com/digitalrcs/DigitalRCS-Local-LLM-Chatbot/blob/49ebf8f5154b56816bfa25a2c88956f1c9f4cd05/scripts/generate_frog.py), preserving his colors and face shapes with a new animated singing mouth. The original MIT license is included as `licenses/Franky-Art-LICENSE.txt`.
 
 Select **Music list** to return to your folders and files. Your browsing position, queue and playback remain in place. The app remembers your visual style; it starts on the music list.
+
+### Visual power
+
+Use the vertical **Visual power** slider to the right of the animation. Slide upward for bigger movement and a stronger response to quiet passages; slide downward for a gentler display. Its range is **0.5×–3.0×**, with a **1.6×** default. It applies to all ten styles and is saved between sessions. It changes animation intensity only, never playback volume. Franky also opens and closes his mouth faster, following relative loudness rather than holding the same pose throughout louder music.
 
 ## How it works
 

@@ -1,5 +1,7 @@
 # Get started with Magic Music Wall
 
+Applies to Magic Music Wall **0.9.7**.
+
 [All guides](README.md) · [Download the latest release](https://github.com/digitalrcs/MagicMusicWall/releases/latest)
 
 This walkthrough is for Windows 11 Intel/AMD PCs. Have one folder of your own music ready. Your music stays in its original location; the app saves an index and playlists.

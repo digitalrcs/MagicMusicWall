@@ -1,5 +1,7 @@
 # Explore your music constellation
 
+Applies to Magic Music Wall **0.9.7**.
+
 [Documentation home](README.md)
 
 The **Music constellation** is an animated network of artists, albums and songs already in your library. Select a name to explore its connections. Links act like springs: stronger relationships pull names closer, and related neighbors form groups as the network settles. It opens in a separate window, so you can keep using the main player.

@@ -1,5 +1,7 @@
 # Common questions
 
+Applies to Magic Music Wall **0.9.7**.
+
 [All guides](README.md) · [First-use walkthrough](GETTING-STARTED.md)
 
 ## Do I need a subscription, Alexa or an AI model?

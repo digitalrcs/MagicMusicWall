@@ -21,6 +21,7 @@ public sealed class AppPreferences
 
     public bool LibraryToolsExpanded { get; set; } = true;
     public int VisualizationMode { get; set; }
+    public double VisualizationPower { get; set; } = 1.6;
 
     public int Volume { get; set; } = 65;
     public string AudioDeviceId { get; set; } = "";
@@ -112,6 +113,7 @@ public sealed class AppPreferences
 
     private void Normalize()
     {
+        VisualizationPower = double.IsFinite(VisualizationPower) ? Math.Clamp(VisualizationPower, 0.5, 3) : 1.6;
         Volume = Math.Clamp(Volume, 0, 100);
         if (SharingPort is < 0 or > 65535) SharingPort = 0;
         if (RemotePort is < 1 or > 65535) RemotePort = 8787;

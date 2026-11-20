@@ -16,12 +16,23 @@ public partial class MainWindow
         LibraryTools.IsExpanded = _settings.LibraryToolsExpanded;
         VisualStyle.ItemsSource = PlaybackVisualizer.Modes;
         VisualStyle.SelectedIndex = Math.Clamp(_settings.VisualizationMode, 0, PlaybackVisualizer.Modes.Length - 1);
+        VisualPowerSlider.Value = _settings.VisualizationPower;
+        MusicVisual.Power = VisualPowerSlider.Value;
         _visualTimer.Tick += (_, _) =>
         {
             if (WindowState != WindowState.Minimized)
                 MusicVisual.Advance(_visualCapture, _player.IsPlaying && _cast.Renderer is null);
         };
         _visualsInitialized = true;
+    }
+    private void VisualPower_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (MusicVisual is null || VisualPowerText is null) return;
+        MusicVisual.Power = e.NewValue;
+        VisualPowerText.Text = $"{MusicVisual.Power:0.0}×";
+        if (!_visualsInitialized) return;
+        _settings.VisualizationPower = MusicVisual.Power;
+        ScheduleSettingsSave();
     }
     private void ToolsExpansion_Changed(object sender, RoutedEventArgs e)
     {

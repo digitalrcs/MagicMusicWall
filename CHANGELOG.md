@@ -1,5 +1,10 @@
 # Changes
 
+## 0.9.7
+
+- Add a vertical Visual power slider beside the animation, from 0.5× to 3.0× with a stronger 1.6× default. Remember the setting and apply it to all ten visuals without changing audio volume.
+- Make Franky's singing mouth larger and quicker to open/close, following relative loudness so louder music does not leave it stuck wide open. Preserve a quiet-output gate.
+
 ## 0.9.6
 
 - Add Franky sings: adapt the original ESP32 Franky frog with an audio-driven singing mouth, body bounce and floating notes.

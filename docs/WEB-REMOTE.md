@@ -1,5 +1,7 @@
 # Control the PC or listen in a browser
 
+Applies to Magic Music Wall **0.9.7**.
+
 [Documentation home](README.md)
 
 The web remote is a page served by Magic Music Wall while the Windows app is open. It works on reachable devices on your trusted home network. There is no cloud server or router-forwarding setup.

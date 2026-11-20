@@ -39,7 +39,12 @@
     <Grid Grid.Row="1" x:Name="VisualizerPanel" Visibility="Collapsed">
      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
      <DockPanel Margin="0,0,0,8"><Button DockPanel.Dock="Right" Content="Reconnect visuals" Click="ReconnectVisuals_Click" Margin="8,0,0,0"/><ComboBox x:Name="VisualStyle" SelectionChanged="VisualStyle_Changed" AutomationProperties.Name="Visualization style"/></DockPanel>
-     <Border Grid.Row="1" BorderBrush="#858DA3" BorderThickness="1" CornerRadius="8" ClipToBounds="True"><local:PlaybackVisualizer x:Name="MusicVisual"/></Border>
+     <Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="76"/></Grid.ColumnDefinitions>
+      <Border BorderBrush="#858DA3" BorderThickness="1" CornerRadius="8" ClipToBounds="True"><local:PlaybackVisualizer x:Name="MusicVisual"/></Border>
+      <Border Grid.Column="1" Margin="8,0,0,0" BorderBrush="#858DA3" BorderThickness="1" CornerRadius="8" Padding="6,10" Background="#191C25">
+       <DockPanel><TextBlock DockPanel.Dock="Top" Text="Visual&#10;power" TextAlignment="Center" FontSize="12"/><TextBlock DockPanel.Dock="Bottom" x:Name="VisualPowerText" Text="1.6×" TextAlignment="Center" Margin="0,8,0,0"/><Slider x:Name="VisualPowerSlider" Orientation="Vertical" Minimum="0.5" Maximum="3" Value="1.6" SmallChange="0.1" LargeChange="0.5" TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="VisualPower_Changed" Margin="0,10,0,0" HorizontalAlignment="Center" ToolTip="Animation intensity only; does not change audio volume" AutomationProperties.Name="Visual power"/></DockPanel>
+      </Border>
+     </Grid>
      <TextBlock Grid.Row="2" x:Name="VisualStatus" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
     </Grid>
     <Grid Grid.Row="1" x:Name="CollectionPanel">

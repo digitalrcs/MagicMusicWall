@@ -1,5 +1,7 @@
 # Troubleshooting
 
+Applies to Magic Music Wall **0.9.7**.
+
 [Documentation home](README.md)
 
 Start with the visible status message in the player or Setup. It usually identifies whether the problem is a missing file, disconnected output, network address, lookup provider or tag-save failure.
@@ -95,7 +97,7 @@ Successful writes display the original-file backup path. If the file was saved b
 
 ## The constellation selects the wrong music or shows few connections
 
-Version 0.8.1 focuses on the current track first when opening or reopening the constellation. A different highlighted queue item does not override the current track. With no current music, it tries selected queue/library music, a selected/open folder, then the first queued song. Click **Music constellation** in the main player again to refocus; it does not continuously jump while you explore. If there is no usable context, the alphabetical fallback is expected.
+The player focuses on the current track first when opening or reopening the constellation. A different highlighted queue item does not override the current track. With no current music, it tries selected queue/library music, a selected/open folder, then the first queued song. Click **Music constellation** in the main player again to refocus; it does not continuously jump while you explore. If there is no usable context, the alphabetical fallback is expected.
 
 Clear map search/genre filters and choose **All music** if results seem missing. Use **Metadata** or **Blended** before sound analysis; **Sound** needs analyzed audio on both sides of a connection. Check the coverage line. Missing tags and incomplete MusicBrainz coverage can leave few relationships. A rebuild does not automatically fetch online information or analyze sound. See [the three separate scan actions](GETTING-STARTED.md).
 
@@ -116,3 +118,7 @@ Close the app before copying/restoring library data. Keep a copy of the current 
 If a library file cannot be read, the app preserves a uniquely named `library.corrupt.*.json` before recovering. An unreadable or newer incompatible library is not silently overwritten. Keep those files if you need help investigating the problem.
 
 When asking for help, include the app version, Windows version, action you took, expected/actual behavior and the relevant status message. Remove private media paths, remote URLs/QR codes and tokens from public screenshots or logs.
+
+## Visuals feel weak or Franky holds his mouth open
+
+Select **Playing music · visuals** and raise the vertical **Visual power** slider beside the animation. It ranges from 0.5× to 3.0× and defaults to 1.6×. It affects animation only; adjust playback loudness with the separate Volume control. Franky follows changes in relative loudness and closes quickly between beats. Constant audio can still hold a steady mouth shape; this is not lyric lip-sync. If nothing moves, confirm local PC playback is active, check the live-output label and try **Reconnect visuals**. Casting and browser-only audio do not feed these desktop visuals.

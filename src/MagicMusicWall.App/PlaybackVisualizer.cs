@@ -63,12 +63,20 @@ public sealed partial class PlaybackVisualizer : FrameworkElement
 {
     public static readonly string[] Modes = ["Spectrum", "Mirror bars", "Waveform", "Orbit rings", "Star voyage", "Nebula", "Mountain range", "Light tunnel", "Fine spectrum", "Franky sings"];
     public int Mode { get; set; }
+    private double _power = 1.6;
+    public double Power
+    {
+        get => _power;
+        set { _power = double.IsFinite(value) ? Math.Clamp(value, 0.5, 3) : 1.6; InvalidateVisual(); }
+    }
+    internal double Response(double level) => Math.Pow(Math.Clamp(level, 0, 1), 1 / Power);
     private readonly float[] _samples = new float[2048];
     private readonly Complex[] _fft = new Complex[2048];
     private readonly double[] _bands = new double[64];
     private readonly double[] _fineBands = new double[192];
     private readonly double[] _mountainBands = new double[64];
     private double _mouth, _bounce;
+    private double _mouthPeak = 0.015;
     // Strictly increasing edges cover bins 1..1023 without repeating bass bins.
     internal static int FineEdge(int edge) => 1 + edge + (int)(831 * Math.Pow(edge / 192.0, 2));
     private readonly Brush[] _colors = Enumerable.Range(0, 64).Select(i =>
@@ -113,22 +121,27 @@ public sealed partial class PlaybackVisualizer : FrameworkElement
             double peak = 0;
             for (int i = low; i < high; i++) peak = Math.Max(peak, _fft[i].Magnitude / 512);
             var target = Math.Clamp((20 * Math.Log10(Math.Max(1e-6, peak)) + 65) / 65, 0, 1);
-            _bands[b] = Math.Max(target, _bands[b] * 0.87);
-            _mountainBands[b] = Math.Max(target, _mountainBands[b] * 0.55);
+            _bands[b] = Math.Max(Response(target), _bands[b] * Math.Pow(0.87, Power));
+            _mountainBands[b] = Math.Max(Response(target), _mountainBands[b] * Math.Pow(0.55, Power));
         }
         for (int b = 0; b < _fineBands.Length; b++)
         {
             double peak = 0;
             for (int i = FineEdge(b); i < FineEdge(b + 1); i++) peak = Math.Max(peak, _fft[i].Magnitude / 512);
             var target = Math.Clamp((20 * Math.Log10(Math.Max(1e-6, peak)) + 65) / 65, 0, 1);
-            _fineBands[b] = Math.Max(target, _fineBands[b] * 0.8);
+            _fineBands[b] = Math.Max(Response(target), _fineBands[b] * Math.Pow(0.8, Power));
         }
         double rms = Math.Sqrt(_samples.Sum(sample => (double)sample * sample) / _samples.Length);
-        double mouthTarget = playing && rms >= 0.001 ? Math.Clamp(Math.Sqrt(rms) * 2.6, 0, 1) : 0;
-        _mouth += (mouthTarget - _mouth) * (mouthTarget > _mouth ? 0.65 : 0.3);
+        // Follow relative loudness rather than clipping most loud passages to
+        // one open-mouth pose. Slow peak release preserves contrast between beats;
+        // the floor and silence gate prevent quiet output noise from singing.
+        _mouthPeak = playing ? Math.Max(0.015, Math.Max(rms, _mouthPeak * 0.985)) : 0.015;
+        double mouthTarget = playing && rms >= 0.001
+            ? Math.Pow(Math.Clamp((rms / _mouthPeak - 0.12) / 0.88, 0, 1), 1.3 / Math.Sqrt(Power)) : 0;
+        _mouth += (mouthTarget - _mouth) * (mouthTarget > _mouth ? 0.85 : 0.7);
         _bounce += ((playing ? Math.Clamp(rms * 6, 0, 1) : 0) - _bounce) * 0.5;
         _energy = _bands.Take(20).Average();
-        if (playing) _time += 0.033 * (0.25 + _energy * 2);
+        if (playing) _time += 0.033 * (0.25 + _energy * 2 * Power);
         InvalidateVisual();
     }
     protected override void OnRender(DrawingContext dc)
@@ -147,7 +160,7 @@ public sealed partial class PlaybackVisualizer : FrameworkElement
         }
         else if (Mode == 2)
         {
-            var points = Enumerable.Range(0, 512).Select(i => new Point(i * w / 511, cy + _samples[i * 4] * h * 0.45));
+            var points = Enumerable.Range(0, 512).Select(i => new Point(i * w / 511, cy + Math.Clamp(_samples[i * 4] * Power * Power, -1, 1) * h * 0.45));
             Line(dc, points, _colors[22], 2);
         }
         else if (Mode == 3)
@@ -158,7 +171,7 @@ public sealed partial class PlaybackVisualizer : FrameworkElement
                 Line(dc, Enumerable.Range(0, 129).Select(i =>
                 {
                     double angle = i * Math.PI / 64 + _time * (r % 2 == 0 ? 0.12 : -0.12);
-                    double radius = Math.Min(w, h) * (0.12 + r * 0.07 + _bands[i % 64] * 0.1);
+                    double radius = Math.Min(w, h) * (0.12 + r * 0.07 + _bands[i % 64] * 0.1 * Math.Sqrt(Power));
                     return new Point(cx + Math.Cos(angle) * radius, cy + Math.Sin(angle) * radius);
                 }), _colors[ring * 16], 2);
             }
@@ -170,7 +183,7 @@ public sealed partial class PlaybackVisualizer : FrameworkElement
                 double z = 0.08 + ((i * 0.61803398875 + _time * 0.12) % 1), angle = i * 2.39996;
                 double radius = (0.05 + (i % 17) / 24.0) / z;
                 var p = new Point(cx + Math.Cos(angle) * radius * w * 0.35, cy + Math.Sin(angle) * radius * h * 0.35);
-                dc.DrawEllipse(_colors[i % 64], null, p, (1 + _energy * 2) / z, (1 + _energy * 2) / z);
+                dc.DrawEllipse(_colors[i % 64], null, p, (1 + _energy * 2 * Math.Sqrt(Power)) / z, (1 + _energy * 2 * Math.Sqrt(Power)) / z);
             }
         }
         else if (Mode == 5)
@@ -178,7 +191,7 @@ public sealed partial class PlaybackVisualizer : FrameworkElement
             for (int i = 0; i < 100; i++)
             {
                 double angle = i * 2.39996 + _time * 0.12, radius = Math.Sqrt(i / 100.0) * Math.Min(w, h) * 0.4;
-                double size = 3 + _bands[i % 64] * 22;
+                double size = 3 + _bands[i % 64] * 22 * Math.Sqrt(Power);
                 dc.PushOpacity(0.18 + _bands[i % 64] * 0.6);
                 dc.DrawEllipse(_colors[i % 64], null, new Point(cx + Math.Cos(angle) * radius, cy + Math.Sin(angle) * radius * 0.65), size * 1.8, size);
                 dc.Pop();
@@ -211,7 +224,7 @@ public sealed partial class PlaybackVisualizer : FrameworkElement
                 Line(dc, Enumerable.Range(0, 7).Select(i =>
                 {
                     double angle = i * Math.PI / 3 + _time * 0.08;
-                    double radius = depth * Math.Max(w, h) * (0.5 + _bands[ring * 3] * 0.25);
+                    double radius = depth * Math.Max(w, h) * (0.5 + _bands[ring * 3] * 0.25 * Math.Sqrt(Power));
                     return new Point(cx + Math.Cos(angle) * radius, cy + Math.Sin(angle) * radius);
                 }), _colors[ring * 3], 1 + depth * 2);
             }

@@ -1,5 +1,7 @@
 # Find information and edit file tags
 
+Applies to Magic Music Wall **0.9.7**.
+
 [Documentation home](README.md)
 
 Metadata describes a song or video, such as its title, artist and album. Magic Music Wall reads file tags, can save additional MusicBrainz information in its own library, and can write selected file-tag changes after you review them. Saving library information and editing a media file are separate actions.

@@ -1,6 +1,8 @@
 # AI playlists and saved song notes
 
-AI features are available from 0.9.0. The song/folder picker, incremental results and early-stop option require 0.9.1 or later.
+Applies to Magic Music Wall **0.9.7**.
+
+This guide covers the current AI assistant, including the song/folder picker, incremental results and early-stop option.
 
 The assistant recommends music already in your library. It does not download songs, use Spotify, or send audio files for listening. AI is optional; ordinary playback works without it.
 
@@ -31,7 +33,7 @@ Keys are encrypted using Windows protection for the current Windows account. Lea
 
 **Recommend & play** explicitly requests immediate playback after a complete, successful review and replaces the queue. **Play selected** also replaces the queue. Normal player shuffle and output settings still apply. A textual request that says "play" does not bypass the Recommend preview button. Save the resulting queue as a playlist with the existing playlist controls.
 
-The chosen scope is reviewed in batches of up to 60. Matches appear in the list after each completed batch. In early-stop mode, review ends when the requested number of distinct matches has been found (or the scope is exhausted). Full-review mode can replace earlier matches with higher-scoring results. Large libraries can take a long time and cloud providers may charge for many requests. Progress identifies the current batch. From 0.9.4, a temporary popup shows the animated activity bar and search progress. It closes when the request finishes, fails or is cancelled. Closing the popup cancels the search; partial results never automatically play. The assistant uses one page scrollbar for its controls and results. The explanation under Recommend is also boxed for readability. **Cancel** stops the request and keeps completed matches visible for manual review/queueing. Closing the window also cancels. Neither action automatically plays partial results. Playback actions are disabled while a review is running. Batch scores are AI judgments, not a calibrated measure of similarity.
+The chosen scope is reviewed in batches of up to 60. Matches appear in the list after each completed batch. In early-stop mode, review ends when the requested number of distinct matches has been found (or the scope is exhausted). Full-review mode can replace earlier matches with higher-scoring results. Large libraries can take a long time and cloud providers may charge for many requests. Progress identifies the current batch. A temporary popup shows the animated activity bar and search progress. It closes when the request finishes, fails or is cancelled. Closing the popup cancels the search; partial results never automatically play. The assistant uses one page scrollbar for its controls and results. The explanation under Recommend is also boxed for readability. **Cancel** stops the request and keeps completed matches visible for manual review/queueing. Closing the window also cancels. Neither action automatically plays partial results. Playback actions are disabled while a review is running. Batch scores are AI judgments, not a calibrated measure of similarity.
 
 The app rejects unknown song IDs, removes duplicate recommendations and rechecks availability before queueing. It cannot guarantee the model's musical judgments or interpretation of your request. If nothing matches, an empty list is valid.
 
