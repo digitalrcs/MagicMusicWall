@@ -2,6 +2,8 @@
 
 ## 0.9.8
 
+- Drive Franky's mouth from the 300–3,400 Hz vocal-presence range while floating notes and body bounce continue to follow the full mix. This is frequency filtering, not isolated vocals.
+
 - Make Visual power fill the available panel height, enlarge its handle, and use 0.01 steps with two-decimal feedback and precise + / − buttons. Track clicks move by 0.05 instead of 0.5.
 
 ## 0.9.7

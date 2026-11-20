@@ -57,9 +57,9 @@ internal static class Program
         for (int i = 0; i < 45; i++) visual.AnalyzeSamples(false);
         Check(Field<double>("_mouth") < 0.001 && fine.Max() < 0.001, "Silence leaves singing or spectrum energy");
         Render(9, "franky-idle.png");
-        void Tone(double amplitude, int frames)
+        void Tone(double amplitude, int frames, int bin = 64)
         {
-            for (int i = 0; i < samples.Length; i++) samples[i] = (float)(amplitude * Math.Sin(2 * Math.PI * 64 * i / samples.Length));
+            for (int i = 0; i < samples.Length; i++) samples[i] = (float)(amplitude * Math.Sin(2 * Math.PI * bin * i / samples.Length));
             for (int i = 0; i < frames; i++) visual.AnalyzeSamples(true);
         }
         Tone(0.01, 3);
@@ -74,6 +74,12 @@ internal static class Program
         Check(Field<double>("_mouth") < 0.04, "Mouth does not close promptly between beats");
         Tone(0.0005, 20);
         Check(Field<double>("_mouth") < 0.001, "Quiet output noise makes Franky sing");
+        Tone(0.3, 30, 4); // 93.75 Hz bass: notes move, mouth stays closed.
+        Check(Field<double>("_mouth") < 0.01 && Field<double>("_notes") > 0.3, "Bass must animate notes without singing");
+        Tone(0.3, 30, 320); // 7.5 kHz treble.
+        Check(Field<double>("_mouth") < 0.01 && Field<double>("_notes") > 0.3, "Treble must animate notes without singing");
+        Tone(0.08, 6, 64); // 1.5 kHz presence.
+        Check(Field<double>("_mouth") > 0.3, "Vocal-range energy must animate the mouth");
         foreach (double power in new[] { 0.5, 1.6, 3.0 })
         {
             visual.Power = power;

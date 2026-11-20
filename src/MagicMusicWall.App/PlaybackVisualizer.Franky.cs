@@ -24,14 +24,14 @@ public sealed partial class PlaybackVisualizer
         void Ellipse(double x, double y, double rx, double ry, Brush brush) => dc.DrawEllipse(brush, null, new Point(x, y), rx, ry);
         Ellipse(160, 192, 113 - _bounce * 12, 9, FrogDark);
         // Floating notes only appear with audio energy; no pretend singing in silence.
-        if (_mouth > 0.04)
+        if (_notes > 0.04)
         {
             for (int i = 0; i < 6; i++)
             {
                 double phase = (_time * 0.45 + i / 6.0) % 1;
                 double x = i % 2 == 0 ? 24 - phase * 28 : 296 + phase * 28;
                 double y = 144 - phase * 135;
-                dc.PushOpacity((1 - phase) * _mouth);
+                dc.PushOpacity((1 - phase) * _notes);
                 Ellipse(x, y, 5, 3.5, _colors[i * 10]);
                 dc.DrawLine(new Pen(_colors[i * 10], 2), new Point(x + 4, y), new Point(x + 4, y - 19));
                 dc.DrawLine(new Pen(_colors[i * 10], 2), new Point(x + 4, y - 19), new Point(x + 11, y - 15));

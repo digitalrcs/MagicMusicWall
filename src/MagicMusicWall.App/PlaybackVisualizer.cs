@@ -75,7 +75,7 @@ public sealed partial class PlaybackVisualizer : FrameworkElement
     private readonly double[] _bands = new double[64];
     private readonly double[] _fineBands = new double[192];
     private readonly double[] _mountainBands = new double[64];
-    private double _mouth, _bounce;
+    private double _mouth, _bounce, _notes;
     private double _mouthPeak = 0.015;
     // Strictly increasing edges cover bins 1..1023 without repeating bass bins.
     internal static int FineEdge(int edge) => 1 + edge + (int)(831 * Math.Pow(edge / 192.0, 2));
@@ -132,12 +132,21 @@ public sealed partial class PlaybackVisualizer : FrameworkElement
             _fineBands[b] = Math.Max(Response(target), _fineBands[b] * Math.Pow(0.8, Power));
         }
         double rms = Math.Sqrt(_samples.Sum(sample => (double)sample * sample) / _samples.Length);
+        // Vocal-presence approximation, not source separation. At 48 kHz,
+        // retain FFT bins whose centers are within 300..3400 Hz. Hann-window
+        // energy correction keeps this comparable to the full-mix RMS.
+        double vocalEnergy = 0;
+        for (int bin = (int)Math.Ceiling(300.0 * 2048 / 48000); bin <= (int)Math.Floor(3400.0 * 2048 / 48000); bin++)
+            vocalEnergy += _fft[bin].Magnitude * _fft[bin].Magnitude;
+        double vocalRms = Math.Sqrt(2 * vocalEnergy / (2048.0 * 2048 * 0.375));
+        double notesTarget = playing && rms >= 0.001 ? Response(Math.Clamp(Math.Sqrt(rms) * 2.6, 0, 1)) : 0;
+        _notes += (notesTarget - _notes) * 0.5;
         // Follow relative loudness rather than clipping most loud passages to
         // one open-mouth pose. Slow peak release preserves contrast between beats;
         // the floor and silence gate prevent quiet output noise from singing.
-        _mouthPeak = playing ? Math.Max(0.015, Math.Max(rms, _mouthPeak * 0.985)) : 0.015;
-        double mouthTarget = playing && rms >= 0.001
-            ? Math.Pow(Math.Clamp((rms / _mouthPeak - 0.12) / 0.88, 0, 1), 1.3 / Math.Sqrt(Power)) : 0;
+        _mouthPeak = playing ? Math.Max(0.015, Math.Max(vocalRms, _mouthPeak * 0.985)) : 0.015;
+        double mouthTarget = playing && vocalRms >= 0.001
+            ? Math.Pow(Math.Clamp((vocalRms / _mouthPeak - 0.12) / 0.88, 0, 1), 1.3 / Math.Sqrt(Power)) : 0;
         _mouth += (mouthTarget - _mouth) * (mouthTarget > _mouth ? 0.85 : 0.7);
         _bounce += ((playing ? Math.Clamp(rms * 6, 0, 1) : 0) - _bounce) * 0.5;
         _energy = _bands.Take(20).Average();

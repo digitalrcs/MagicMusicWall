@@ -25,7 +25,7 @@ Click **Library tools** at the bottom of the left sidebar. The tool buttons fold
 | Fine spectrum | 192 thin bars covering distinct frequency ranges; the original 64-bar Spectrum stays unchanged |
 | Franky sings | Franky the frog opens his mouth, bobs and releases musical notes in response to audio energy |
 
-Version 0.9.8 also makes **Mountain range** more responsive, with taller peaks and a faster fall between beats. Franky's singing follows the sound level, not lyrics or isolated vocals; instruments can make him sing too. Silence closes his mouth and fades the notes.
+Version 0.9.8 also makes **Mountain range** more responsive, with taller peaks and a faster fall between beats. Franky's mouth follows energy in the 300–3,400 Hz vocal-presence range, while his notes and bounce respond to the full mix. This is a frequency filter, not vocal isolation or lyric lip-sync: instruments in that range can still make him sing. Silence closes his mouth and fades the notes.
 
 Franky's vector character is adapted from DigitalRCS's original [ESP32 Franky artwork](https://github.com/digitalrcs/DigitalRCS-Local-LLM-Chatbot/blob/49ebf8f5154b56816bfa25a2c88956f1c9f4cd05/scripts/generate_frog.py), preserving his colors and face shapes with a new animated singing mouth. The original MIT license is included as `licenses/Franky-Art-LICENSE.txt`.
 
