@@ -2,6 +2,10 @@
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
+## Make room and watch your music
+
+Click **Library tools** at the bottom left to hide or show the tool buttons and give playlists more space. Above the center collection, choose **Playing music · visuals** and select a style. Choose **Music list** to return to browsing. The [playback visuals guide](PLAYBACK-VISUALS.md) explains all eight modes, audio outputs, and reconnecting.
+
 ## Connect a speaker or stereo
 
 1. Open **Bluetooth settings** from Magic Music Wall and pair/connect your receiver in Windows. For wired speakers, make sure Windows can play through them.

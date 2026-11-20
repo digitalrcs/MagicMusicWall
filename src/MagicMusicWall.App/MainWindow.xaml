@@ -13,11 +13,13 @@
      <TextBlock Text="Click to browse · double-click to play" FontSize="10" Foreground="{StaticResource MutedBrush}" Margin="10,0,0,6" TextWrapping="Wrap"/>
     </StackPanel>
     <StackPanel DockPanel.Dock="Bottom">
+     <Expander x:Name="LibraryTools" Header="Library tools" ToolTip="Collapse these buttons to make more room for playlists" IsExpanded="True" Foreground="{StaticResource TextBrush}" Expanded="ToolsExpansion_Changed" Collapsed="ToolsExpansion_Changed"><StackPanel>
      <Button Content="AI playlist assistant" Click="AiPlaylist_Click" Margin="0,8,0,0"/>
      <Button Content="Music constellation" Click="MusicMap_Click" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Music constellation"/>
      <Button Content="⚙  Setup" Click="Setup_Click" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Setup"/>
      <Button Content="Manage folders" Click="ManageFolders_Click" HorizontalAlignment="Stretch" Margin="0,12,0,8"/>
      <Button x:Name="RescanButton" Content="Rescan library" Click="Rescan_Click" HorizontalAlignment="Stretch"/>
+     </StackPanel></Expander>
      <Button Click="Brand_Click" Background="Transparent" Padding="5,4" HorizontalAlignment="Left" Margin="0,16,0,0" ToolTip="Visit DigitalRCS.com" AutomationProperties.Name="DigitalRCS.com website"><StackPanel Orientation="Horizontal"><Image Source="Assets/digitalrcs-logo.png" Width="28" Height="28"/><TextBlock Text="DigitalRCS.com" FontSize="12" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/></StackPanel></Button>
     </StackPanel>
     <ListBox x:Name="PlaylistsList" IsSynchronizedWithCurrentItem="False" SelectionChanged="PlaylistsList_SelectionChanged" MouseDoubleClick="PlaylistsList_DoubleClick" AutomationProperties.Name="Saved playlists"><ListBox.ItemTemplate><DataTemplate><DockPanel><TextBlock DockPanel.Dock="Right" Text="{Binding ItemIds.Count}" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/><TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/></DockPanel></DataTemplate></ListBox.ItemTemplate><ListBox.ContextMenu><ContextMenu><MenuItem Header="Rename playlist" Click="RenamePlaylist_Click"/><MenuItem Header="Delete playlist" Click="DeletePlaylist_Click"/></ContextMenu></ListBox.ContextMenu></ListBox>
@@ -29,6 +31,18 @@
    <StackPanel Grid.Row="1" Margin="0,16,0,12"><TextBlock Text="LISTEN LOCAL" Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="SemiBold"/><TextBlock x:Name="ViewTitle" Text="Your collection" FontSize="28" FontWeight="SemiBold" Margin="0,4,0,3"/><TextBlock x:Name="LibrarySummary" Text="Bring your music together, wherever it lives." Foreground="{StaticResource MutedBrush}" FontSize="12"/></StackPanel>
    <WrapPanel Grid.Row="2" Margin="0,0,0,8"><Button x:Name="PlayResultsButton" Content="▶  Play results" Style="{StaticResource AccentButton}" Click="PlayResults_Click" Margin="0,0,8,8"/><Button x:Name="QueuePlaylistButton" Content="+ Queue playlist" Click="QueuePlaylist_Click" Visibility="Collapsed" Margin="0,0,8,8" ToolTip="Append this playlist's displayed songs without interrupting playback"/><Button x:Name="AddFolderButton" Content="+ Add folder" Click="AddFolder_Click" Margin="0,0,8,8"/><Button x:Name="AddFilesButton" Content="+ Add files" Click="AddFiles_Click" Margin="0,0,8,8"/><Button Content="Queue selected" Click="QueueSelected_Click" Margin="0,0,8,8"/><Button Content="Song info / lyrics" Click="Info_Click" Margin="0,0,8,8"/><Button Content="Edit file tags" Click="Metadata_Click" Margin="0,0,0,8"/></WrapPanel>
    <Grid Grid.Row="3">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+     <RadioButton x:Name="LibraryMode" Content="Music list" GroupName="CenterMode" IsChecked="True" Checked="CenterMode_Changed" Foreground="{StaticResource TextBrush}" Margin="0,0,24,0"/>
+     <RadioButton x:Name="VisualMode" Content="Playing music · visuals" GroupName="CenterMode" Checked="CenterMode_Changed" Foreground="{StaticResource TextBrush}"/>
+    </StackPanel>
+    <Grid Grid.Row="1" x:Name="VisualizerPanel" Visibility="Collapsed">
+     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+     <DockPanel Margin="0,0,0,8"><Button DockPanel.Dock="Right" Content="Reconnect visuals" Click="ReconnectVisuals_Click" Margin="8,0,0,0"/><ComboBox x:Name="VisualStyle" SelectionChanged="VisualStyle_Changed" AutomationProperties.Name="Visualization style"/></DockPanel>
+     <Border Grid.Row="1" BorderBrush="#858DA3" BorderThickness="1" CornerRadius="8" ClipToBounds="True"><local:PlaybackVisualizer x:Name="MusicVisual"/></Border>
+     <TextBlock Grid.Row="2" x:Name="VisualStatus" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
+    </Grid>
+    <Grid Grid.Row="1" x:Name="CollectionPanel">
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
     <StackPanel x:Name="FolderNavigation" Margin="0,0,0,8" Visibility="Collapsed">
      <DockPanel LastChildFill="False">
@@ -76,6 +90,7 @@
      <ListView.ContextMenu><ContextMenu><MenuItem Header="Play selected" Click="PlaySelected_Click"/><MenuItem Header="Add to queue" Click="QueueSelected_Click"/><Separator/><MenuItem Header="Song info / lyrics" Click="Info_Click"/><MenuItem Header="Edit file tags…" Click="Metadata_Click"/><MenuItem Header="Show in Explorer" Click="ShowFile_Click"/><MenuItem Header="Share selected file on LAN…" Click="Share_Click"/><Separator/><MenuItem Header="Move up in playlist" Click="PlaylistUp_Click"/><MenuItem Header="Move down in playlist" Click="PlaylistDown_Click"/><MenuItem Header="Remove from this playlist" Click="RemoveFromPlaylist_Click"/><MenuItem Header="Remove from library (keep file)" Click="RemoveFromLibrary_Click"/></ContextMenu></ListView.ContextMenu>
     </ListView>
     <Border Grid.Row="1" x:Name="EmptyPanel" Background="#171A22" CornerRadius="10" Padding="40"><StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"><TextBlock Text="♫" FontSize="62" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center"/><TextBlock x:Name="EmptyTitle" Text="Make room for your music" FontSize="23" TextAlignment="Center" Margin="0,16,0,10"/><TextBlock x:Name="EmptyDescription" Text="Add a folder from your PC, USB drive, or network share.&#10;Your original files stay right where they are." Foreground="{StaticResource MutedBrush}" TextAlignment="Center" TextWrapping="Wrap" LineHeight="24"/><Button x:Name="EmptyLibraryButton" Content="Choose a music folder" Click="EmptyLibrary_Click" Style="{StaticResource AccentButton}" HorizontalAlignment="Center" Margin="0,24,0,0"/></StackPanel></Border>
+   </Grid>
    </Grid>
    <Grid Grid.Row="4" Margin="0,14,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Foreground="{StaticResource MutedBrush}" FontSize="12" TextTrimming="CharacterEllipsis" Text="Ready. Add folders or drop files here."/><Button Grid.Column="1" x:Name="CancelImportButton" Content="Cancel scan" Visibility="Collapsed" Padding="8,2" Click="CancelScan_Click"/></Grid>
   </Grid>

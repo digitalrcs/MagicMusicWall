@@ -1,5 +1,11 @@
 # Changes
 
+## 0.9.5
+
+- Collapse sidebar tool buttons vertically to give playlists more room; remember the expanded state.
+- Switch the collection between its folder/file list and eight live playback visuals, including spectrum, waveform, orbit rings and a star voyage.
+- Capture only the selected local Windows output for visuals, without changing playback routing. Release capture on pause, list view, minimize and shutdown; provide explicit reconnect and capture status.
+
 ## 0.9.4
 
 - Move AI search activity into a temporary owned popup that closes on completion, cancellation or failure. Closing the popup cancels the search.

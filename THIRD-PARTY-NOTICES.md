@@ -8,6 +8,7 @@ Magic Music Wall uses the following separately licensed components. The applicat
 | VideoLAN.LibVLC.Windows | 3.0.24 | VLC/libVLC and plugins retain their individual licenses; https://www.videolan.org/legal.html ; https://code.videolan.org/videolan/vlc |
 | TagLibSharp | 2.3.0 | LGPL-2.1-only, https://github.com/mono/taglib-sharp |
 | QRCoder | 1.8.1 | MIT, [upstream source](https://github.com/Shane32/QRCoder); bundled text: `licenses/QRCoder-LICENSE.txt` |
+| NAudio.Wasapi and NAudio.Core | 2.2.1 | MIT, [upstream source](https://github.com/naudio/NAudio/tree/v2.2.1); bundled text: `licenses/NAudio-LICENSE.txt` |
 | Microsoft .NET and ASP.NET Core runtime | 10.0 | MIT and bundled third-party notices, https://github.com/dotnet/runtime and https://github.com/dotnet/aspnetcore |
 
 The Windows distributions keep managed/native dependencies separate so they can be replaced under their licenses. Preserve all dependency license files and notices included in the published directory. The release includes a companion archive of upstream source snapshots, with exact revisions, hashes and known native dependency inventory limits recorded in [Third-party source provenance](licenses/REDISTRIBUTION.md). The installer and portable packages also include the exact .NET, ASP.NET Core and Windows Desktop runtime notices used by the build. The project's copyright-reserved notice does not replace any third-party license.

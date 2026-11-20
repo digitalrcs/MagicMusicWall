@@ -18,6 +18,13 @@ $OutputDirectory = (Resolve-Path -LiteralPath $OutputDirectory).Path
 
 $sources = @(
     [pscustomobject]@{
+        Component = 'NAudio.Wasapi and NAudio.Core'; Version = '2.2.1'
+        Revision = 'b5d5ff83fd378f046398891fe5cd99426ce44732'
+        File = 'NAudio-2.2.1-source.tar.gz'
+        Url = 'https://codeload.github.com/naudio/NAudio/tar.gz/b5d5ff83fd378f046398891fe5cd99426ce44732'
+        ExpectedSha256 = '4b4ba5cda49bc80e47198744f04546cd09385b118cf124acd118743ad06e3475'
+    },
+    [pscustomobject]@{
         Component = 'LibVLCSharp and LibVLCSharp.WPF'; Version = '3.10.2'
         Revision = '3082c09ca955131c705fc4767fde03e9c4a14999'
         File = 'LibVLCSharp-3.10.2-source.tar.gz'
@@ -84,7 +91,7 @@ $manifestPath = Join-Path $cacheDirectory 'manifest.json'
 } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
 $bundleFiles += $manifestPath
 
-$noticeNames = @('LibVLCSharp-3.10.2-LICENSE.txt', 'TagLibSharp-2.3.0-COPYING.txt', 'QRCoder-LICENSE.txt',
+$noticeNames = @('NAudio-LICENSE.txt', 'LibVLCSharp-3.10.2-LICENSE.txt', 'TagLibSharp-2.3.0-COPYING.txt', 'QRCoder-LICENSE.txt',
     'VLC-3.0.24-COPYING.txt', 'VLC-3.0.24-COPYING.LIB.txt', 'SOURCES.md', 'REDISTRIBUTION.md')
 foreach ($name in $noticeNames) {
     $sourcePath = Join-Path (Join-Path $projectRoot 'licenses') $name

@@ -11,11 +11,12 @@
     <VlcWindowsArm64Enabled>false</VlcWindowsArm64Enabled>
     <AssemblyName>MagicMusicWall</AssemblyName>
     <ApplicationIcon>..\..\installer\assets\DigitalRCS.ico</ApplicationIcon>
-    <Version>0.9.4</Version>
+    <Version>0.9.5</Version>
     <Company>DigitalRCS.com</Company>
     <Description>Local music and video library for Windows</Description>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
     <Resource Include="Assets\digitalrcs-logo.png" />
     <PackageReference Include="LibVLCSharp.WPF" Version="3.10.2" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.24" />

@@ -64,6 +64,7 @@ public partial class MainWindow : Window
         InitializeCasting();
         InitializePreferences();
         _ready = true;
+        InitializeVisuals();
         Volatile.Write(ref _requestedVolume, _settings.Volume);
         VolumeSlider.Value = _settings.Volume;
         _player.Volume = _settings.Volume;
@@ -514,6 +515,7 @@ public partial class MainWindow : Window
         VolumeText.Text = _player.Mute ? "Muted" : $"{_settings.Volume}%";
         _updatingTime = false;
         _ = CheckAudioRoute();
+        RefreshVisualizerCapture();
     }
     private void Seek_Begin(object sender, MouseButtonEventArgs e) => _seeking = true;
     private void Seek_End(object sender, MouseButtonEventArgs e) { _seeking = false; if (_player.IsSeekable) _player.Time = (long)SeekSlider.Value; }
@@ -585,6 +587,7 @@ public partial class MainWindow : Window
         if (_closing) return;
         if (_metadataWriting) { Status("Please wait for the file tags to finish saving."); return; }
         if (_scanning) { _scanCancel?.Cancel(); Status("Cancelling the scan. Close again after it finishes."); return; }
+        StopVisuals();
         _closing = true; _timer.Stop(); _saveTimer.Stop(); ++_playVersion; IsEnabled = false;
         try
         {

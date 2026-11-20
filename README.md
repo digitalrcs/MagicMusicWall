@@ -9,16 +9,16 @@ Add the music and videos you already own, browse a compact folder/file grid, bui
 
 ![Magic Music Wall library with demonstration folders](docs/images/library.png)
 
-## Download version 0.9.4
+## Download version 0.9.5
 
 For **Windows 11 on Intel/AMD x64 PCs**. The .NET runtime and VLC playback engine are included; no separate runtime installation is needed.
 
 | Package | What to do |
 | --- | --- |
-| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.4/MagicMusicWall-0.9.4-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
-| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.4/MagicMusicWall-0.9.4-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
-| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.4/MagicMusicWall-0.9.4-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
-| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.4/SHA256SUMS.txt) | Verify the downloaded files. |
+| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.5/MagicMusicWall-0.9.5-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
+| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.5/MagicMusicWall-0.9.5-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
+| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.5/MagicMusicWall-0.9.5-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
+| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.5/SHA256SUMS.txt) | Verify the downloaded files. |
 
 [All releases](https://github.com/digitalrcs/MagicMusicWall/releases) · [Install and USB instructions](docs/WINDOWS-INSTALLER.md) · [Full documentation](docs/README.md)
 
@@ -40,6 +40,8 @@ The directory grid shows the folders and files you added to your library. Search
 ![Saved playlist and playback queue](docs/images/playlists.png)
 
 ## What you can do
+
+- **Watch your music:** switch between the music list and eight live visuals, including spectrum bars, waveform, orbit rings and Star voyage. Collapse **Library tools** for more playlist space. [Playback visuals guide](docs/PLAYBACK-VISUALS.md).
 
 - **Play your own collection:** music and video playback, queue controls, saved playlists, shuffle and repeat.
 - **Explore your music constellation:** follow an animated spring network of artists, albums and songs, with stronger connections pulling music closer together. Drag names, pause motion, explore Metadata, Sound or Blended similarity, and queue what you discover. Optional local sound analysis keeps cached results and can be cancelled and resumed. [Constellation guide](docs/MUSIC-MAP.md).

@@ -19,6 +19,9 @@ public sealed class AppPreferences
     public string AiKeyEndpoint { get; set; } = "";
     public string AiKeyProvider { get; set; } = "";
 
+    public bool LibraryToolsExpanded { get; set; } = true;
+    public int VisualizationMode { get; set; }
+
     public int Volume { get; set; } = 65;
     public string AudioDeviceId { get; set; } = "";
     public string AudioDeviceName { get; set; } = "";
