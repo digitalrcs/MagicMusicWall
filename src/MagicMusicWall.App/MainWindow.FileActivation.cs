@@ -35,7 +35,15 @@ public partial class MainWindow
             var items = paths.Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(path => _catalog.Document.Items.FirstOrDefault(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase)))
                 .OfType<MediaItem>().ToList();
-            if (items.Count > 0) await StartQueue(items);
+            if (items.Count == 0) return;
+            // Decide after import: the user may have changed the queue or setting
+            // while tags were being read. Appending must not alter playback state.
+            if (_settings.QueueExternalFiles && _queue.Count > 0)
+            {
+                foreach (var item in items) _queue.Add(item);
+                Status($"Added {items.Count} {(items.Count == 1 ? "file" : "files")} to the queue.");
+            }
+            else await StartQueue(items);
         }
         catch (Exception ex) { Error(ex); }
         finally { _fileOpenGate.Release(); }

@@ -1,6 +1,6 @@
 # Install Magic Music Wall or carry it on USB
 
-Applies to Magic Music Wall **0.9.11**.
+Applies to Magic Music Wall **0.9.12**.
 
 [Documentation home](README.md)
 
@@ -12,9 +12,9 @@ Get the files from the project's [GitHub Releases page](https://github.com/digit
 
 | Download | Use it for |
 | --- | --- |
-| `MagicMusicWall-0.9.11-Setup-x64.exe` | Install on a Windows PC, including from a USB drive. |
-| `MagicMusicWall-0.9.11-Portable-x64.zip` | Extract and run without installing. Keep the extracted folder together. |
-| `MagicMusicWall-0.9.11-USB-Kit.zip` | Carry the installer, portable ZIP, instructions and checksums in one download. |
+| `MagicMusicWall-0.9.12-Setup-x64.exe` | Install on a Windows PC, including from a USB drive. |
+| `MagicMusicWall-0.9.12-Portable-x64.zip` | Extract and run without installing. Keep the extracted folder together. |
+| `MagicMusicWall-0.9.12-USB-Kit.zip` | Carry the installer, portable ZIP, instructions and checksums in one download. |
 | `SHA256SUMS.txt` | Compare downloaded files with the published checksums. |
 | GitHub source archives | Developers who want to inspect or build the code. These are not the ready-to-run app. |
 
@@ -24,10 +24,10 @@ This release targets **Windows 11 on Intel/AMD x64 PCs**. The installer permits 
 
 ## Install on this PC
 
-1. Copy or download `MagicMusicWall-0.9.11-Setup-x64.exe` to the PC, or open it from your USB drive.
+1. Copy or download `MagicMusicWall-0.9.12-Setup-x64.exe` to the PC, or open it from your USB drive.
 2. Close any running copy of Magic Music Wall before continuing.
 3. Open the installer and follow its pages. The default location is `%LOCALAPPDATA%\Programs\MagicMusicWall` for your Windows account.
-4. Choose whether to create a desktop shortcut, then finish the installation.
+4. Choose whether to create a desktop shortcut and register music file types with MagicMusicWall, then finish the installation.
 5. Open **Magic Music Wall** from the Start menu or shortcut.
 
 ![Branded Windows installer](images/installer.png)
@@ -40,16 +40,16 @@ The installer is unsigned. Windows may display an unknown-publisher or reputatio
 
 ## Double-click music files
 
-The updated installer registers **MagicMusicWall** as a music player for MP3, FLAC, WAV/WAVE, AAC, M4A, OGG/OGA, OPUS, WMA, AIFF/AIF, ALAC and APE files.
+When **Register music file types with MagicMusicWall** is checked, the installer registers **MagicMusicWall** as a music player for MP3, FLAC, WAV/WAVE, AAC, M4A, OGG/OGA, OPUS, WMA, AIFF/AIF, ALAC and APE files.
 
-1. Install the updated build.
+1. Install the updated build with **Register music file types with MagicMusicWall** checked.
 2. Right-click a music file in File Explorer and choose **Open with > Choose another app**.
 3. Select **MagicMusicWall**, then **Always**. Repeat for other file formats you use, or use **Settings > Apps > Default apps**.
 4. Double-click a file to load and play it. If Magic Music Wall is already running, it receives the file and restores its window.
 
-Opening a file adds it to the library and replaces the playback queue without adding it to a selected saved playlist. The original music file is unchanged. Playback uses the current output and volume; an active library operation finishes before the file is imported. Missing or unsupported files leave the current queue intact and show an explanation.
+By default, opening a file adds it to the library and appends it to an existing playback queue without interrupting the playing or paused track. An empty queue starts playback immediately. In **Setup > Sound**, uncheck **Add external files to the existing queue**, then click **Save settings**, to replace the queue and play opened files immediately instead. Neither choice adds files to the selected saved playlist. The original music file is unchanged. Playback uses the current output and volume; an active library operation finishes before the file is imported. Missing or unsupported files leave the current queue intact and show an explanation.
 
-Installation registers the option without overwriting your existing default. Uninstalling removes MagicMusicWall's registrations. The portable ZIP does not register file types automatically. For a portable command-line launch, use `MagicMusicWall.exe --portable --play "F:\Music\Song.mp3"`; `--data-dir` and `--import` retain their existing meanings.
+Leaving the installer association checkbox unchecked skips registration; unchecking it during an upgrade removes MagicMusicWall registrations from an earlier install. Other applications' registrations and Windows default-choice values are not modified. When enabled, installation registers the option without overwriting your existing default. Uninstalling removes MagicMusicWall's registrations. The portable ZIP does not register file types automatically. For a portable command-line launch, use `MagicMusicWall.exe --portable --play "F:\Music\Song.mp3"`; `--data-dir` and `--import` retain their existing meanings.
 
 Developer check: `MagicMusicWall.exe --play "C:\Music\Song.mp3"` (a bare quoted file path also works). Test once with the app closed and again while it is playing, plus a path containing spaces or Unicode and an unavailable file.
 
@@ -64,7 +64,7 @@ Installing on a second PC does not automatically transfer the first PC's library
 
 ## Run the portable copy
 
-1. Extract `MagicMusicWall-0.9.11-Portable-x64.zip` to a writable folder on the USB drive. Do not run the app from inside the ZIP.
+1. Extract `MagicMusicWall-0.9.12-Portable-x64.zip` to a writable folder on the USB drive. Do not run the app from inside the ZIP.
 2. Keep all extracted files and subfolders together; the player needs its bundled runtime and VLC files.
 3. Open **Start-MagicMusicWall.cmd**. This starts portable mode and keeps the library/settings in the adjacent **Data** folder.
 4. For music you want to carry, create a **Media** folder inside the extracted app folder and copy your music there. Add it through **Add folder** or **Add files**. Other reachable locations can also be added.
@@ -97,7 +97,7 @@ Back up the active data folder while the app is closed. It holds your playlist r
 This optional PowerShell command prints an installer's SHA-256 checksum:
 
 ```powershell
-Get-FileHash .\MagicMusicWall-0.9.11-Setup-x64.exe -Algorithm SHA256
+Get-FileHash .\MagicMusicWall-0.9.12-Setup-x64.exe -Algorithm SHA256
 ```
 
 Compare the full value with `SHA256SUMS.txt` for the same release. Matching values show that the file matches the published package; they do not replace your normal software-trust checks.

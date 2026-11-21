@@ -28,6 +28,7 @@ public sealed class AppPreferences
     public string AudioDeviceName { get; set; } = "";
     public bool Shuffle { get; set; }
     public bool RepeatQueue { get; set; }
+    public bool QueueExternalFiles { get; set; } = true;
     public bool RescanOnStartup { get; set; }
     public bool CollectionGridView { get; set; }
     public string SharingAddress { get; set; } = "";

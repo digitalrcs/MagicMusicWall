@@ -41,6 +41,9 @@
      <Slider x:Name="Volume" Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" AutomationProperties.Name="Saved volume"/>
      <CheckBox x:Name="Shuffle" Content="Shuffle when starting a new queue" Margin="0,26,0,15"/>
      <CheckBox x:Name="RepeatQueue" Content="Repeat the queue"/>
+     <TextBlock Text="Files opened from Windows" Style="{StaticResource Label}"/>
+     <CheckBox x:Name="QueueExternalFiles" Content="Add external files to the existing queue" AutomationProperties.Name="Add external files to the existing queue"/>
+     <TextBlock Text="Keep the current track playing or paused and add opened files at the end. If the queue is empty, playback starts immediately. Uncheck to replace the queue and play the opened files immediately. Click Save settings to apply." Style="{StaticResource Help}"/>
      <TextBlock Text="Audio output, volume, shuffle and repeat changes in the player are also saved automatically." Style="{StaticResource Help}" Margin="0,22,0,0"/>
     </StackPanel></ScrollViewer>
    </TabItem>

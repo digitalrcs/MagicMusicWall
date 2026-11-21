@@ -13,6 +13,7 @@ public sealed class AppPreferencesTests : IDisposable
     public void MissingSettingsUseDefaultsAndSaveCreatesDirectory()
     {
         var preferences = AppPreferences.Load(_directory);
+        Assert.True(preferences.QueueExternalFiles);
         Assert.Equal(65, preferences.Volume);
         Assert.Equal(8787, preferences.RemotePort);
         Assert.False(preferences.RemoteEnabled);
@@ -26,6 +27,7 @@ public sealed class AppPreferencesTests : IDisposable
     {
         WriteSettings("""{"volume":23,"audioDeviceId":"stereo-output"}""");
         var preferences = AppPreferences.Load(_directory);
+        Assert.True(preferences.QueueExternalFiles);
         Assert.Equal(23, preferences.Volume);
         Assert.Equal("stereo-output", preferences.AudioDeviceId);
         Assert.Equal(8787, preferences.RemotePort);
@@ -55,6 +57,19 @@ public sealed class AppPreferencesTests : IDisposable
         loaded.Save(_directory);
         Assert.Equal(42, AppPreferences.Load(_directory).Volume);
         Assert.Empty(Directory.GetFiles(_directory, "*.tmp"));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ExternalFileQueuePreferenceRoundTrips(bool enqueue)
+    {
+        var preferences = new AppPreferences { QueueExternalFiles = enqueue };
+        preferences.Save(_directory);
+        Assert.Equal(enqueue, AppPreferences.Load(_directory).QueueExternalFiles);
+        var copy = preferences.Copy();
+        copy.QueueExternalFiles = !enqueue;
+        Assert.Equal(enqueue, preferences.QueueExternalFiles);
     }
 
     [Theory]

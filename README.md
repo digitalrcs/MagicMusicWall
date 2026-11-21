@@ -9,16 +9,16 @@ Add the music and videos you already own, browse a compact folder/file grid, bui
 
 ![Magic Music Wall library with demonstration folders](docs/images/library.png)
 
-## Download version 0.9.11
+## Download version 0.9.12
 
 For **Windows 11 on Intel/AMD x64 PCs**. The .NET runtime and VLC playback engine are included; no separate runtime installation is needed.
 
 | Package | What to do |
 | --- | --- |
-| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.11/MagicMusicWall-0.9.11-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
-| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.11/MagicMusicWall-0.9.11-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
-| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.11/MagicMusicWall-0.9.11-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
-| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.11/SHA256SUMS.txt) | Verify the downloaded files. |
+| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.12/MagicMusicWall-0.9.12-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
+| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.12/MagicMusicWall-0.9.12-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
+| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.12/MagicMusicWall-0.9.12-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
+| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.12/SHA256SUMS.txt) | Verify the downloaded files. |
 
 [All releases](https://github.com/digitalrcs/MagicMusicWall/releases) · [Install and USB instructions](docs/WINDOWS-INSTALLER.md) · [Full documentation](docs/README.md)
 
@@ -41,7 +41,7 @@ The directory grid shows the folders and files you added to your library. Search
 
 ## What you can do
 
-- **Double-click to play:** choose MagicMusicWall as your Windows default for music files. Opening a song loads it into the library and starts playback, including when the app is already running. [File association setup](docs/WINDOWS-INSTALLER.md#double-click-music-files).
+- **Double-click to play:** choose MagicMusicWall as your Windows default for music files. Opening a song adds it to the current queue, or starts playback if the queue is empty. Choose replace-and-play instead in Setup > Sound. Installer file associations are optional. [File association setup](docs/WINDOWS-INSTALLER.md#double-click-music-files).
 
 - **Watch your music:** switch between the music list and ten live visuals, including spectrum bars, waveform, orbit rings and Star voyage. Adjust the side **Visual power** slider for stronger or gentler animation without changing volume. Collapse **Library tools** for more playlist space. [Playback visuals guide](docs/PLAYBACK-VISUALS.md).
 

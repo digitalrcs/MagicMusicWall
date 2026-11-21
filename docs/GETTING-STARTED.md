@@ -1,6 +1,6 @@
 # Get started with Magic Music Wall
 
-Applies to Magic Music Wall **0.9.11**.
+Applies to Magic Music Wall **0.9.12**.
 
 [All guides](README.md) · [Download the latest release](https://github.com/digitalrcs/MagicMusicWall/releases/latest)
 

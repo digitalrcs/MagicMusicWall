@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.9.11"
+  #define AppVersion "0.9.12"
 #endif
 #ifndef PayloadDirectory
   #error PayloadDirectory must point to a clean self-contained published application.
@@ -57,6 +57,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Shortcuts:"; Flags: unchecked
 
+Name: "associatefiles"; Description: "Register music file types with MagicMusicWall (choose defaults in Windows)"; GroupDescription: "File associations:"
+
 [Files]
 ; User data is outside {app}. Never add an UninstallDelete rule for it.
 ; Portable launchers/markers are distributed in the portable ZIP only.
@@ -65,40 +67,59 @@ Source: "assets\DigitalRCS.ico"; DestDir: "{app}\Assets"; Flags: ignoreversion
 
 [Registry]
 ; Register choices per user; Windows owns the user's default-app selection.
-Root: HKCU; Subkey: "Software\Classes\MagicMusicWall.Audio"; ValueType: string; ValueName: ""; ValueData: "MagicMusicWall music file"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\MagicMusicWall.Audio\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\MagicMusicWall.exe"",0"
-Root: HKCU; Subkey: "Software\Classes\MagicMusicWall.Audio\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\MagicMusicWall.exe"" --play ""%1"""
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities"; ValueType: string; ValueName: "ApplicationName"; ValueData: "MagicMusicWall"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities"; ValueType: string; ValueName: "ApplicationDescription"; ValueData: "Play music files with Magic Music Wall."
-Root: HKCU; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueName: "MagicMusicWall"; ValueData: "Software\MagicMusicWall\Capabilities"; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\Classes\.mp3\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".mp3"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.flac\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".flac"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.wav\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".wav"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.wave\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".wave"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.aac\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".aac"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.m4a\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".m4a"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.ogg\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".ogg"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.oga\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".oga"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.opus\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".opus"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.wma\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".wma"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.aiff\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".aiff"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.aif\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".aif"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.alac\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".alac"; ValueData: "MagicMusicWall.Audio"
-Root: HKCU; Subkey: "Software\Classes\.ape\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue
-Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".ape"; ValueData: "MagicMusicWall.Audio"
+Root: HKCU; Subkey: "Software\Classes\MagicMusicWall.Audio"; ValueType: string; ValueName: ""; ValueData: "MagicMusicWall music file"; Flags: uninsdeletekey; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\MagicMusicWall.Audio\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\MagicMusicWall.exe"",0"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\MagicMusicWall.Audio\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\MagicMusicWall.exe"" --play ""%1"""; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities"; ValueType: string; ValueName: "ApplicationName"; ValueData: "MagicMusicWall"; Flags: uninsdeletekey; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities"; ValueType: string; ValueName: "ApplicationDescription"; ValueData: "Play music files with Magic Music Wall."; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueName: "MagicMusicWall"; ValueData: "Software\MagicMusicWall\Capabilities"; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.mp3\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".mp3"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.flac\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".flac"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.wav\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".wav"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.wave\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".wave"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.aac\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".aac"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.m4a\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".m4a"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.ogg\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".ogg"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.oga\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".oga"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.opus\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".opus"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.wma\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".wma"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.aiff\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".aiff"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.aif\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".aif"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.alac\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".alac"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\Classes\.ape\OpenWithProgids"; ValueType: string; ValueName: "MagicMusicWall.Audio"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities\FileAssociations"; ValueType: string; ValueName: ".ape"; ValueData: "MagicMusicWall.Audio"; Tasks: associatefiles
+
+; Opting out also removes registrations made by a previous version.
+Root: HKCU; Subkey: "Software\Classes\MagicMusicWall.Audio"; ValueType: none; Flags: deletekey; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\MagicMusicWall\Capabilities"; ValueType: none; Flags: deletekey; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\RegisteredApplications"; ValueName: "MagicMusicWall"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.mp3\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.flac\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.wav\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.wave\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.aac\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.m4a\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.ogg\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.oga\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.opus\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.wma\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.aiff\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.aif\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.alac\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
+Root: HKCU; Subkey: "Software\Classes\.ape\OpenWithProgids"; ValueName: "MagicMusicWall.Audio"; ValueType: none; Flags: deletevalue; Tasks: not associatefiles
 
 [Icons]
 Name: "{group}\Magic Music Wall"; Filename: "{app}\MagicMusicWall.exe"; WorkingDir: "{app}"; IconFilename: "{app}\Assets\DigitalRCS.ico"

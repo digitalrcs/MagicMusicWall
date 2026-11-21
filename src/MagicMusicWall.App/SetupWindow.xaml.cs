@@ -21,6 +21,7 @@ public partial class SetupWindow : Window
         Volume.Value = _draft.Volume;
         Shuffle.IsChecked = _draft.Shuffle;
         RepeatQueue.IsChecked = _draft.RepeatQueue;
+        QueueExternalFiles.IsChecked = _draft.QueueExternalFiles;
         RescanStartup.IsChecked = _draft.RescanOnStartup;
         RemoteEnabled.IsChecked = _draft.RemoteEnabled;
         BrowserPlaybackEnabled.IsChecked = _draft.BrowserPlaybackEnabled;
@@ -112,6 +113,7 @@ public partial class SetupWindow : Window
         if ((RepeatQueue.IsChecked == true) != _draft.RepeatQueue) updated.RepeatQueue = RepeatQueue.IsChecked == true;
         updated.RemoteAccessToken = _draft.RemoteAccessToken;
         if (newPassphraseHash is not null) updated.RemotePassphraseHash = newPassphraseHash;
+        updated.QueueExternalFiles = QueueExternalFiles.IsChecked == true;
         updated.RescanOnStartup = RescanStartup.IsChecked == true;
         updated.RemoteEnabled = RemoteEnabled.IsChecked == true;
         updated.BrowserPlaybackEnabled = BrowserPlaybackEnabled.IsChecked == true;
