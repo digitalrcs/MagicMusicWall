@@ -179,6 +179,18 @@ public partial class MainWindow
             case "play-playlist": await StartQueue(RemoteResults("", command.PlaylistId)); break;
             case "play-folder": await StartQueue(RemoteFolderSelection(command.FolderId).Descendants.ToList()); break;
             case "play-results": await StartQueue(RemoteResults(command.Query ?? "", command.PlaylistId)); break;
+            case "shuffle": ShuffleBox.IsChecked = command.Enabled!.Value; break;
+            case "repeat": RepeatBox.IsChecked = command.Enabled!.Value; break;
+            case "refresh-audio": RefreshAudio(); break;
+            case "audio-output":
+                if (_cast.Renderer is not null) throw new InvalidOperationException("Stop casting in the Windows app before changing PC audio output.");
+                var outputId = command.AudioOutputId!;
+                if (outputId.Length > 0 && !_vlc.AudioOutputDevices("mmdevice").Any(d => SameOutput(d.DeviceIdentifier, outputId)))
+                    throw new ArgumentException("That audio output is unavailable. Connect it in Windows and refresh the outputs.");
+                var output = SetupAudioChoices(refresh: true).FirstOrDefault(d => SameOutput(d.Id, outputId))
+                    ?? throw new ArgumentException("Audio output unavailable. Refresh outputs and try again.");
+                await SelectAudioOutputAsync(output);
+                break;
             case "volume":
                 VolumeSlider.Value = command.Volume!.Value;
                 break;
@@ -215,7 +227,9 @@ public partial class MainWindow
                 Math.Max(0, main._player.Time), Math.Max(0, main._player.Length), main._settings.Volume,
                 main._cast.Renderer is not null ? main._cast.Name : main.AudioOutputLabel,
                 main._queue.Take(500).Select(ToRemote).ToList(), main._catalog.Document.Playlists.Select(p => new RemotePlaylist(p.Id, p.Name, p.ItemIds.Count)).ToList(),
-                main._current is null ? -1 : main._queueIndex, main._settings.BrowserPlaybackEnabled);
+                main._current is null ? -1 : main._queueIndex, main._settings.BrowserPlaybackEnabled,
+                main.ShuffleBox.IsChecked == true, main.RepeatBox.IsChecked == true, main._settings.AudioDeviceId,
+                main.SetupAudioChoices().Select(d => new RemoteAudioOutput(d.Id, d.Name)).ToList(), main._cast.Renderer is null);
         }, DispatcherPriority.Background, cancellationToken).Task;
 
         public Task<RemoteLibrary> GetLibraryAsync(string query, string? playlistId, CancellationToken cancellationToken) => main.Dispatcher.InvokeAsync(() =>

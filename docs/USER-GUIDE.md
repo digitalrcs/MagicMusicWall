@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **0.9.12**.
+Applies to Magic Music Wall **0.9.13**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 

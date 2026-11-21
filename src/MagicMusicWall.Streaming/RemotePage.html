@@ -20,6 +20,17 @@
     .queue-actions{display:flex;flex-direction:column;flex-shrink:0;gap:2px}.queue-actions button{width:64px;min-width:64px;min-height:44px;padding:8px 5px;font-size:11px}.queue-remove{background:transparent;border:0;color:var(--bad)}.queue-remove:hover:not(:disabled){background:#3b2830}.queue-section .track-row{gap:4px}.queue-section .track-main{align-self:stretch}.session-controls{display:flex;align-items:center;gap:12px}.sign-out{background:transparent;font-size:12px;padding:8px 10px}.sign-in{max-width:520px;margin:12px auto 32px;padding:26px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}.sign-in h1{font:400 30px/1.2 Georgia,serif;margin:8px 0 12px}.sign-in p{font-size:13px;line-height:1.7;color:var(--muted)}.sign-in form{margin-top:20px}.passphrase-label{display:block;font-size:13px}.sign-in input[type=password]{display:block;width:100%;min-height:48px;margin-top:8px;padding:11px 12px;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--text);font-size:16px}.remember-device{display:flex;align-items:center;gap:10px;min-height:48px;margin:9px 0;font-size:13px}.remember-device input{width:20px;height:20px;accent-color:var(--accent)}.sign-in .sign-in-message{margin:14px 0 0;color:var(--bad)}.sign-in .setup-help{margin-top:16px}.sign-in-submit{width:100%}
     @media(max-width:600px){.directory .metadata-column,.directory .directory-meta,.directory .time-column,.directory .directory-time{display:none}.directory .actions-column{width:88px}.directory-actions{white-space:normal}.directory-actions .row-info{width:88px}.directory-actions button,.queue-actions button{font-size:12px}.directory .track-main,.directory-name>.folder-open{gap:7px;padding:9px 5px}.directory .track-subtitle{display:block;font-size:11px}.directory .track-name,.directory .folder-name{font-size:14px}.topbar{flex-wrap:wrap}.session-controls{margin-left:auto}.sign-in{padding:23px 20px}}
     @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+    .section-card{min-width:0;border:2px solid #635975;border-radius:14px;background:var(--panel);padding:0;overflow:hidden}
+    .section-card>summary{cursor:pointer;min-height:50px;padding:15px 18px;background:#252332;color:var(--text);font-weight:600;font-size:16px;list-style-position:inside;overflow-wrap:anywhere}
+    .section-card[open]>summary{border-bottom:1px solid #635975}.section-card>summary::marker{color:var(--accent)}
+    .section-card>summary .queue-count{margin-left:12px;font-weight:400}.section-body{padding:18px}
+    .player-section,.section-card.mode-panel{grid-column:1/-1}.player-section>.player{border:0;border-radius:0;padding:24px;gap:24px}
+    .section-card.queue-section{border:2px solid #635975;padding:0}.pc-settings{margin-top:18px;padding-top:16px;border-top:1px solid #635975}
+    .pc-settings>label{display:block;font-size:12px;color:var(--muted);margin:12px 0 8px}.pc-settings select{width:100%;min-width:0;min-height:44px;background:var(--raised);color:var(--text);border:1px solid #80718f;border-radius:8px;padding:8px;font-size:13px}
+    .queue-options,.output-actions{display:flex;gap:12px;flex-wrap:wrap}.queue-options label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}.queue-options input{width:20px;height:20px;accent-color:var(--accent)}
+    .output-actions{margin-top:10px}.output-actions button{font-size:12px;flex:1}.pc-settings .mode-help{margin-top:10px}
+    @media(max-width:760px){.section-body{padding:14px}.player-section>.player{padding:18px}.section-card>summary{padding:14px}.layout{gap:16px}}
   </style>
 </head>
 <body>
@@ -42,8 +53,8 @@
       <button id="signInRetry" type="button" class="library-retry" hidden>Check again</button>
     </section>
     <main class="layout" id="remoteContent" hidden>
-      <section class="mode-panel" aria-label="Playback destination"><div class="mode-buttons" role="group" aria-label="Playback mode"><button id="pcMode" type="button" aria-pressed="true">Control PC</button><button id="listenMode" type="button" aria-pressed="false" disabled>Listen/watch here</button></div><p id="modeHelp" class="mode-help">Choose music and control playback on your Windows PC.</p></section>
-      <section class="player" aria-label="Now playing">
+      <details class="section-card mode-panel" data-panel="destination" open><summary>Playback destination</summary><div class="section-body"><div class="mode-buttons" role="group" aria-label="Playback mode"><button id="pcMode" type="button" aria-pressed="true">Control PC</button><button id="listenMode" type="button" aria-pressed="false" disabled>Listen/watch here</button></div><p id="modeHelp" class="mode-help">Choose music and control playback on your Windows PC.</p></div></details>
+      <details class="section-card player-section" data-panel="player" open><summary>Now playing</summary><div class="player">
         <div class="playing-info">
           <div class="record" aria-hidden="true"></div>
           <div class="track-copy"><p class="eyebrow" id="playingLabel">Now playing on PC</p><h1 id="trackTitle">Your next favorite</h1><p class="artist" id="trackArtist">Choose something from your collection.</p><p class="output"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v13H4V3Zm2 2v9h12V5H6Zm3 13h6v2h3v2H6v-2h3v-2Z"/></svg><span><span id="outputDestination">Plays on your Windows PC</span><br><span id="outputName">Waiting for the app</span></span></p><button id="nowInfo" class="song-info-button" type="button" disabled>Song info</button></div>
@@ -56,11 +67,18 @@
           </div>
           <div class="timeline"><time id="elapsed">0:00</time><input class="range" id="seek" type="range" min="0" max="1" value="0" step="1000" aria-label="Playback position" disabled><time id="duration">0:00</time></div>
           <div class="volume-row"><label for="volume">Volume</label><input class="range" id="volume" type="range" min="0" max="100" value="0" step="1" disabled><output id="volumeValue" for="volume">—</output></div>
+          <div class="pc-settings" aria-label="PC playback settings">
+            <div class="queue-options"><label><input id="pcShuffle" type="checkbox" disabled> Shuffle</label><label><input id="pcRepeat" type="checkbox" disabled> Repeat queue</label></div>
+            <label for="audioOutput">PC audio output</label>
+            <select id="audioOutput" disabled><option value="">Windows default output</option></select>
+            <div class="output-actions"><button id="applyAudio" type="button" disabled>Use output</button><button id="refreshAudio" type="button" disabled>Refresh outputs</button></div>
+            <p id="audioHelp" class="mode-help">Connect Bluetooth devices in Windows first. This changes the PC output.</p>
+          </div>
         </div>
         <div id="browserControls" class="browser-controls" hidden><button id="listenCurrent" class="listen-current" type="button" disabled>Listen to PC’s current track here</button><audio id="browserAudio" controls preload="none" hidden></audio><video id="browserVideo" controls preload="none" playsinline hidden></video><div class="browser-transport"><button id="browserPrevious" type="button" disabled>← Previous</button><button id="browserNext" type="button" disabled>Next →</button></div><p id="browserStatus" class="browser-status" role="status">Choose a song or video to play on this device.</p></div>
-      </section>
-      <section class="library-section" aria-labelledby="libraryHeading">
-        <div class="section-heading"><div><p class="eyebrow">Pick the soundtrack</p><h2 id="libraryHeading">Your collection</h2></div></div>
+      </div></details>
+      <details class="section-card library-section" data-panel="library" open><summary id="libraryHeading">Your collection</summary><div class="section-body">
+
         <div class="library-tools"><div class="search-wrap"><label for="search" class="sr-only">Search artists, albums or songs</label><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 1 0 4.9 12l5 5 1.4-1.4-5-5A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"/></svg><input id="search" type="search" placeholder="Artist, album, song…" autocomplete="off" maxlength="256"></div><button id="playResults" type="button" class="accent-button" data-command disabled>Play results</button></div>
         <div class="playlist-row"><label for="playlist">Browse</label><select id="playlist"><option value="">Your collection</option></select></div>
         <nav id="folderNavigation" class="folder-navigation" aria-label="Library folders"><div class="folder-toolbar"><button id="folderHome" type="button">All folders</button><button id="folderUp" type="button" disabled>↑ Up</button><div class="collection-view" role="group" aria-label="Collection scope"><button id="folderView" type="button" aria-pressed="true">Folders</button><button id="gridView" type="button" aria-pressed="false">All songs</button></div></div><p id="folderBreadcrumb" class="folder-breadcrumb">Your folders</p></nav>
@@ -69,8 +87,8 @@
         <table id="libraryDirectory" class="directory" aria-label="Library folders and files"><colgroup><col class="name-column"><col class="metadata-column"><col class="time-column"><col class="actions-column"></colgroup><thead><tr><th scope="col">Name</th><th scope="col" class="directory-meta">Artist / Album</th><th scope="col" class="directory-time">Time</th><th scope="col">Actions</th></tr></thead><tbody id="folderRows"></tbody><tbody id="results"></tbody></table>
         <div class="empty" id="libraryEmpty">Your collection will appear here when the Windows app connects.</div>
         <button id="libraryRetry" class="library-retry" type="button" hidden>Try loading again</button>
-      </section>
-      <section class="queue-section" aria-labelledby="queueHeading"><div class="section-heading"><div><p class="eyebrow">Keep it going</p><h2 id="queueHeading">Up next</h2></div><span class="queue-count" id="queueCount">0 tracks</span></div><ol class="track-list" id="queue" aria-label="Playback queue"></ol><div class="empty" id="queueEmpty">Your queue is empty. Choose a song below to start listening.</div></section>
+      </div></details>
+      <details class="section-card queue-section" data-panel="queue" open><summary><span id="queueHeading">Up next</span> <span class="queue-count" id="queueCount">0 tracks</span></summary><div class="section-body"><ol class="track-list" id="queue" aria-label="Playback queue"></ol><div class="empty" id="queueEmpty">Your queue is empty. Choose a song below to start listening.</div></div></details>
     </main>
     <footer class="footer"><a href="https://digitalrcs.com" target="_blank" rel="noopener noreferrer"><img src="/brand-logo.png" alt="DigitalRCS logo" width="27" height="27">DigitalRCS.com</a><span>Your files. Your soundtrack.</span></footer>
   </div>
@@ -90,6 +108,16 @@
   (() => {
     'use strict';
     const $ = id => document.getElementById(id);
+    document.querySelectorAll('details[data-panel]').forEach(panel => {
+      const key = 'magicMusicWall.panel.' + panel.dataset.panel;
+      try { panel.open = localStorage.getItem(key) !== 'closed'; } catch (_) { }
+      const savePanel = () => { try { localStorage.setItem(key, panel.open ? 'open' : 'closed'); } catch (_) { } };
+      panel.addEventListener('toggle', savePanel);
+      window.addEventListener('pagehide', savePanel);
+    });
+    let settingsPending = false;
+    let audioSelectionDirty = false;
+    let audioOptionsSignature = '';
     const storageKey = 'magicMusicWall.remoteKey';
     const linkOptions = new URLSearchParams(location.hash.slice(1));
     let accessKey = linkOptions.get('key') || '';
@@ -517,9 +545,47 @@
         $('volume').value = String(Math.min(100, Math.max(0, finite(next.volume))));
         $('volumeValue').textContent = Math.round(finite(next.volume)) + '%';
       }
+      renderPcSettings();
       renderPlaylists(Array.isArray(next.playlists) ? next.playlists : []);
       renderQueue(playbackMode === 'listen' ? browserQueue : Array.isArray(next.queue) ? next.queue : []);
       setConnection(true);
+    }
+    function renderPcSettings() {
+      const disabled = !connected || playbackMode !== 'pc' || settingsPending;
+      for (const id of ['pcShuffle', 'pcRepeat', 'refreshAudio']) $(id).disabled = disabled;
+      const outputDisabled = disabled || state?.canChangeAudioOutput === false;
+      $('audioOutput').disabled = outputDisabled;
+      $('applyAudio').disabled = outputDisabled;
+      $('audioHelp').textContent = state?.canChangeAudioOutput === false
+        ? 'Stop casting in the Windows app before changing PC audio output.'
+        : 'Connect Bluetooth devices in Windows first. This changes the PC output.';
+      if (!state || settingsPending) return;
+      $('pcShuffle').checked = state.shuffle === true;
+      $('pcRepeat').checked = state.repeatQueue === true;
+      const options = Array.isArray(state.audioOutputs) ? state.audioOutputs : [];
+      const signature = JSON.stringify(options);
+      if (signature !== audioOptionsSignature) {
+        const selected = $('audioOutput').value;
+        $('audioOutput').replaceChildren(...options.map(output => {
+          const option = document.createElement('option');
+          option.value = text(output.id); option.textContent = text(output.name); return option;
+        }));
+        audioOptionsSignature = signature;
+        if (audioSelectionDirty && options.some(output => output.id === selected)) $('audioOutput').value = selected;
+        else audioSelectionDirty = false;
+      }
+      if (!audioSelectionDirty && document.activeElement !== $('audioOutput')) $('audioOutput').value = text(state.audioOutputId);
+    }
+    async function playbackSetting(action, values = {}) {
+      if (settingsPending || !connected || playbackMode !== 'pc') return;
+      settingsPending = true;
+      renderPcSettings();
+      try { await command(action, values); }
+      finally {
+        settingsPending = false;
+        if (action === 'audio-output' || action === 'refresh-audio') { audioSelectionDirty = false; $('audioOutput').blur(); }
+        renderPcSettings();
+      }
     }
     function browserPlaybackAllowed() {
       return connected && playbackMode === 'listen' && state?.browserPlaybackEnabled === true;
@@ -537,6 +603,7 @@
       $('outputName').textContent = listening ? 'This device’s speakers or headphones' : text(state?.output) || 'Windows default output';
     }
     function updatePlaybackMode() {
+      renderPcSettings();
       const listening = playbackMode === 'listen';
       const allowed = browserPlaybackAllowed();
       $('pcMode').setAttribute('aria-pressed', String(!listening));
@@ -1028,6 +1095,11 @@
         if (error.status === 401 || error.status === 403) setConnection(false, error.message);
       }
     }
+    $('pcShuffle').addEventListener('change', () => playbackSetting('shuffle', { enabled: $('pcShuffle').checked }));
+    $('pcRepeat').addEventListener('change', () => playbackSetting('repeat', { enabled: $('pcRepeat').checked }));
+    $('audioOutput').addEventListener('change', () => { audioSelectionDirty = true; });
+    $('applyAudio').addEventListener('click', () => playbackSetting('audio-output', { audioOutputId: $('audioOutput').value }));
+    $('refreshAudio').addEventListener('click', () => playbackSetting('refresh-audio'));
     $('previous').addEventListener('click', () => command('previous'));
     $('toggle').addEventListener('click', () => command('toggle'));
     $('next').addEventListener('click', () => command('next'));

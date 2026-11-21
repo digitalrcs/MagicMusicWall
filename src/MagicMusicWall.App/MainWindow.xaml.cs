@@ -564,6 +564,13 @@ public partial class MainWindow : Window
     private async void AudioDevice_Changed(object sender, SelectionChangedEventArgs e)
     {
         if (!_ready || _updatingDevices || AudioDevicesBox.SelectedItem is not AudioChoice device) return;
+        await SelectAudioOutputAsync(device);
+    }
+    private async Task SelectAudioOutputAsync(AudioChoice device)
+    {
+        _updatingDevices = true;
+        try { AudioDevicesBox.SelectedItem = device; }
+        finally { _updatingDevices = false; }
         _settings.AudioDeviceId = device.Id;
         _settings.AudioDeviceName = device.Name;
         ScheduleSettingsSave();

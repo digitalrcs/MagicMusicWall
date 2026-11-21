@@ -25,12 +25,16 @@ public interface IRemoteControl
 
 public sealed record RemoteItem(string Id, string Title, string Artist, string Album, string Duration, bool IsVideo);
 public sealed record RemotePlaylist(string Id, string Name, int Count);
+public sealed record RemoteAudioOutput(string Id, string Name);
 public sealed record RemoteState(string? CurrentId, string Title, string Artist, bool IsPlaying,
     long PositionMs, long DurationMs, int Volume, string Output,
-    IReadOnlyList<RemoteItem> Queue, IReadOnlyList<RemotePlaylist> Playlists, int CurrentQueueIndex = -1, bool BrowserPlaybackEnabled = false);
+    IReadOnlyList<RemoteItem> Queue, IReadOnlyList<RemotePlaylist> Playlists, int CurrentQueueIndex = -1, bool BrowserPlaybackEnabled = false,
+    bool Shuffle = false, bool RepeatQueue = false, string AudioOutputId = "",
+    IReadOnlyList<RemoteAudioOutput>? AudioOutputs = null, bool CanChangeAudioOutput = true);
 public sealed record RemoteLibrary(IReadOnlyList<RemoteItem> Items, int Total);
 public sealed record RemoteCommand(string Action, string? ItemId = null, string? PlaylistId = null,
-    string? Query = null, int? Volume = null, long? PositionMs = null, int? QueueIndex = null, string? FolderId = null);
+    string? Query = null, int? Volume = null, long? PositionMs = null, int? QueueIndex = null, string? FolderId = null,
+    bool? Enabled = null, string? AudioOutputId = null);
 
 /// <summary>
 /// Optional LAN remote for the desktop player. The page is public, but every API request
@@ -445,7 +449,7 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
     private static bool ValidCommand(RemoteCommand? command)
     {
         if (command is null || command.ItemId?.Length > 128 || command.PlaylistId?.Length > 128 || command.Query?.Length > 256 ||
-            command.Volume is < 0 or > 100 || command.PositionMs < 0 || command.QueueIndex is < 0 or > 499 ||
+            command.AudioOutputId?.Length > 1024 || command.Volume is < 0 or > 100 || command.PositionMs < 0 || command.QueueIndex is < 0 or > 499 ||
             (command.FolderId is not null && !ValidFolderId(command.FolderId))) return false;
         return command.Action switch
         {
@@ -454,6 +458,9 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
             "play-queue-item" or "remove-queue-item" => !string.IsNullOrWhiteSpace(command.ItemId) && command.QueueIndex.HasValue,
             "play-playlist" => !string.IsNullOrWhiteSpace(command.PlaylistId),
             "play-folder" => true,
+            "shuffle" or "repeat" => command.Enabled.HasValue,
+            "audio-output" => command.AudioOutputId is not null,
+            "refresh-audio" => true,
             "volume" => command.Volume.HasValue,
             "seek" => command.PositionMs.HasValue,
             _ => false

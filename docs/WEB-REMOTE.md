@@ -1,6 +1,6 @@
 # Control the PC or listen in a browser
 
-Applies to Magic Music Wall **0.9.12**.
+Applies to Magic Music Wall **0.9.13**.
 
 [Documentation home](README.md)
 
@@ -82,3 +82,13 @@ If the page will not connect, see [remote troubleshooting](TROUBLESHOOTING.md#th
 ## Shuffle when controlling the PC
 
 When **Shuffle** is enabled in the desktop player, the web remote's **Control PC → Next** chooses from the remaining desktop queue entries, just like the desktop Next button. The currently playing song is not restarted when Shuffle is toggled. This does not change the independent **Listen / watch here** queue.
+
+## PC output and queue settings
+
+In **Control PC**, expand **Now playing** to change **Shuffle** and **Repeat queue**. These controls use the same saved settings as the desktop player and update when another controller changes them.
+
+Choose a **PC audio output**, then select **Use output**. **Refresh outputs** reloads the Windows device list. Connect Bluetooth devices in Windows first. Audio-output selection is unavailable while casting; stop casting in the Windows app before selecting a PC output. These controls do not change the phone or browser's audio output in **Listen/watch here** mode.
+
+## Collapse sections
+
+Playback destination, Now playing, Your collection, and Up next have visible borders and clickable headers. Click or tap a header to collapse/expand its section, or focus it and press Enter/Space. The browser remembers each section's state locally. Collapsing a section does not stop playback or clear its contents. If browser storage is blocked, the panels still work but are expanded on a fresh page load.

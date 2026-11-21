@@ -70,6 +70,11 @@ public sealed class RemoteControlServerTests : IAsyncLifetime
         Assert.Contains("\"currentId\":\"track-1\"", body);
         Assert.Contains("\"isPlaying\":true", body);
         Assert.Contains("Unique private track", body);
+        var state = await response.Content.ReadFromJsonAsync<RemoteState>();
+        Assert.True(state!.Shuffle);
+        Assert.True(state.RepeatQueue);
+        Assert.Equal("test-speakers", state.AudioOutputId);
+        Assert.Equal(2, state.AudioOutputs!.Count);
         Assert.DoesNotContain("path", body, StringComparison.OrdinalIgnoreCase);
         Assert.True(response.Headers.CacheControl?.NoStore);
         Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
@@ -118,6 +123,13 @@ public sealed class RemoteControlServerTests : IAsyncLifetime
     [InlineData("{\"action\":\"volume\",\"volume\":0}")]
     [InlineData("{\"action\":\"volume\",\"volume\":100}")]
     [InlineData("{\"action\":\"seek\",\"positionMs\":0}")]
+    [InlineData("{\"action\":\"shuffle\",\"enabled\":true}")]
+    [InlineData("{\"action\":\"shuffle\",\"enabled\":false}")]
+    [InlineData("{\"action\":\"repeat\",\"enabled\":true}")]
+    [InlineData("{\"action\":\"repeat\",\"enabled\":false}")]
+    [InlineData("{\"action\":\"audio-output\",\"audioOutputId\":\"\"}")]
+    [InlineData("{\"action\":\"audio-output\",\"audioOutputId\":\"test-speakers\"}")]
+    [InlineData("{\"action\":\"refresh-audio\"}")]
     public async Task SupportedCommandsAreDispatchedExactlyOnce(string json)
     {
         using var request = Request(HttpMethod.Post, "/api/command", json: json);
@@ -128,6 +140,12 @@ public sealed class RemoteControlServerTests : IAsyncLifetime
     }
 
     [Theory]
+    [InlineData("{\"action\":\"shuffle\"}")]
+    [InlineData("{\"action\":\"repeat\"}")]
+    [InlineData("{\"action\":\"shuffle\",\"enabled\":\"yes\"}")]
+    [InlineData("{\"action\":\"audio-output\"}")]
+    [InlineData("{\"action\":\"audio-output\",\"audioOutputId\":null}")]
+    [InlineData("{\"action\":\"audio-output\",\"audioOutputId\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}")]
     [InlineData("{bad json}")]
     [InlineData("null")]
     [InlineData("{}")]
@@ -267,7 +285,8 @@ public sealed class RemoteControlServerTests : IAsyncLifetime
             ReadStarted.TrySetResult();
             if (BlockRead) await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
             return new RemoteState(Item.Id, Item.Title, Item.Artist, true, 1000, 182000, 65,
-                "Stereo", [Item], [new("playlist-1", "Dinner", 1)]);
+                "Stereo", [Item], [new("playlist-1", "Dinner", 1)], Shuffle: true, RepeatQueue: true,
+                AudioOutputId: "test-speakers", AudioOutputs: [new("", "Windows default output"), new("test-speakers", "Test speakers")]);
         }
         public Task<RemoteLibrary> GetLibraryAsync(string query, string? playlistId, CancellationToken cancellationToken)
         {
