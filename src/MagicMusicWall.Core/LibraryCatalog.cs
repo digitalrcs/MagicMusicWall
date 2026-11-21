@@ -7,6 +7,8 @@ namespace MagicMusicWall.Core;
 /// <summary>Local, read-only media indexing. Library edits never alter or delete media files.</summary>
 public sealed partial class LibraryCatalog
 {
+    public static bool IsSupported(string path) => AudioExtensions.Contains(System.IO.Path.GetExtension(path)) || IsVideo(path);
+    public static bool IsVideo(string path) => VideoExtensions.Contains(System.IO.Path.GetExtension(path));
     private static readonly HashSet<string> AudioExtensions = new(StringComparer.OrdinalIgnoreCase)
     { ".mp3", ".flac", ".wav", ".wave", ".aac", ".m4a", ".ogg", ".oga", ".opus", ".wma", ".aiff", ".aif", ".alac", ".ape" };
     private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)

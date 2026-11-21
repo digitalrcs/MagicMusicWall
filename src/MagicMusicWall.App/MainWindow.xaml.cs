@@ -33,7 +33,7 @@ public partial class MainWindow : Window
     private bool _resumePaused;
     private MediaItem? _current;
 
-    public MainWindow()
+    public MainWindow(string[]? startupFiles = null)
     {
         InitializeComponent();
         _settings = AppPreferences.Load(App.DataDirectory);
@@ -78,10 +78,11 @@ public partial class MainWindow : Window
         if (portableMessage is not null) Status(portableMessage);
         Loaded += async (_, _) =>
         {
+            if (startupFiles is { Length: > 0 }) await OpenFilesAsync(startupFiles);
             await ConfigureRemote();
             var i = Array.IndexOf(App.Arguments, "--import");
             if (i >= 0 && i + 1 < App.Arguments.Length) await ImportPaths([App.Arguments[i + 1]]);
-            else if (_settings.RescanOnStartup) await RescanLibrary();
+            else if (startupFiles is not { Length: > 0 } && _settings.RescanOnStartup) await RescanLibrary();
         };
     }
 
