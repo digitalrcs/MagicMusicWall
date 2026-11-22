@@ -1,6 +1,6 @@
 # Build and package Magic Music Wall
 
-Applies to Magic Music Wall **0.9.14**.
+Applies to Magic Music Wall **0.9.15**.
 
 [Documentation home](README.md) · [Contributing](../CONTRIBUTING.md)
 
@@ -61,7 +61,7 @@ Build the App first for the bundled VLC path. The second command generates a tem
 For native playback volume checks on Windows, run the opt-in console project against the VLC directory of an existing published payload:
 
 ```powershell
-dotnet run --project tests/MagicMusicWall.Playback.Checks -c Release -- --native-dir artifacts/release-staging/0.9.14/app/libvlc/win-x64
+dotnet run --project tests/MagicMusicWall.Playback.Checks -c Release -- --native-dir artifacts/release-staging/0.9.15/app/libvlc/win-x64
 ```
 
 Publish the payload first, or substitute another existing `libvlc/win-x64` directory. The check generates a temporary silent WAV and verifies VLC volume and mute state across track changes. It is separate from `dotnet test` and does not verify audible output quality or Bluetooth hardware.
@@ -102,12 +102,12 @@ MusicBrainz enrichment is a separate, explicitly started API workflow. `MediaIte
 
 `scripts\Publish.ps1` publishes a Windows x64 payload with its .NET runtime and VLC files. Keep the whole payload together; this is not a single-EXE distribution.
 
-Build release packages from a fresh, dedicated staging directory. Do not overwrite the folder of a running app and do not stage user data or personal media. These examples use the versioned staging directory `artifacts\release-staging\0.9.14\app`.
+Build release packages from a fresh, dedicated staging directory. Do not overwrite the folder of a running app and do not stage user data or personal media. These examples use the versioned staging directory `artifacts\release-staging\0.9.15\app`.
 
 Publish the staged payload with:
 
 ```powershell
-pwsh -File scripts/Publish.ps1 -OutputDirectory artifacts/release-staging/0.9.14/app -SkipArchive
+pwsh -File scripts/Publish.ps1 -OutputDirectory artifacts/release-staging/0.9.15/app -SkipArchive
 ```
 
 The publish script assembles the application, required runtime/native libraries, third-party notices/license texts, and **OfflineDocs**. It renders the Markdown documentation using PowerShell 7's `ConvertFrom-Markdown`. `-SkipArchive` leaves archive creation to the release-packaging script.
@@ -117,9 +117,9 @@ The publish script assembles the application, required runtime/native libraries,
 Once the staged payload is ready:
 
 ```powershell
-.\scripts\Build-Installer.ps1 -PayloadDirectory .\artifacts\release-staging\0.9.14\app -OutputDirectory .\artifacts\release\0.9.14 -Version 0.9.14
-.\scripts\Package-ThirdPartySources.ps1 -OutputDirectory .\artifacts\release\0.9.14 -Version 0.9.14
-.\scripts\Package-Release.ps1 -PayloadDirectory .\artifacts\release-staging\0.9.14\app -OutputDirectory .\artifacts\release\0.9.14 -Version 0.9.14 -AdditionalAsset .\artifacts\release\0.9.14\MagicMusicWall-0.9.14-ThirdParty-Sources.zip
+.\scripts\Build-Installer.ps1 -PayloadDirectory .\artifacts\release-staging\0.9.15\app -OutputDirectory .\artifacts\release\0.9.15 -Version 0.9.15
+.\scripts\Package-ThirdPartySources.ps1 -OutputDirectory .\artifacts\release\0.9.15 -Version 0.9.15
+.\scripts\Package-Release.ps1 -PayloadDirectory .\artifacts\release-staging\0.9.15\app -OutputDirectory .\artifacts\release\0.9.15 -Version 0.9.15 -AdditionalAsset .\artifacts\release\0.9.15\MagicMusicWall-0.9.15-ThirdParty-Sources.zip
 ```
 
 `Build-Installer.ps1` also accepts `-IsccPath` when the Inno compiler is installed in a nonstandard location. `Package-Release.ps1` accepts `-InstallerPath` for an already built installer and `-AdditionalAsset` for reviewed release companion files. It packages prepared inputs; it does not rebuild the application.
@@ -127,13 +127,13 @@ Once the staged payload is ready:
 Expected release files (publish the six files other than the optional individual `.sha256` sidecars):
 
 ```text
-artifacts/release/0.9.14/
-  MagicMusicWall-0.9.14-Setup-x64.exe
-  MagicMusicWall-0.9.14-Setup-x64.exe.sha256
-  MagicMusicWall-0.9.14-Portable-x64.zip
-  MagicMusicWall-0.9.14-ThirdParty-Sources.zip
-  MagicMusicWall-0.9.14-ThirdParty-Sources.zip.sha256
-  MagicMusicWall-0.9.14-USB-Kit.zip
+artifacts/release/0.9.15/
+  MagicMusicWall-0.9.15-Setup-x64.exe
+  MagicMusicWall-0.9.15-Setup-x64.exe.sha256
+  MagicMusicWall-0.9.15-Portable-x64.zip
+  MagicMusicWall-0.9.15-ThirdParty-Sources.zip
+  MagicMusicWall-0.9.15-ThirdParty-Sources.zip.sha256
+  MagicMusicWall-0.9.15-USB-Kit.zip
   START-HERE.txt
   SHA256SUMS.txt
 ```

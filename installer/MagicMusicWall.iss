@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.9.14"
+  #define AppVersion "0.9.15"
 #endif
 #ifndef PayloadDirectory
   #error PayloadDirectory must point to a clean self-contained published application.

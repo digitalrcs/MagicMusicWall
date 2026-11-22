@@ -328,7 +328,24 @@ public sealed partial class LibraryCatalog
 
     public void RemoveFolder(string folderId)
     {
-        lock (_gate) { Document.Folders.RemoveAll(f => f.Id == folderId); SaveLocked(); }
+        lock (_gate)
+        {
+            var folder = Document.Folders.FirstOrDefault(f => f.Id == folderId);
+            if (folder is null) return;
+            var candidates = FolderBrowser.Browse([folder], Document.Items, folder.Path).Descendants.Select(i => i.Id).ToHashSet(StringComparer.Ordinal);
+            Document.Folders.RemoveAll(f => f.Id == folderId);
+            var loose = FolderBrowser.Browse(Document.Folders, Document.Items, FolderBrowser.LooseFiles).Files;
+            RemoveItems(loose.Where(i => candidates.Contains(i.Id)).Select(i => i.Id));
+        }
+    }
+
+    /// <summary>Remove untracked library entries without changing media on disk.</summary>
+    public void ClearAddedFiles()
+    {
+        lock (_gate)
+        {
+            RemoveItems(FolderBrowser.Browse(Document.Folders, Document.Items, FolderBrowser.LooseFiles).Files.Select(i => i.Id));
+        }
     }
 
     public void RemoveItems(IEnumerable<string> ids)

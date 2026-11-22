@@ -191,6 +191,19 @@ public sealed class RemoteBrowserMediaTests : IAsyncLifetime
         Assert.False(timeout.IsCancellationRequested, "Shutdown should abort the transfer without waiting for a client timeout.");
     }
 
+    [Fact]
+    public async Task ExistingTicketCannotReopenRemovedLibraryItem()
+    {
+        var ticket = await Ticket();
+        _control.Enabled = false; // Same interface result as removing the indexed item.
+        using var response = await _client.GetAsync(_server.BaseUrl + ticket.Url);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.True(File.Exists(MediaPath));
+        _control.Enabled = true;
+        using var revoked = await _client.GetAsync(_server.BaseUrl + ticket.Url);
+        Assert.Equal(HttpStatusCode.NotFound, revoked.StatusCode);
+    }
+
     private class PlaybackControl : IRemoteControl
     {
         public List<RemoteCommand> Commands { get; } = [];

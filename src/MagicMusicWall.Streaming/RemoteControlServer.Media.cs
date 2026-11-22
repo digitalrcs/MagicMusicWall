@@ -10,7 +10,7 @@ public sealed partial class RemoteControlServer
     private static void MapBrowserStreaming(WebApplication application, IRemoteControl control, CancellationToken lifetime)
     {
         // A new store is captured by each listener, so restarting cannot revive an old URL.
-        var tickets = new BrowserMediaTickets(lifetime);
+        var tickets = new BrowserMediaTickets(control as IRemoteMedia, lifetime);
         application.MapPost("/api/stream", async (HttpContext context) =>
         {
             if (!context.Request.HasJsonContentType())
@@ -59,7 +59,7 @@ public sealed partial class RemoteControlServer
             var media = control is IRemoteMedia source ? await source.GetMediaFileAsync(itemId, request.Token).ConfigureAwait(false) : null;
             var file = media is null ? null : BrowserMediaFile.Openable(media.AbsolutePath);
             if (file is null) { await MediaNotFound(context).ConfigureAwait(false); return; }
-            var ticket = tickets.Add(file);
+            var ticket = tickets.Add(itemId, file);
             await context.Response.WriteAsJsonAsync(ticket, JsonOptions, request.Token).ConfigureAwait(false);
         });
         application.MapMethods("/stream/{token}", ["GET", "HEAD"], tickets.Serve);
@@ -91,13 +91,13 @@ public sealed partial class RemoteControlServer
         }
     }
 
-    private sealed class BrowserMediaTickets(CancellationToken lifetime)
+    private sealed class BrowserMediaTickets(IRemoteMedia? source, CancellationToken lifetime)
     {
         private const int MaximumTickets = 128;
         private readonly object _gate = new();
         private readonly Dictionary<string, Entry> _entries = new(StringComparer.Ordinal);
 
-        public RemoteMediaTicket Add(BrowserMediaFile file)
+        public RemoteMediaTicket Add(string itemId, BrowserMediaFile file)
         {
             lock (_gate)
             {
@@ -108,7 +108,7 @@ public sealed partial class RemoteControlServer
                 string token;
                 do { token = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32)); } while (_entries.ContainsKey(token));
                 var expires = now.AddHours(8);
-                _entries.Add(token, new(file, expires));
+                _entries.Add(token, new(itemId, file, expires));
                 return new("/stream/" + token, expires, file.ContentType);
             }
         }
@@ -134,6 +134,14 @@ public sealed partial class RemoteControlServer
             }
             using (revocation)
             {
+                // A previously issued URL must not reopen a removed library entry.
+                var current = source is null ? null : await source.GetMediaFileAsync(entry.ItemId, context.RequestAborted).ConfigureAwait(false);
+                if (current is null || !string.Equals(current.AbsolutePath, entry.File.FullPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    lock (_gate) _entries.Remove(token!);
+                    await MediaNotFound(context).ConfigureAwait(false);
+                    return;
+                }
                 FileStream stream;
                 try
                 {
@@ -151,6 +159,6 @@ public sealed partial class RemoteControlServer
             }
         }
 
-        private sealed record Entry(BrowserMediaFile File, DateTimeOffset ExpiresAt);
+        private sealed record Entry(string ItemId, BrowserMediaFile File, DateTimeOffset ExpiresAt);
     }
 }

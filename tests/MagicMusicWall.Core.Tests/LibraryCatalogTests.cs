@@ -158,15 +158,91 @@ public sealed class LibraryCatalogTests : IDisposable
     }
 
     [Fact]
-    public async Task RemovingFolderOnlyStopsDiscoveryAndKeepsImportedItems()
+    public async Task RemovingFolderRemovesTracksAndPlaylistReferencesWithoutDeletingMedia()
     {
         var file = WriteWave(Path.Combine(_root, "music"), "One.wav");
         var catalog = NewCatalog();
         await catalog.AddFolderAsync(Path.GetDirectoryName(file)!);
+        var bytes = File.ReadAllBytes(file);
+        var playlist = catalog.CreatePlaylist("Saved");
+        catalog.AddToPlaylist(playlist.Id, catalog.Document.Items.Select(i => i.Id));
         catalog.RemoveFolder(catalog.Document.Folders[0].Id);
         Assert.Empty(catalog.Document.Folders);
+        Assert.Empty(catalog.Document.Items);
+        Assert.Empty(playlist.ItemIds);
+        Assert.Equal(bytes, File.ReadAllBytes(file));
+        var reloaded = NewCatalog();
+        await reloaded.RescanAsync();
+        Assert.Empty(reloaded.Document.Items);
+        Assert.Empty(reloaded.Document.Playlists.Single(p => p.Id == playlist.Id).ItemIds);
+    }
+
+    [Fact]
+    public async Task RemovingOuterFolderKeepsNestedSourceAndSiblingPrefixAndLooseItems()
+    {
+        var root = Path.Combine(_root, "Music");
+        var removed = WriteWave(root, "One.wav");
+        var nested = WriteWave(Path.Combine(root, "Nested"), "Two.wav");
+        var sibling = WriteWave(Path.Combine(_root, "Music2"), "Three.wav");
+        var loose = WriteWave(Path.Combine(_root, "Loose"), "Four.wav");
+        var catalog = NewCatalog();
+        await catalog.AddFolderAsync(root);
+        await catalog.AddFolderAsync(Path.GetDirectoryName(nested)!);
+        await catalog.AddFolderAsync(Path.GetDirectoryName(sibling)!);
+        await catalog.AddFilesAsync([loose]);
+        var playlist = catalog.CreatePlaylist("Saved");
+        catalog.AddToPlaylist(playlist.Id, catalog.Document.Items.Select(i => i.Id));
+        var outer = catalog.Document.Folders.First(f => f.Path == root);
+        outer.Path = outer.Path.ToUpperInvariant();
+        catalog.RemoveFolder(outer.Id);
+        Assert.Equal(3, catalog.Document.Items.Count);
+        Assert.DoesNotContain(catalog.Document.Items, i => i.Path == removed);
+        Assert.Equal(3, playlist.ItemIds.Count);
+        catalog.RemoveFolder("unknown");
+        Assert.Equal(3, catalog.Document.Items.Count);
+        Assert.True(File.Exists(removed));
+    }
+
+    [Fact]
+    public async Task RemovingNestedSourceKeepsTracksCoveredByParent()
+    {
+        var root = Path.Combine(_root, "Music");
+        var file = WriteWave(Path.Combine(root, "Nested"), "One.wav");
+        var catalog = NewCatalog();
+        await catalog.AddFolderAsync(root);
+        await catalog.AddFolderAsync(Path.GetDirectoryName(file)!);
+        catalog.RemoveFolder(catalog.Document.Folders.Single(f => f.Path != root).Id);
         Assert.Single(catalog.Document.Items);
-        Assert.True(File.Exists(file));
+        Assert.Single(catalog.Document.Folders);
+    }
+
+    [Fact]
+    public async Task ClearAddedFilesRemovesLegacyOrphansAndLooseFilesOnlyAndPersists()
+    {
+        var managed = WriteWave(Path.Combine(_root, "Managed"), "One.wav");
+        var orphan = WriteWave(Path.Combine(_root, "Removed"), "Two.wav");
+        var loose = WriteWave(Path.Combine(_root, "Loose"), "Three.wav");
+        var catalog = NewCatalog();
+        await catalog.AddFolderAsync(Path.GetDirectoryName(managed)!);
+        await catalog.AddFolderAsync(Path.GetDirectoryName(orphan)!);
+        catalog.Document.Folders.RemoveAll(f => f.Path == Path.GetDirectoryName(orphan)); // Older version behavior.
+        await catalog.AddFilesAsync([loose]);
+        var playlist = catalog.CreatePlaylist("Saved");
+        catalog.AddToPlaylist(playlist.Id, catalog.Document.Items.Select(i => i.Id));
+        var before = new[] { managed, orphan, loose }.ToDictionary(p => p, File.ReadAllBytes);
+        catalog.ClearAddedFiles();
+        Assert.Equal(managed, Assert.Single(catalog.Document.Items).Path);
+        Assert.Equal(catalog.Document.Items[0].Id, Assert.Single(playlist.ItemIds));
+        foreach (var pair in before) Assert.Equal(pair.Value, File.ReadAllBytes(pair.Key));
+        var reloaded = NewCatalog();
+        await reloaded.RescanAsync();
+        Assert.Equal(managed, Assert.Single(reloaded.Document.Items).Path);
+        reloaded.ClearAddedFiles();
+        Assert.Single(reloaded.Document.Items);
+        reloaded.RemoveFolder(reloaded.Document.Folders[0].Id);
+        await reloaded.AddFilesAsync([loose]);
+        reloaded.ClearAddedFiles();
+        Assert.Empty(NewCatalog().Document.Items);
     }
 
     [Fact]

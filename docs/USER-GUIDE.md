@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **0.9.14**.
+Applies to Magic Music Wall **0.9.15**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
@@ -134,7 +134,10 @@ Changes to folders/playlists and the main player's output, volume, shuffle and r
 
 ## Keep your collection safe
 
-- **Remove from library (keep file)** removes the catalog entry and its playlist references; the media stays on disk. Rescanning its folder can import it again.
+- **Manage folders → Remove selected source** removes that source and its tracks from the library, saved playlists and PC queue. Tracks still covered by another managed folder remain. Files on disk are never deleted.
+- **Manage folders → Clear added files** removes all entries outside your remaining managed folders, including tracks left under **Added files** after removing a source in older versions. This keeps the files on disk and does not remove tracks inside managed folders.
+- **Remove from library (keep file)** removes selected catalog entries, playlist references and PC queue entries. To clear selected added files, open **Added files**, select the tracks (Ctrl+A selects all visible tracks), and use this command. Clear a search/filter first if you want every track. Rescanning a managed folder can import its removed entries again.
+- If a removed track is playing on the PC, playback stops. Old browser links cannot reopen removed tracks; audio already delivered to a browser may remain buffered there.
 - Metadata lookup does not write tags until you explicitly confirm **Save checked tags**. See the [metadata guide](METADATA.md).
 - Keep a backup of your active data folder and a separate backup of your media. **Setup → TV & data** shows the data location.
 

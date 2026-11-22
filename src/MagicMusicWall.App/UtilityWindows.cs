@@ -48,21 +48,50 @@ internal sealed class TextPrompt : Window
 
 internal sealed class FolderWindow : Window
 {
-    public FolderWindow(LibraryCatalog catalog)
+    public FolderWindow(LibraryCatalog catalog, Func<bool> canRemove, Func<Task> libraryChanged)
     {
         Ui.Theme(this);
-        Title = "Library folders"; Width = 690; Height = 430; WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        Title = "Library folders"; Width = 730; Height = 500; MinWidth = 590; MinHeight = 400; WindowStartupLocation = WindowStartupLocation.CenterOwner;
         var panel = new DockPanel { Margin = new Thickness(24) };
         var heading = Ui.Text("Your library sources", 24); DockPanel.SetDock(heading, Dock.Top); panel.Children.Add(heading);
-        var help = Ui.Text("Rescan checks these folders for new and changed files. Removing a source stops future scans; your existing library entries and files are kept.", 13, true); DockPanel.SetDock(help, Dock.Top); panel.Children.Add(help);
-        var list = new ListBox { DisplayMemberPath = "Path", ItemsSource = catalog.Document.Folders.ToList() };
-        var remove = Ui.Button("Remove selected source", (_, _) =>
+        var help = Ui.Text("Removing a source also removes its tracks from the library, playlists and PC queue. Tracks covered by another source stay. Files on disk are never deleted.", 13, true); DockPanel.SetDock(help, Dock.Top); panel.Children.Add(help);
+        var list = new ListBox { DisplayMemberPath = "Path" };
+        var actions = new StackPanel();
+        var added = Ui.Text("", 13, true);
+        var busy = false;
+        Button clear = null!;
+        async Task Change(Action change)
         {
-            if (list.SelectedItem is not LibraryFolder folder) return;
-            try { catalog.RemoveFolder(folder.Id); list.ItemsSource = catalog.Document.Folders.ToList(); }
+            if (busy || !canRemove()) return;
+            busy = true; actions.IsEnabled = false;
+            try { change(); await libraryChanged(); }
             catch (Exception ex) { MessageBox.Show(this, ex.Message, "Library folders"); }
+            finally { busy = false; actions.IsEnabled = true; Refresh(); }
+        }
+        var remove = Ui.Button("Remove selected source", async (_, _) =>
+        {
+            if (list.SelectedItem is not LibraryFolder folder || !canRemove()) return;
+            if (MessageBox.Show(this, "Remove this source and its tracks from the library, playlists and PC queue? Files stay on disk. Tracks covered by another source are kept.", "Remove library source", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+            await Change(() => catalog.RemoveFolder(folder.Id));
         });
-        DockPanel.SetDock(remove, Dock.Bottom); panel.Children.Add(remove); panel.Children.Add(list); Content = panel;
+        clear = Ui.Button("Clear added files", async (_, _) =>
+        {
+            if (!canRemove()) return;
+            var count = FolderBrowser.Browse(catalog.Document.Folders, catalog.Document.Items, FolderBrowser.LooseFiles).Files.Count;
+            if (count == 0 || MessageBox.Show(this, $"Remove all {count:N0} added files from the library, playlists and PC queue? Files stay on disk. Managed folder tracks are kept.", "Clear added files", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+            await Change(catalog.ClearAddedFiles);
+        });
+        void Refresh()
+        {
+            list.ItemsSource = catalog.Document.Folders.ToList();
+            var count = FolderBrowser.Browse(catalog.Document.Folders, catalog.Document.Items, FolderBrowser.LooseFiles).Files.Count;
+            added.Text = $"Added files: {count:N0} tracks outside your managed folders, including entries kept by older versions.";
+            clear.IsEnabled = count > 0;
+        }
+        actions.Children.Add(remove); actions.Children.Add(added); actions.Children.Add(clear);
+        DockPanel.SetDock(actions, Dock.Bottom); panel.Children.Add(actions); panel.Children.Add(list); Content = panel;
+        Closing += (_, e) => { if (busy) e.Cancel = true; };
+        Refresh();
     }
 }
 

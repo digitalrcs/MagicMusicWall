@@ -226,7 +226,7 @@ public partial class MainWindow : Window
     private void ManageFolders_Click(object sender, RoutedEventArgs e)
     {
         if (!CanEdit()) return;
-        new FolderWindow(_catalog) { Owner = this }.ShowDialog();
+        new FolderWindow(_catalog, CanRemoveLibraryItems, ReconcileRemovedLibraryItemsAsync) { Owner = this }.ShowDialog();
         RefreshPlaylists();
         RefreshView();
     }
@@ -292,13 +292,13 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { Error(ex); }
     }
-    private void RemoveFromLibrary_Click(object sender, RoutedEventArgs e)
+    private async void RemoveFromLibrary_Click(object sender, RoutedEventArgs e)
     {
-        if (!CanEdit()) return;
+        if (!CanRemoveLibraryItems()) return;
         var ids = Selection().Select(i => i.Id).ToList();
         if (ids.Count == 0) return;
         if (MessageBox.Show(this, $"Remove {ids.Count} items from the library and playlists? Files stay on disk. A later folder rescan can import them again.", "Remove library entries", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
-        try { _catalog.RemoveItems(ids); RefreshPlaylists(); RefreshView(); Status("Removed library entries. Files were kept."); } catch (Exception ex) { Error(ex); }
+        try { _catalog.RemoveItems(ids); await ReconcileRemovedLibraryItemsAsync(); Status("Removed library entries. Files were kept."); } catch (Exception ex) { Error(ex); }
     }
     private void ShowFile_Click(object sender, RoutedEventArgs e)
     {

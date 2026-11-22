@@ -1,6 +1,6 @@
-# Playback visuals (version 0.9.14)
+# Playback visuals (version 0.9.15)
 
-Applies to Magic Music Wall **0.9.14**.
+Applies to Magic Music Wall **0.9.15**.
 
 ## More room for playlists
 

@@ -84,7 +84,7 @@ public partial class MainWindow
     internal void ManageSetupFolders(Window owner)
     {
         if (!CanEdit()) return;
-        new FolderWindow(_catalog) { Owner = owner }.ShowDialog();
+        new FolderWindow(_catalog, CanRemoveLibraryItems, ReconcileRemovedLibraryItemsAsync) { Owner = owner }.ShowDialog();
         RefreshView();
     }
 

@@ -1,6 +1,6 @@
 # Common questions
 
-Applies to Magic Music Wall **0.9.14**.
+Applies to Magic Music Wall **0.9.15**.
 
 [All guides](README.md) · [First-use walkthrough](GETTING-STARTED.md)
 
@@ -51,3 +51,9 @@ The installer alone does not contain your library or music. Portable mode can ca
 Close the app and run the newer installer at the same install location. Back up your active data folder first. Read offline help from the **Magic Music Wall documentation** Start menu shortcut or **OfflineDocs/index.html** in the package.
 
 For help, read [Troubleshooting](TROUBLESHOOTING.md), then report the version, exact steps, expected/actual result and visible error in [GitHub Issues](https://github.com/digitalrcs/MagicMusicWall/issues). Do not attach private music, a complete library/settings file, access URLs, QR codes or tokens.
+
+## How do I clear Added files without deleting music from my drive?
+
+Open **Manage folders** (also available in **Setup → Library**) and click **Clear added files**. Confirm to remove those entries from the library, playlists and PC queue. Your actual files stay on disk. This also clears entries left by older versions after removing their source folders.
+
+Starting in 0.9.15, **Remove selected source** removes its tracks automatically, except tracks still covered by another managed source. Use **Remove from library (keep file)** for individual selections.

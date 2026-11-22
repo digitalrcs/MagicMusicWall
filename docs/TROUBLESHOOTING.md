@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Applies to Magic Music Wall **0.9.14**.
+Applies to Magic Music Wall **0.9.15**.
 
 [Documentation home](README.md)
 
