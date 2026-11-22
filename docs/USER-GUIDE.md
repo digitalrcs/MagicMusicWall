@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **0.9.16**.
+Applies to Magic Music Wall **0.9.17**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
@@ -144,3 +144,5 @@ Changes to folders/playlists and the main player's output, volume, shuffle and r
 - Keep a backup of your active data folder and a separate backup of your media. **Setup → TV & data** shows the data location.
 
 For phone controls, QR codes and independent browser listening, continue to the [web remote guide](WEB-REMOTE.md).
+
+Double-click a track in **Up Next** to play that queue position. Scrollbar arrows, the scrollbar track/thumb, and empty queue space only navigate the list; they do not restart playback.

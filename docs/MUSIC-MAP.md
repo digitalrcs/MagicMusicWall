@@ -1,6 +1,6 @@
 # Explore your music constellation
 
-Applies to Magic Music Wall **0.9.16**.
+Applies to Magic Music Wall **0.9.17**.
 
 [Documentation home](README.md)
 

@@ -424,7 +424,18 @@ public partial class MainWindow : Window
     }
     private async void Next_Click(object sender, RoutedEventArgs e) => await AdvanceQueue();
     private async void Previous_Click(object sender, RoutedEventArgs e) { if (_queueChanging || _closing) return; if (_player.Time > 3000 && _player.IsSeekable) _player.Time = 0; else if (_queue.Count > 0) await PlayIndex(Math.Max(0, _queueIndex - 1)); }
-    private async void Queue_DoubleClick(object sender, MouseButtonEventArgs e) { if (!_queueChanging && !_closing && QueueList.SelectedIndex >= 0) await PlayIndex(QueueList.SelectedIndex); }
+    private async void Queue_DoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (_queueChanging || _closing || e.ChangedButton != MouseButton.Left) return;
+        // Scrollbar and empty-space clicks belong to the list, but not to a track.
+        var row = e.OriginalSource is DependencyObject source
+            ? ItemsControl.ContainerFromElement(QueueList, source) as ListBoxItem : null;
+        if (row is null) return;
+        var index = QueueList.ItemContainerGenerator.IndexFromContainer(row);
+        if (index < 0 || index >= _queue.Count) return;
+        e.Handled = true;
+        await PlayIndex(index);
+    }
     private async void ClearQueue_Click(object sender, RoutedEventArgs e) => await ClearQueueAsync();
     private async Task ClearQueueAsync()
     {
