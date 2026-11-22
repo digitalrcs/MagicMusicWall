@@ -130,6 +130,9 @@ public sealed class RemoteControlServerTests : IAsyncLifetime
     [InlineData("{\"action\":\"audio-output\",\"audioOutputId\":\"\"}")]
     [InlineData("{\"action\":\"audio-output\",\"audioOutputId\":\"test-speakers\"}")]
     [InlineData("{\"action\":\"refresh-audio\"}")]
+    [InlineData("{\"action\":\"clear-queue\"}")]
+    [InlineData("{\"action\":\"queue-selection\",\"itemIds\":[\"track-1\"]}")]
+    [InlineData("{\"action\":\"queue-selection\",\"folderIds\":[\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"]}")]
     public async Task SupportedCommandsAreDispatchedExactlyOnce(string json)
     {
         using var request = Request(HttpMethod.Post, "/api/command", json: json);
@@ -146,6 +149,13 @@ public sealed class RemoteControlServerTests : IAsyncLifetime
     [InlineData("{\"action\":\"audio-output\"}")]
     [InlineData("{\"action\":\"audio-output\",\"audioOutputId\":null}")]
     [InlineData("{\"action\":\"audio-output\",\"audioOutputId\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}")]
+    [InlineData("{\"action\":\"queue-selection\"}")]
+    [InlineData("{\"action\":\"resolve-selection\",\"itemIds\":[]}")]
+    [InlineData("{\"action\":\"queue-selection\",\"itemIds\":[null]}")]
+    [InlineData("{\"action\":\"queue-selection\",\"itemIds\":[\"\"]}")]
+    [InlineData("{\"action\":\"queue-selection\",\"folderIds\":[null]}")]
+    [InlineData("{\"action\":\"queue-selection\",\"folderIds\":[\"not-a-folder-id\"]}")]
+    [InlineData("{\"action\":\"queue-selection\",\"itemIds\":[42]}")]
     [InlineData("{bad json}")]
     [InlineData("null")]
     [InlineData("{}")]
@@ -189,13 +199,48 @@ public sealed class RemoteControlServerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task BrowserSelectionResolutionDoesNotDispatchPlayback()
+    {
+        using var request = Request(HttpMethod.Post, "/api/command", json: """{"action":"resolve-selection","itemIds":["track-1"]}""");
+        using var response = await _client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var resolved = await response.Content.ReadFromJsonAsync<RemoteLibrary>();
+        Assert.Equal("track-1", Assert.Single(resolved!.Items).Id);
+        Assert.Empty(_control.Commands);
+    }
+
+    [Fact]
+    public async Task StaleBrowserSelectionReturnsSafeError()
+    {
+        using var request = Request(HttpMethod.Post, "/api/command", json: """{"action":"resolve-selection","itemIds":["missing"]}""");
+        using var response = await _client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Contains("Nothing was added", await response.Content.ReadAsStringAsync());
+        Assert.DoesNotContain("private-folder", await response.Content.ReadAsStringAsync());
+        Assert.Empty(_control.Commands);
+    }
+
+    [Theory]
+    [InlineData(500, HttpStatusCode.NoContent)]
+    [InlineData(501, HttpStatusCode.BadRequest)]
+    public async Task BulkSelectionIsBoundedAndPreservesIds(int count, HttpStatusCode expected)
+    {
+        var ids = Enumerable.Range(0, count).Select(i => "track-" + i).ToArray();
+        using var request = Request(HttpMethod.Post, "/api/command", json: System.Text.Json.JsonSerializer.Serialize(new RemoteCommand("queue-selection", ItemIds: ids)));
+        using var response = await _client.SendAsync(request);
+        Assert.Equal(expected, response.StatusCode);
+        if (expected == HttpStatusCode.NoContent) Assert.Equal(ids, Assert.Single(_control.Commands).ItemIds);
+        else Assert.Empty(_control.Commands);
+    }
+
+    [Fact]
     public async Task FormsOversizedBodiesAndCrossOriginCommandsAreRejected()
     {
         using var form = Request(HttpMethod.Post, "/api/command");
         form.Content = new StringContent("action=next", Encoding.UTF8, "application/x-www-form-urlencoded");
         using var formResponse = await _client.SendAsync(form);
         Assert.Equal(HttpStatusCode.UnsupportedMediaType, formResponse.StatusCode);
-        using var oversized = Request(HttpMethod.Post, "/api/command", json: "{\"action\":\"play-results\",\"query\":\"" + new string('x', 17000) + "\"}");
+        using var oversized = Request(HttpMethod.Post, "/api/command", json: "{\"action\":\"play-results\",\"query\":\"" + new string('x', 131073) + "\"}");
         using var oversizedResponse = await _client.SendAsync(oversized);
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, oversizedResponse.StatusCode);
         using var crossOrigin = Request(HttpMethod.Post, "/api/command", json: "{\"action\":\"next\"}");
@@ -268,7 +313,7 @@ public sealed class RemoteControlServerTests : IAsyncLifetime
         await Assert.ThrowsAsync<InvalidOperationException>(() => _server.StartAsync("127.0.0.1", 0, Token, _control));
     }
 
-    private sealed class FakeControl : IRemoteControl
+    private sealed class FakeControl : IRemoteControl, IRemoteQueueSelection
     {
         private static readonly RemoteItem Item = new("track-1", "Unique private track", "Artist", "Album", "3:02", false);
         public int ReadCount { get; private set; }
@@ -279,6 +324,11 @@ public sealed class RemoteControlServerTests : IAsyncLifetime
         public bool BlockRead { get; set; }
         public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public List<RemoteCommand> Commands { get; } = [];
+        public Task<IReadOnlyList<RemoteItem>> ResolveQueueItemsAsync(RemoteCommand command, CancellationToken cancellationToken)
+        {
+            if (command.ItemIds?.Contains("missing") == true) throw new KeyNotFoundException("private-folder/secret.mp3");
+            return Task.FromResult<IReadOnlyList<RemoteItem>>([Item]);
+        }
         public async Task<RemoteState> GetStateAsync(CancellationToken cancellationToken)
         {
             ++ReadCount;

@@ -437,7 +437,8 @@ public partial class MainWindow : Window
     private async void Next_Click(object sender, RoutedEventArgs e) => await AdvanceQueue();
     private async void Previous_Click(object sender, RoutedEventArgs e) { if (_queueChanging || _closing) return; if (_player.Time > 3000 && _player.IsSeekable) _player.Time = 0; else if (_queue.Count > 0) await PlayIndex(Math.Max(0, _queueIndex - 1)); }
     private async void Queue_DoubleClick(object sender, MouseButtonEventArgs e) { if (!_queueChanging && !_closing && QueueList.SelectedIndex >= 0) await PlayIndex(QueueList.SelectedIndex); }
-    private async void ClearQueue_Click(object sender, RoutedEventArgs e)
+    private async void ClearQueue_Click(object sender, RoutedEventArgs e) => await ClearQueueAsync();
+    private async Task ClearQueueAsync()
     {
         if (_queueChanging) return;
         _queueChanging = true;

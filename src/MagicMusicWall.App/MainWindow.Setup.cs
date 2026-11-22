@@ -162,6 +162,13 @@ public partial class MainWindow
         if (_closing || _queueChanging || _scanning) throw new InvalidOperationException("The player is busy. Try again shortly.");
         switch (command.Action)
         {
+            case "clear-queue": await ClearQueueAsync(); break;
+            case "queue-folder":
+            case "queue-selection":
+                // Resolve the complete batch before mutating the queue; stale IDs
+                // cannot leave behind a partially added selection.
+                foreach (var selected in ResolveQueueSelection(command)) _queue.Add(selected);
+                break;
             case "play-queue-item":
                 var index = command.QueueIndex!.Value;
                 if (index >= _queue.Count || _queue[index].Id != command.ItemId)

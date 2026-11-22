@@ -9,16 +9,16 @@ Add the music and videos you already own, browse a compact folder/file grid, bui
 
 ![Magic Music Wall library with demonstration folders](docs/images/library.png)
 
-## Download version 0.9.13
+## Download version 0.9.14
 
 For **Windows 11 on Intel/AMD x64 PCs**. The .NET runtime and VLC playback engine are included; no separate runtime installation is needed.
 
 | Package | What to do |
 | --- | --- |
-| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.13/MagicMusicWall-0.9.13-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
-| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.13/MagicMusicWall-0.9.13-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
-| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.13/MagicMusicWall-0.9.13-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
-| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.13/SHA256SUMS.txt) | Verify the downloaded files. |
+| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.14/MagicMusicWall-0.9.14-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
+| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.14/MagicMusicWall-0.9.14-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
+| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.14/MagicMusicWall-0.9.14-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
+| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.14/SHA256SUMS.txt) | Verify the downloaded files. |
 
 [All releases](https://github.com/digitalrcs/MagicMusicWall/releases) · [Install and USB instructions](docs/WINDOWS-INSTALLER.md) · [Full documentation](docs/README.md)
 
@@ -49,7 +49,7 @@ The directory grid shows the folders and files you added to your library. Search
 - **Explore your music constellation:** follow an animated spring network of artists, albums and songs, with stronger connections pulling music closer together. Drag names, pause motion, explore Metadata, Sound or Blended similarity, and queue what you discover. Optional local sound analysis keeps cached results and can be cancelled and resumed. [Constellation guide](docs/MUSIC-MAP.md).
 - **Add MusicBrainz information:** look up missing details for your library or a selected artist, album or song. Review uncertain matches, refresh saved information, and use available genres, community labels and instrument credits in constellation search and connections. Results stay in the app's library; the [MusicBrainz workflow](docs/METADATA.md#save-musicbrainz-information-in-your-library) explains matching and privacy.
 - **Choose an output:** PC audio or a Windows-connected Bluetooth device, plus Chromecast discovery and VLC casting.
-- **Use your phone:** sign in with a passphrase at the plain web address and remember that browser, or scan a QR access link. Change PC audio output, shuffle, and repeat from the remote. Bordered sections collapse independently and remember your layout. Read wrapped song names, remove queued items, and listen/watch independently in the browser.
+- **Use your phone:** sign in with a passphrase at the plain web address and remember that browser, or scan a QR access link. Change PC audio output, shuffle, and repeat from the remote. Select files and folders to queue, add whole folders including subfolders, or clear the active queue. Bordered sections collapse independently and remember your layout. Read wrapped song names, remove queued items, and listen/watch independently in the browser.
 - **Find song details:** MusicBrainz recordings and albums, local or LRCLIB lyrics, and attributed Wikipedia facts.
 - **Review file tags:** compare current/proposed title, artist, album and more, then save checked fields with an original-file backup. Optional TMDB movie lookup uses your own token.
 - **Share a movie:** give a compatible Fire TV/VLC network player a temporary link to one selected file.

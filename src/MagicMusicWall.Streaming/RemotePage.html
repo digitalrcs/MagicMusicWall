@@ -31,6 +31,9 @@
     .queue-options,.output-actions{display:flex;gap:12px;flex-wrap:wrap}.queue-options label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}.queue-options input{width:20px;height:20px;accent-color:var(--accent)}
     .output-actions{margin-top:10px}.output-actions button{font-size:12px;flex:1}.pc-settings .mode-help{margin-top:10px}
     @media(max-width:760px){.section-body{padding:14px}.player-section>.player{padding:18px}.section-card>summary{padding:14px}.layout{gap:16px}}
+    .selection-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.selection-toolbar button{font-size:12px;min-height:44px;padding:8px 10px}
+    .directory .selection-column{width:44px}.directory .selection-cell{padding:0;text-align:center}.selection-hit{display:grid;place-items:center;min-width:44px;min-height:44px;cursor:pointer}.selection-hit input{width:20px;height:20px;accent-color:var(--accent);cursor:pointer}
+    .directory tr.selected{background:#39304d}.queue-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}.queue-toolbar button{color:var(--bad);font-size:12px}.queue-toolbar span{font-size:11px;line-height:1.5}
   </style>
 </head>
 <body>
@@ -84,11 +87,13 @@
         <nav id="folderNavigation" class="folder-navigation" aria-label="Library folders"><div class="folder-toolbar"><button id="folderHome" type="button">All folders</button><button id="folderUp" type="button" disabled>↑ Up</button><div class="collection-view" role="group" aria-label="Collection scope"><button id="folderView" type="button" aria-pressed="true">Folders</button><button id="gridView" type="button" aria-pressed="false">All songs</button></div></div><p id="folderBreadcrumb" class="folder-breadcrumb">Your folders</p></nav>
         <p class="results-meta" id="resultsMeta" role="status">Connect to see your collection.</p>
         <p id="listenLimit" class="listen-limit" hidden>Play listed tracks uses only the tracks shown below (up to 500). Open a folder to see its tracks; subfolders are not included.</p>
-        <table id="libraryDirectory" class="directory" aria-label="Library folders and files"><colgroup><col class="name-column"><col class="metadata-column"><col class="time-column"><col class="actions-column"></colgroup><thead><tr><th scope="col">Name</th><th scope="col" class="directory-meta">Artist / Album</th><th scope="col" class="directory-time">Time</th><th scope="col">Actions</th></tr></thead><tbody id="folderRows"></tbody><tbody id="results"></tbody></table>
+        <div class="selection-toolbar" aria-label="Add music to queue"><button id="queueFolder" type="button" disabled>Add folder to queue</button><button id="queueSelected" type="button" class="accent-button" disabled>Add selected</button><button id="selectShown" type="button" disabled>Select shown</button><button id="clearSelection" type="button" disabled>Clear selection</button></div>
+        <p id="selectionCount" class="results-meta" role="status">0 selected · Folders include subfolders.</p>
+        <table id="libraryDirectory" class="directory" aria-label="Library folders and files"><colgroup><col class="selection-column"><col class="name-column"><col class="metadata-column"><col class="time-column"><col class="actions-column"></colgroup><thead><tr><th scope="col"><span class="sr-only">Select</span></th><th scope="col">Name</th><th scope="col" class="directory-meta">Artist / Album</th><th scope="col" class="directory-time">Time</th><th scope="col">Actions</th></tr></thead><tbody id="folderRows"></tbody><tbody id="results"></tbody></table>
         <div class="empty" id="libraryEmpty">Your collection will appear here when the Windows app connects.</div>
         <button id="libraryRetry" class="library-retry" type="button" hidden>Try loading again</button>
       </div></details>
-      <details class="section-card queue-section" data-panel="queue" open><summary><span id="queueHeading">Up next</span> <span class="queue-count" id="queueCount">0 tracks</span></summary><div class="section-body"><ol class="track-list" id="queue" aria-label="Playback queue"></ol><div class="empty" id="queueEmpty">Your queue is empty. Choose a song below to start listening.</div></div></details>
+      <details class="section-card queue-section" data-panel="queue" open><summary><span id="queueHeading">Up next</span> <span class="queue-count" id="queueCount">0 tracks</span></summary><div class="section-body"><div class="queue-toolbar"><button id="clearQueue" type="button" disabled>Clear queue</button><span class="muted">Stops playback in this destination.</span></div><ol class="track-list" id="queue" aria-label="Playback queue"></ol><div class="empty" id="queueEmpty">Your queue is empty. Choose a song below to start listening.</div></div></details>
     </main>
     <footer class="footer"><a href="https://digitalrcs.com" target="_blank" rel="noopener noreferrer"><img src="/brand-logo.png" alt="DigitalRCS logo" width="27" height="27">DigitalRCS.com</a><span>Your files. Your soundtrack.</span></footer>
   </div>
@@ -135,6 +140,10 @@
     let authStatusRequest = 0;
     let loginPending = false;
     let queueRemovalPending = false;
+    let selectionPending = false;
+    let queueEditVersion = 0;
+    const selectedFiles = new Set();
+    const selectedFolders = new Set();
     let state = null;
     let libraryItems = [];
     const collectionViewKey = 'magicmusic-collection-view';
@@ -358,6 +367,75 @@
         $('signOut').disabled = false;
       }
     }
+    function resetSelection() {
+      selectedFiles.clear(); selectedFolders.clear();
+      document.querySelectorAll('.library-select').forEach(input => { input.checked = false; input.closest('tr')?.classList.remove('selected'); });
+      updateSelectionControls();
+    }
+    function updateSelectionControls() {
+      const allowed = connected && (playbackMode === 'pc' || browserPlaybackAllowed());
+      const loaded = !!loadedLibraryMode;
+      const count = selectedFiles.size + selectedFolders.size;
+      const busy = selectionPending || queueRemovalPending;
+      $('queueSelected').disabled = !allowed || !loaded || !count || busy;
+      $('selectShown').disabled = !allowed || !loaded || !(libraryItems.length + folderItems.length) || busy;
+      $('clearSelection').disabled = !count || busy;
+      $('queueFolder').hidden = !folderMode();
+      $('queueFolder').textContent = currentFolderId === null ? 'Add collection to queue' : 'Add folder to queue';
+      $('queueFolder').disabled = !allowed || loadedLibraryMode !== 'folders' || !folderDescendantCount || busy;
+      $('selectionCount').textContent = count + ' selected · Folders include subfolders.';
+      document.querySelectorAll('.library-select').forEach(input => { input.disabled = !allowed || busy; });
+      document.querySelectorAll('.selection-add').forEach(button => { button.disabled = !allowed || busy; });
+      const queue = playbackMode === 'listen' ? browserQueue : state?.queue;
+      $('clearQueue').disabled = !allowed || !queue?.length || queueRemovalPending || (selectionPending && playbackMode === 'pc');
+      $('clearQueue').setAttribute('aria-label', playbackMode === 'listen' ? 'Clear browser queue' : 'Clear PC queue');
+    }
+    function selectionCell(kind, item) {
+      const cell = element('td', '', 'selection-cell');
+      const label = element('label', '', 'selection-hit');
+      const input = document.createElement('input'); input.type = 'checkbox'; input.className = 'library-select';
+      input.dataset.kind = kind; input.dataset.id = item.id;
+      input.setAttribute('aria-label', 'Select ' + (kind === 'folder' ? 'folder ' + text(item.name) : 'file ' + text(item.title)));
+      const selected = kind === 'folder' ? selectedFolders : selectedFiles;
+      input.checked = selected.has(item.id);
+      input.addEventListener('change', () => {
+        if (input.checked && selectedFiles.size + selectedFolders.size >= 500) { input.checked = false; showToast('Select up to 500 files or folders at a time.'); return; }
+        if (input.checked) selected.add(item.id); else selected.delete(item.id);
+        input.closest('tr').classList.toggle('selected', input.checked); updateSelectionControls();
+      });
+      label.append(input); cell.append(label); return cell;
+    }
+    async function addSelection(values, wholeFolder = false) {
+      if (!connected || selectionPending || queueRemovalPending || (playbackMode === 'listen' && !browserPlaybackAllowed())) return;
+      const mode = playbackMode, version = queueEditVersion, auth = authVersion, view = libraryRequest;
+      selectionPending = true; updateSelectionControls();
+      const action = mode === 'pc' ? (wholeFolder ? 'queue-folder' : 'queue-selection') : (wholeFolder ? 'resolve-folder' : 'resolve-selection');
+      try {
+        const result = await api('/api/command', { method: 'POST', body: JSON.stringify({ action, ...values }) });
+        if (auth !== authVersion || mode !== playbackMode || version !== queueEditVersion) return;
+        if (mode === 'listen') {
+          if (!browserPlaybackAllowed()) return;
+          const items = Array.isArray(result?.items) ? result.items : [];
+          browserQueue = browserQueue.concat(items); updatePlaybackMode();
+          showToast(items.length + ' tracks added to this browser’s queue.');
+        } else { await refreshState(true); showToast('Added to the PC queue.'); }
+        if (view === libraryRequest) resetSelection();
+      } catch (error) { if (auth === authVersion) showToast(error.message); }
+      finally { selectionPending = false; updateSelectionControls(); }
+    }
+    async function clearActiveQueue() {
+      if ($('clearQueue').disabled) return;
+      ++queueEditVersion;
+      if (playbackMode === 'listen') {
+        cancelBrowserPlayback(); browserQueue = []; browserQueueIndex = -1;
+        $('browserStatus').textContent = 'This browser’s queue is empty. Choose music to add.';
+        updatePlaybackMode(); showToast('Browser queue cleared. The PC queue is unchanged.');
+      } else {
+        queueRemovalPending = true; updatePlaybackMode();
+        try { await command('clear-queue', {}, 'PC queue cleared. Saved playlists are unchanged.'); }
+        finally { queueRemovalPending = false; updatePlaybackMode(); }
+      }
+    }
     function addLibraryItem(item) {
       if (!connected) return;
       if (playbackMode === 'listen') {
@@ -419,7 +497,7 @@
         metadata.append(element('span', text(item.artist) || (item.isVideo ? 'Video' : 'Local file'), 'directory-artist'), element('span', text(item.album), 'directory-album'));
         const time = element('td', '', 'directory-time');
         time.append(duration);
-        row.append(nameCell, metadata, time);
+        row.append(selectionCell('file', item), nameCell, metadata, time);
       }
       const info = document.createElement('button');
         info.type = 'button';
@@ -495,6 +573,7 @@
       }
       $('queueEmpty').hidden = items.length > 0;
       $('queueCount').textContent = items.length + (items.length === 1 ? ' track' : ' tracks');
+      updateSelectionControls();
       document.querySelectorAll('.track-row').forEach(row => {
         const currentId = displayedItemId();
         const queueIndex = playbackMode === 'listen' ? browserQueueIndex : state?.currentQueueIndex;
@@ -647,6 +726,7 @@
       if (mode === 'listen' && (!connected || state?.browserPlaybackEnabled !== true)) return;
       const next = mode === 'listen' ? 'listen' : 'pc';
       if (next !== playbackMode) {
+        ++queueEditVersion; resetSelection();
         cancelBrowserPlayback();
         playbackMode = next;
         $('browserStatus').textContent = 'Choose a song or video to play on this device.';
@@ -752,6 +832,7 @@
       if (playbackMode === 'listen') $('playResults').textContent = 'Play listed tracks';
       else if (mode) $('playResults').textContent = currentFolderId === null ? 'Play collection' : 'Play folder';
       else $('playResults').textContent = $('playlist').value && !$('search').value.trim() ? 'Play playlist' : 'Play results';
+      updateSelectionControls();
     }
     function openFolder(id) {
       currentFolderId = text(id) || null;
@@ -780,11 +861,15 @@
       action.type = 'button';
       action.setAttribute('aria-label', open.title);
       action.addEventListener('click', navigate);
-      actions.append(action);
-      row.append(nameCell, element('td', count + (count === 1 ? ' item' : ' items'), 'directory-meta'), element('td', '', 'directory-time'), actions);
+      const add = element('button', 'Add', 'selection-add'); add.type = 'button';
+      add.setAttribute('aria-label', 'Add folder ' + (text(folder.name) || 'folder') + ' to queue');
+      add.addEventListener('click', () => addSelection({ folderId: folder.id }, true));
+      actions.append(action, add);
+      row.append(selectionCell('folder', folder), nameCell, element('td', count + (count === 1 ? ' item' : ' items'), 'directory-meta'), element('td', '', 'directory-time'), actions);
       return row;
     }
     function beginLibraryLoad() {
+      resetSelection();
       libraryItems = [];
       folderItems = [];
       folderDescendantCount = 0;
@@ -1095,6 +1180,16 @@
         if (error.status === 401 || error.status === 403) setConnection(false, error.message);
       }
     }
+    $('clearQueue').addEventListener('click', clearActiveQueue);
+    $('queueSelected').addEventListener('click', () => addSelection({ itemIds: [...selectedFiles], folderIds: [...selectedFolders] }));
+    $('queueFolder').addEventListener('click', () => addSelection({ folderId: currentFolderId }, true));
+    $('clearSelection').addEventListener('click', resetSelection);
+    $('selectShown').addEventListener('click', () => {
+      const inputs = [...document.querySelectorAll('.library-select')];
+      if (inputs.length > 500) { showToast('Select up to 500 entries, or add a whole folder instead.'); return; }
+      inputs.forEach(input => { input.checked = true; (input.dataset.kind === 'folder' ? selectedFolders : selectedFiles).add(input.dataset.id); input.closest('tr').classList.add('selected'); });
+      updateSelectionControls();
+    });
     $('pcShuffle').addEventListener('change', () => playbackSetting('shuffle', { enabled: $('pcShuffle').checked }));
     $('pcRepeat').addEventListener('change', () => playbackSetting('repeat', { enabled: $('pcRepeat').checked }));
     $('audioOutput').addEventListener('change', () => { audioSelectionDirty = true; });
@@ -1119,6 +1214,7 @@
       else command('play-results', { query, ...(playlistId ? { playlistId } : {}) });
     });
     $('search').addEventListener('input', () => {
+      resetSelection();
       clearTimeout(searchTimer);
       libraryController?.abort();
       ++libraryRequest;

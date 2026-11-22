@@ -46,6 +46,19 @@ public sealed class RemoteFoldersTests : IAsyncLifetime
         Assert.Empty(_control.FolderReads); Assert.Empty(_control.Commands);
     }
 
+    [Theory]
+    [InlineData("queue-folder")]
+    [InlineData("play-folder")]
+    public async Task QueueAndPlayFolderValidateKnownIds(string action)
+    {
+        using var valid = await Send("/api/command", new(action, FolderId: FolderId));
+        Assert.Equal(HttpStatusCode.NoContent, valid.StatusCode);
+        Assert.Equal(action, Assert.Single(_control.Commands).Action);
+        using var stale = await Send("/api/command", new(action, FolderId: new string('B', 64)));
+        Assert.Equal(HttpStatusCode.NotFound, stale.StatusCode);
+        Assert.Single(_control.Commands);
+    }
+
     [Fact]
     public async Task HomeContractHasFoldersAndCollectionCountsWithoutDirectRows()
     {

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,7 @@ public sealed record RemoteState(string? CurrentId, string Title, string Artist,
 public sealed record RemoteLibrary(IReadOnlyList<RemoteItem> Items, int Total);
 public sealed record RemoteCommand(string Action, string? ItemId = null, string? PlaylistId = null,
     string? Query = null, int? Volume = null, long? PositionMs = null, int? QueueIndex = null, string? FolderId = null,
-    bool? Enabled = null, string? AudioOutputId = null);
+    bool? Enabled = null, string? AudioOutputId = null, string[]? ItemIds = null, string[]? FolderIds = null);
 
 /// <summary>
 /// Optional LAN remote for the desktop player. The page is public, but every API request
@@ -44,6 +45,7 @@ public sealed record RemoteCommand(string Action, string? ItemId = null, string?
 public sealed partial class RemoteControlServer : IAsyncDisposable
 {
     private const int MaximumBodyBytes = 16 * 1024;
+    private const int MaximumCommandBodyBytes = 128 * 1024;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { MaxDepth = 16 };
     private readonly SemaphoreSlim _lifecycle = new(1, 1);
     private readonly object _stateLock = new();
@@ -184,12 +186,14 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
             });
             application.MapPost("/api/command", async (HttpContext context) =>
             {
+                if (context.Features.Get<IHttpMaxRequestBodySizeFeature>() is { IsReadOnly: false } limit)
+                    limit.MaxRequestBodySize = MaximumCommandBodyBytes;
                 if (!context.Request.HasJsonContentType())
                 {
                     context.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                     return;
                 }
-                if (context.Request.ContentLength > MaximumBodyBytes)
+                if (context.Request.ContentLength > MaximumCommandBodyBytes)
                 {
                     PayloadTooLarge(context);
                     return;
@@ -198,7 +202,7 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
                 RemoteCommand? command;
                 try
                 {
-                    var buffer = new byte[MaximumBodyBytes + 1];
+                    var buffer = new byte[MaximumCommandBodyBytes + 1];
                     var length = 0;
                     while (length < buffer.Length)
                     {
@@ -206,7 +210,7 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
                         if (read == 0) break;
                         length += read;
                     }
-                    if (length > MaximumBodyBytes)
+                    if (length > MaximumCommandBodyBytes)
                     {
                         PayloadTooLarge(context);
                         return;
@@ -228,7 +232,25 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
                     await BadRequest(context, "The playback command or its values are not valid.");
                     return;
                 }
-                if (command!.Action == "play-folder")
+                if (command!.Action is "resolve-selection" or "resolve-folder")
+                {
+                    if (control is not IRemoteQueueSelection selection) { await FolderNotFound(context); return; }
+                    try
+                    {
+                        var items = await selection.ResolveQueueItemsAsync(command, request.Token).ConfigureAwait(false);
+                        await context.Response.WriteAsJsonAsync(new RemoteLibrary(items, items.Count), request.Token);
+                    }
+                    catch (KeyNotFoundException) { await SelectionNotFound(context); }
+                    return;
+                }
+                if (command.Action == "queue-selection")
+                {
+                    try { await control.ExecuteAsync(command, request.Token).ConfigureAwait(false); }
+                    catch (KeyNotFoundException) { await SelectionNotFound(context); return; }
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    return;
+                }
+                if (command.Action is "play-folder" or "queue-folder")
                 {
                     if (control is not IRemoteFolders folders || await folders.GetFoldersAsync(command.FolderId, request.Token).ConfigureAwait(false) is null)
                     {
@@ -450,14 +472,18 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
     {
         if (command is null || command.ItemId?.Length > 128 || command.PlaylistId?.Length > 128 || command.Query?.Length > 256 ||
             command.AudioOutputId?.Length > 1024 || command.Volume is < 0 or > 100 || command.PositionMs < 0 || command.QueueIndex is < 0 or > 499 ||
-            (command.FolderId is not null && !ValidFolderId(command.FolderId))) return false;
+            (command.FolderId is not null && !ValidFolderId(command.FolderId)) ||
+            (command.ItemIds?.Length ?? 0) + (command.FolderIds?.Length ?? 0) > 500 ||
+            command.ItemIds?.Any(id => string.IsNullOrWhiteSpace(id) || id.Length > 128) == true ||
+            command.FolderIds?.Any(id => !ValidFolderId(id)) == true) return false;
         return command.Action switch
         {
-            "play" or "pause" or "toggle" or "next" or "previous" or "play-results" => true,
+            "play" or "pause" or "toggle" or "next" or "previous" or "play-results" or "clear-queue" => true,
             "play-item" or "queue-item" => !string.IsNullOrWhiteSpace(command.ItemId),
             "play-queue-item" or "remove-queue-item" => !string.IsNullOrWhiteSpace(command.ItemId) && command.QueueIndex.HasValue,
             "play-playlist" => !string.IsNullOrWhiteSpace(command.PlaylistId),
-            "play-folder" => true,
+            "play-folder" or "queue-folder" or "resolve-folder" => true,
+            "queue-selection" or "resolve-selection" => (command.ItemIds?.Length ?? 0) + (command.FolderIds?.Length ?? 0) > 0,
             "shuffle" or "repeat" => command.Enabled.HasValue,
             "audio-output" => command.AudioOutputId is not null,
             "refresh-audio" => true,
@@ -465,6 +491,12 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
             "seek" => command.PositionMs.HasValue,
             _ => false
         };
+    }
+
+    private static Task SelectionNotFound(HttpContext context)
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        return context.Response.WriteAsJsonAsync(new { error = "A selected file or folder is no longer in the library. Refresh the collection and select again. Nothing was added." });
     }
 
     private static bool ValidFolderId(string? value) => value is { Length: 64 } && value.All(char.IsAsciiHexDigit);

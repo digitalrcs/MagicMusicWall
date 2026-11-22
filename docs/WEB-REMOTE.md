@@ -1,6 +1,6 @@
 # Control the PC or listen in a browser
 
-Applies to Magic Music Wall **0.9.13**.
+Applies to Magic Music Wall **0.9.14**.
 
 [Documentation home](README.md)
 
@@ -92,3 +92,11 @@ Choose a **PC audio output**, then select **Use output**. **Refresh outputs** re
 ## Collapse sections
 
 Playback destination, Now playing, Your collection, and Up next have visible borders and clickable headers. Click or tap a header to collapse/expand its section, or focus it and press Enter/Space. The browser remembers each section's state locally. Collapsing a section does not stop playback or clear its contents. If browser storage is blocked, the panels still work but are expanded on a fresh page load.
+
+## Select files and folders to queue
+
+Use the checkboxes beside files and folders in the collection. **Add selected** appends the selection without replacing the queue or interrupting a playing/paused track. **Select shown** selects the displayed entries (up to 500); **Clear selection** unchecks them. Changing folders, searches, playlists, or playback destination clears the selection.
+
+Use **Add** on a folder row to queue that folder, or **Add folder to queue** to queue the open folder. At collection home this becomes **Add collection to queue**. Folders include all indexed tracks in their subfolders, including tracks beyond the visible 500-row browsing limit. Overlapping folders/files in one batch add each track once; tracks already in the queue are not removed or deduplicated. A stale selected item cancels the entire batch instead of adding only part of it.
+
+**Clear queue** in Up next stops playback and empties the active destination's queue. In **Control PC** it clears the desktop queue; in **Listen/watch here** it clears only that browser's queue. Original files, the library, and saved playlists are unchanged. Adding to an empty queue does not start it; select a queued track to play.
