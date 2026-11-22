@@ -81,10 +81,17 @@ public partial class MainWindow
         if (picker.ShowDialog(owner) == true) await ImportPaths(picker.FolderNames, false);
     }
 
+    private async Task AddSetupFiles(Window owner)
+    {
+        if (!CanEdit()) return;
+        var picker = new OpenFileDialog { Title = "Add music or video files", Multiselect = true, Filter = "Media files|*.mp3;*.flac;*.m4a;*.aac;*.wav;*.ogg;*.opus;*.wma;*.aiff;*.aif;*.mp4;*.mkv;*.avi;*.mov;*.webm;*.m4v;*.wmv;*.ts|All files|*.*" };
+        if (picker.ShowDialog(owner) == true) await ImportPaths(picker.FileNames, false);
+    }
+
     internal void ManageSetupFolders(Window owner)
     {
         if (!CanEdit()) return;
-        new FolderWindow(_catalog, CanRemoveLibraryItems, ReconcileRemovedLibraryItemsAsync) { Owner = owner }.ShowDialog();
+        new FolderWindow(_catalog, CanRemoveLibraryItems, ReconcileRemovedLibraryItemsAsync, AddSetupFolder, AddSetupFiles) { Owner = owner }.ShowDialog();
         RefreshView();
     }
 

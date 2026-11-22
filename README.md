@@ -9,16 +9,16 @@ Add the music and videos you already own, browse a compact folder/file grid, bui
 
 ![Magic Music Wall library with demonstration folders](docs/images/library.png)
 
-## Download version 0.9.15
+## Download version 0.9.16
 
 For **Windows 11 on Intel/AMD x64 PCs**. The .NET runtime and VLC playback engine are included; no separate runtime installation is needed.
 
 | Package | What to do |
 | --- | --- |
-| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.15/MagicMusicWall-0.9.15-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
-| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.15/MagicMusicWall-0.9.15-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
-| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.15/MagicMusicWall-0.9.15-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
-| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.15/SHA256SUMS.txt) | Verify the downloaded files. |
+| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.16/MagicMusicWall-0.9.16-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
+| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.16/MagicMusicWall-0.9.16-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
+| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.16/MagicMusicWall-0.9.16-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
+| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v0.9.16/SHA256SUMS.txt) | Verify the downloaded files. |
 
 [All releases](https://github.com/digitalrcs/MagicMusicWall/releases) · [Install and USB instructions](docs/WINDOWS-INSTALLER.md) · [Full documentation](docs/README.md)
 
@@ -31,7 +31,7 @@ The installer is unsigned. Clean Windows installation and ARM emulation have not
 Download **Setup-x64.exe** from the release assets to install. GitHub's **Source code (zip)** download is for developers, not a ready-to-run player.
 
 1. Connect your stereo or headphones in Windows, then choose the device under **Listening on**.
-2. Click **Add folder** or **Add files**. You can add local storage, a connected USB drive, or an accessible network share.
+2. Open **Manage folders**, then choose **Add folders…** or **Add files…**. You can add local storage, a connected USB drive, or an accessible network share.
 3. Open a folder to browse its contents. Click a song name or **+ Queue** to add just that song to **Up next**.
 4. Press Play. Save the queue as a playlist, or select songs and add them to Dinner, Jazz, Rock, 80's, or your own playlist.
 

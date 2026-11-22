@@ -42,7 +42,7 @@ public partial class MainWindow
     private void EmptyLibrary_Click(object sender, RoutedEventArgs e)
     {
         if (!_ready || _scanning) return;
-        if (_catalog.Document.Items.Count == 0) { AddFolder_Click(sender, e); return; }
+        if (_catalog.Document.Items.Count == 0) { ManageFolders_Click(sender, e); return; }
         _updatingPlaylistControls = true;
         try
         {

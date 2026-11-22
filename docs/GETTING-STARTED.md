@@ -1,6 +1,6 @@
 # Get started with Magic Music Wall
 
-Applies to Magic Music Wall **0.9.15**.
+Applies to Magic Music Wall **0.9.16**.
 
 [All guides](README.md) · [Download the latest release](https://github.com/digitalrcs/MagicMusicWall/releases/latest)
 
@@ -18,7 +18,7 @@ The installer is unsigned. Use the official release and follow your PC's securit
 
 1. Connect your speakers or pair your Bluetooth stereo in Windows. Confirm another Windows app can play through it.
 2. In Magic Music Wall, select that device under **Listening on**. Refresh the device list with **↻** if necessary.
-3. Click **Add folder** and choose your music folder. Wait for the scan to finish.
+3. Open **Manage folders**, click **Add folders…**, and choose your music folder. Wait for the scan to finish.
 4. In **Folders**, open a folder and click a song's **+ Queue**. It should appear in **Up next**.
 5. Press the bottom **Play** button and adjust the volume.
 
@@ -57,7 +57,7 @@ The browser player is not a synchronized mirror of the desktop player's position
 
 ## After adding more music
 
-For files added outside the app to an existing source, click **Rescan library**. For a new source, use **Add folder**. Then use **Lookup missing** or **Analyze sound** if you want those extra map details. The app does not continuously watch every folder.
+For files added outside the app to an existing source, click **Rescan library**. For a new source, use **Manage folders → Add folders…**. Then use **Lookup missing** or **Analyze sound** if you want those extra map details. The app does not continuously watch every folder.
 
 Close the app before backing up its active data folder, found in **Setup → TV & data**. Back up the music separately: playlists refer to files and do not contain copies of them.
 

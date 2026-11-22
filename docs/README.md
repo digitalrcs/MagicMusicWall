@@ -2,7 +2,7 @@
 
 ![DigitalRCS.com](images/digitalrcs-logo.png)
 
-Magic Music Wall plays music and videos you already own through a Windows PC, its connected Bluetooth output, or a browser on your home network. These guides cover version **0.9.15**.
+Magic Music Wall plays music and videos you already own through a Windows PC, its connected Bluetooth output, or a browser on your home network. These guides cover version **0.9.16**.
 
 | I want to… | Open this guide |
 | --- | --- |
@@ -20,7 +20,7 @@ Magic Music Wall plays music and videos you already own through a Windows PC, it
 
 Start with **[Get started](GETTING-STARTED.md)** if this is your first time. You do not need a developer account, .NET SDK, separate VLC installation, Alexa, or ESP32 hardware to use the Windows application. Movie metadata lookup is optional and needs your own TMDB token.
 
-These are the current online guides for 0.9.15. An existing installer or portable download contains the documentation snapshot made when it was packaged; later documentation improvements appear here first.
+These are the current online guides for 0.9.16. An existing installer or portable download contains the documentation snapshot made when it was packaged; later documentation improvements appear here first.
 
 The screenshots use demonstration content. Your folder names, playlists and audio devices will be different.
 

@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **0.9.15**.
+Applies to Magic Music Wall **0.9.16**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
@@ -23,7 +23,7 @@ The device's name in the list does not by itself prove that a Bluetooth connecti
 
 **Shuffle:** turning on Shuffle during playback takes effect on the next song, including desktop Next, web-remote Next and automatic advancement. A random remaining entry moves into the next queue position, leaving already-played entries in place. Repeat starts another pass when the queue ends. Turning Shuffle off resumes the visible queue order. If only one unplayed entry remains, that is the next song; Shuffle does not replay earlier entries unless Repeat is on.
 
-1. Click **Add folder** and choose a folder such as `D:\Music`, or click **Add files** to add particular songs. The app catalogs your choices; files remain in their original locations.
+1. Open **Manage folders**, click **Add folders…**, and choose a folder such as `D:\Music`, or choose **Add files…** in that window to add particular songs. The app catalogs your choices; files remain in their original locations.
 2. In **Folders**, click a folder name to enter it. Opening a folder adds nothing to the playback queue.
 3. Click a song's filename or **+ Queue** to append only that song. Press the bottom **Play** button to start the queue, or use the separate **Play** button on the song's row to play it immediately.
 4. Use **Play folder** when you want every song in that folder and its subfolders. **Up next** is your current playback queue; saved playlists are separate.
@@ -134,6 +134,8 @@ Changes to folders/playlists and the main player's output, volume, shuffle and r
 
 ## Keep your collection safe
 
+- **Manage folders → Add folders…** opens the folder picker. Select one or more folders to import; the source list refreshes when the scan finishes. The same control is available through **Setup → Library → Manage folders**.
+- **Manage folders → Add files…** imports selected songs or videos. Files outside a managed source appear under **Added files**. Both import controls are located in Manage folders rather than the main playback toolbar.
 - **Manage folders → Remove selected source** removes that source and its tracks from the library, saved playlists and PC queue. Tracks still covered by another managed folder remain. Files on disk are never deleted.
 - **Manage folders → Clear added files** removes all entries outside your remaining managed folders, including tracks left under **Added files** after removing a source in older versions. This keeps the files on disk and does not remove tracks inside managed folders.
 - **Remove from library (keep file)** removes selected catalog entries, playlist references and PC queue entries. To clear selected added files, open **Added files**, select the tracks (Ctrl+A selects all visible tracks), and use this command. Clear a search/filter first if you want every track. Rescanning a managed folder can import its removed entries again.

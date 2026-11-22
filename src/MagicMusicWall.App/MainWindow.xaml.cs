@@ -143,8 +143,8 @@ public partial class MainWindow : Window
         if (_folderPage is not null) LibrarySummary.Text = $"{_folderPage.Folders.Count:N0} folders · {_folderPage.Descendants.Count:N0} items here · {_catalog.Document.Items.Count:N0} in your library";
         EmptyPanel.Visibility = results.Count == 0 && (_folderPage?.Folders.Count ?? 0) == 0 ? Visibility.Visible : Visibility.Collapsed;
         EmptyTitle.Text = _catalog.Document.Items.Count == 0 ? "Make room for your music" : CurrentPlaylist is not null && SearchBox.Text.Length == 0 ? "This playlist is empty" : "No matches yet";
-        EmptyDescription.Text = _catalog.Document.Items.Count == 0 ? "Add a folder from your PC, USB drive, or network share.\nYour original files stay right where they are." : CurrentPlaylist is not null && SearchBox.Text.Length == 0 ? "Browse your library and select songs. Choose this playlist\nin the dropdown on the right, then Add selected to playlist." : "Try a different artist, album, title, or folder name.";
-        EmptyLibraryButton.Content = _catalog.Document.Items.Count == 0 ? "Choose a music folder" : "Browse your library";
+        EmptyDescription.Text = _catalog.Document.Items.Count == 0 ? "Use Manage folders to add folders or individual files.\nYour original files stay right where they are." : CurrentPlaylist is not null && SearchBox.Text.Length == 0 ? "Browse your library and select songs. Choose this playlist\nin the dropdown on the right, then Add selected to playlist." : "Try a different artist, album, title, or folder name.";
+        EmptyLibraryButton.Content = _catalog.Document.Items.Count == 0 ? "Manage folders" : "Browse your library";
         RefreshMusicMapIfChanged();
     }
 
@@ -163,18 +163,6 @@ public partial class MainWindow : Window
     }
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) { if (!_updatingPlaylistControls) RefreshView(); }
     private void ClearSearch_Click(object sender, RoutedEventArgs e) => SearchBox.Clear();
-    private async void AddFolder_Click(object sender, RoutedEventArgs e)
-    {
-        if (!CanEdit()) return;
-        var dialog = new OpenFolderDialog { Title = "Add a music or video folder", Multiselect = true };
-        if (dialog.ShowDialog(this) == true) await ImportPaths(dialog.FolderNames);
-    }
-    private async void AddFiles_Click(object sender, RoutedEventArgs e)
-    {
-        if (!CanEdit()) return;
-        var dialog = new OpenFileDialog { Title = "Add music or video files", Multiselect = true, Filter = "Media files|*.mp3;*.flac;*.m4a;*.aac;*.wav;*.ogg;*.opus;*.wma;*.aiff;*.aif;*.mp4;*.mkv;*.avi;*.mov;*.webm;*.m4v;*.wmv;*.ts|All files|*.*" };
-        if (dialog.ShowDialog(this) == true) await ImportPaths(dialog.FileNames);
-    }
     private async void Window_Drop(object sender, DragEventArgs e)
     {
         if (!_scanning && e.Data.GetData(DataFormats.FileDrop) is string[] files) await ImportPaths(files);
@@ -205,7 +193,7 @@ public partial class MainWindow : Window
         if (!CanEdit()) return;
         _scanning = true;
         _scanCancel = new();
-        AddFolderButton.IsEnabled = AddFilesButton.IsEnabled = RescanButton.IsEnabled = false;
+        RescanButton.IsEnabled = false;
         ViewsList.IsEnabled = PlaylistsList.IsEnabled = false;
         CancelImportButton.Visibility = Visibility.Visible;
         try { Status(await action(new Progress<string>(Status), _scanCancel.Token)); }
@@ -215,7 +203,7 @@ public partial class MainWindow : Window
         {
             _scanning = false;
             _scanCancel.Dispose(); _scanCancel = null;
-            AddFolderButton.IsEnabled = AddFilesButton.IsEnabled = RescanButton.IsEnabled = true;
+            RescanButton.IsEnabled = true;
             ViewsList.IsEnabled = PlaylistsList.IsEnabled = true;
             CancelImportButton.Visibility = Visibility.Collapsed;
             RefreshPlaylists();
@@ -226,7 +214,7 @@ public partial class MainWindow : Window
     private void ManageFolders_Click(object sender, RoutedEventArgs e)
     {
         if (!CanEdit()) return;
-        new FolderWindow(_catalog, CanRemoveLibraryItems, ReconcileRemovedLibraryItemsAsync) { Owner = this }.ShowDialog();
+        new FolderWindow(_catalog, CanRemoveLibraryItems, ReconcileRemovedLibraryItemsAsync, AddSetupFolder, AddSetupFiles) { Owner = this }.ShowDialog();
         RefreshPlaylists();
         RefreshView();
     }

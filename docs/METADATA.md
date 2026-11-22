@@ -1,6 +1,6 @@
 # Find information and edit file tags
 
-Applies to Magic Music Wall **0.9.15**.
+Applies to Magic Music Wall **0.9.16**.
 
 [Documentation home](README.md)
 

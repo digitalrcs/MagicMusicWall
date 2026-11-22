@@ -1,6 +1,6 @@
 # AI playlists and saved song notes
 
-Applies to Magic Music Wall **0.9.15**.
+Applies to Magic Music Wall **0.9.16**.
 
 This guide covers the current AI assistant, including the song/folder picker, incremental results and early-stop option.
 

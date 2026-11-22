@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Applies to Magic Music Wall **0.9.15**.
+Applies to Magic Music Wall **0.9.16**.
 
 [Documentation home](README.md)
 
@@ -27,7 +27,7 @@ A microphone/call profile can affect Bluetooth audio, but do not disable it as a
 ## A file or folder is missing
 
 - The collection is a catalog of the folders/files you added. It is not a file browser for every drive.
-- Use **Add folder** or **Add files** for a new source. Use **Rescan library** after adding files to an existing source.
+- Use **Manage folders → Add folders…** or **Add files…** for a new source. Use **Rescan library** after adding files to an existing source.
 - Reconnect an unplugged USB drive or network share before rescanning.
 - Check that Windows can open the path in File Explorer using your current account.
 - A saved path on another PC's internal drive is not made available by moving the installer or portable app.

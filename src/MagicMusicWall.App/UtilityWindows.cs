@@ -48,7 +48,7 @@ internal sealed class TextPrompt : Window
 
 internal sealed class FolderWindow : Window
 {
-    public FolderWindow(LibraryCatalog catalog, Func<bool> canRemove, Func<Task> libraryChanged)
+    public FolderWindow(LibraryCatalog catalog, Func<bool> canRemove, Func<Task> libraryChanged, Func<Window, Task> addFolders, Func<Window, Task> addFiles)
     {
         Ui.Theme(this);
         Title = "Library folders"; Width = 730; Height = 500; MinWidth = 590; MinHeight = 400; WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -60,11 +60,11 @@ internal sealed class FolderWindow : Window
         var added = Ui.Text("", 13, true);
         var busy = false;
         Button clear = null!;
-        async Task Change(Action change)
+        async Task Change(Func<Task> change)
         {
             if (busy || !canRemove()) return;
             busy = true; actions.IsEnabled = false;
-            try { change(); await libraryChanged(); }
+            try { await change(); }
             catch (Exception ex) { MessageBox.Show(this, ex.Message, "Library folders"); }
             finally { busy = false; actions.IsEnabled = true; Refresh(); }
         }
@@ -72,23 +72,27 @@ internal sealed class FolderWindow : Window
         {
             if (list.SelectedItem is not LibraryFolder folder || !canRemove()) return;
             if (MessageBox.Show(this, "Remove this source and its tracks from the library, playlists and PC queue? Files stay on disk. Tracks covered by another source are kept.", "Remove library source", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
-            await Change(() => catalog.RemoveFolder(folder.Id));
+            await Change(async () => { catalog.RemoveFolder(folder.Id); await libraryChanged(); });
         });
         clear = Ui.Button("Clear added files", async (_, _) =>
         {
             if (!canRemove()) return;
             var count = FolderBrowser.Browse(catalog.Document.Folders, catalog.Document.Items, FolderBrowser.LooseFiles).Files.Count;
             if (count == 0 || MessageBox.Show(this, $"Remove all {count:N0} added files from the library, playlists and PC queue? Files stay on disk. Managed folder tracks are kept.", "Clear added files", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
-            await Change(catalog.ClearAddedFiles);
+            await Change(async () => { catalog.ClearAddedFiles(); await libraryChanged(); });
         });
         void Refresh()
         {
             list.ItemsSource = catalog.Document.Folders.ToList();
             var count = FolderBrowser.Browse(catalog.Document.Folders, catalog.Document.Items, FolderBrowser.LooseFiles).Files.Count;
-            added.Text = $"Added files: {count:N0} tracks outside your managed folders, including entries kept by older versions.";
+            added.Text = $"Added files: {count:N0} outside your managed folders, including entries kept by older versions.";
             clear.IsEnabled = count > 0;
         }
-        actions.Children.Add(remove); actions.Children.Add(added); actions.Children.Add(clear);
+        var sources = new WrapPanel();
+        sources.Children.Add(Ui.Button("Add folders…", async (_, _) => await Change(() => addFolders(this))));
+        sources.Children.Add(Ui.Button("Add files…", async (_, _) => await Change(() => addFiles(this))));
+        sources.Children.Add(remove);
+        actions.Children.Add(sources); actions.Children.Add(added); actions.Children.Add(clear);
         DockPanel.SetDock(actions, Dock.Bottom); panel.Children.Add(actions); panel.Children.Add(list); Content = panel;
         Closing += (_, e) => { if (busy) e.Cancel = true; };
         Refresh();
