@@ -7,7 +7,7 @@ try {
     & dotnet build src/MagicMusicWall.App -c Release
     if ($LASTEXITCODE) { throw 'Application build failed.' }
     foreach ($project in @('MagicMusicWall.Core.Tests', 'MagicMusicWall.Streaming.Tests')) {
-        & dotnet test "tests/$project" -c Release --no-restore
+        & dotnet test "tests/$project" -c Release
         if ($LASTEXITCODE) { throw "$project failed." }
     }
     $native = Join-Path $projectRoot 'src/MagicMusicWall.App/bin/Release/net10.0-windows/libvlc/win-x64'
