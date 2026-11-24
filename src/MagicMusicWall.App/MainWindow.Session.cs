@@ -10,6 +10,13 @@ public partial class MainWindow
     private bool _sessionInitialized;
     private long? _pendingSessionPosition;
 
+    private long DisplayDurationMilliseconds()
+    {
+        if (!_pendingSessionPosition.HasValue) return Math.Max(0, _player.Length);
+        var seconds = _current?.DurationSeconds ?? 0;
+        return double.IsFinite(seconds) ? (long)(Math.Clamp(seconds, 0, 864000) * 1000) : 0;
+    }
+
     private ListeningSession CaptureSession() => new()
     {
         ItemIds = _queue.Select(i => i.Id).ToList(), CurrentIndex = _queueIndex,

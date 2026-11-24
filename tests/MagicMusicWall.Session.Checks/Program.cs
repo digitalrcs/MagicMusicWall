@@ -53,6 +53,13 @@ internal static class Program
                 ((ListBoxItem)queueList.ItemContainerGenerator.ContainerFromIndex(2)).IsSelected = true;
                 Check(((int[])Call(window, "SelectedQueueIndices")!).SequenceEqual([0, 2]), "WPF multiple selection identifies duplicate occurrences independently");
                 queueList.SelectedIndex = 2;
+                var bridgeType = typeof(MainWindow).GetNestedType("RemoteBridge", BindingFlags.NonPublic)!;
+                var bridge = (MagicMusicWall.Streaming.IRemoteControl)Activator.CreateInstance(bridgeType, window)!;
+                var restoredState = await bridge.GetStateAsync(CancellationToken.None);
+                Check(restoredState.PositionMs == 9000 && restoredState.DurationMs == 60000, "remote reports restored paused position and duration");
+                await bridge.ExecuteAsync(new MagicMusicWall.Streaming.RemoteCommand("seek", PositionMs: 12000), CancellationToken.None);
+                Check(Field<long?>(window, "_pendingSessionPosition") == 12000 && player.Media is null, "remote seeks restored position without starting audio");
+                await bridge.ExecuteAsync(new MagicMusicWall.Streaming.RemoteCommand("seek", PositionMs: 9000), CancellationToken.None);
                 var images = Path.GetFullPath("../../../../../docs/images", AppContext.BaseDirectory);
                 if (Environment.GetEnvironmentVariable("MMW_CAPTURE_SCREENSHOTS") == "1")
                 {

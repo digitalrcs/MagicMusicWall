@@ -519,7 +519,7 @@ public partial class MainWindow : Window
         CheckpointListeningSession();
         _updatingTime = true;
         if (_seeking && (_seekVersion != _playVersion || !_player.IsSeekable)) SeekSlider.CancelSeek();
-        var length = Math.Max(1, _pendingSessionPosition.HasValue ? (long)((_current?.DurationSeconds ?? 0) * 1000) : _player.Length);
+        var length = Math.Max(1, DisplayDurationMilliseconds());
         if (!_seeking) SeekSlider.Maximum = length;
         if (!_seeking) SeekSlider.Value = Math.Max(0, _pendingSessionPosition ?? _player.Time);
         SeekSlider.IsEnabled = _player.IsSeekable;

@@ -214,6 +214,7 @@ public partial class MainWindow
                 VolumeSlider.Value = command.Volume!.Value;
                 break;
             case "seek":
+                if (_pendingSessionPosition.HasValue) { _pendingSessionPosition = Math.Clamp(command.PositionMs!.Value, 0, DisplayDurationMilliseconds()); break; }
                 await Playback(() => { if (_player.IsSeekable) _player.Time = Math.Clamp(command.PositionMs!.Value, 0, Math.Max(0, _player.Length)); return true; });
                 break;
             case "next":
@@ -243,7 +244,7 @@ public partial class MainWindow
         {
             if (main._closing) throw new InvalidOperationException("The player is closing.");
             return new RemoteState(main._current?.Id, main.NowTitle.Text, main.NowArtist.Text, main._player.IsPlaying,
-                Math.Max(0, main._player.Time), Math.Max(0, main._player.Length), main._settings.Volume,
+                main.CaptureSession().PositionMilliseconds, main.DisplayDurationMilliseconds(), main._settings.Volume,
                 main._cast.Renderer is not null ? main._cast.Name : main.AudioOutputLabel,
                 main._queue.Take(500).Select(ToRemote).ToList(), main._catalog.Document.Playlists.Select(p => new RemotePlaylist(p.Id, p.Name, main._catalog.PlaylistItems(p.Id).Count)).ToList(),
                 main._current is null ? -1 : main._queueIndex, main._settings.BrowserPlaybackEnabled,

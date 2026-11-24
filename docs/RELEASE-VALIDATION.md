@@ -7,7 +7,7 @@ Validated on Windows on 24 November 2026. Automated fixtures use generated or fi
 | Build | Release build succeeds with zero warnings and errors. |
 | Core | 263 tests pass, including exact duplicate queue identity, session recovery, catalog removal/undo, M3U interchange, relinking, smart playlists and validated backup rollback. |
 | Streaming | 244 tests pass, including full queue paging, stale commands, browser media rules and server-enforced guest authorization/revocation. |
-| Native session | 18 checks pass using the real WPF app and silent WAVs: paused restore without loading audio, retained position, duplicate selection, reordering, undo, external file append and graceful-close persistence. |
+| Native session | 20 checks pass using the real WPF app and silent WAVs: paused restore without loading audio, retained position, duplicate selection, reordering, undo, external file append and graceful-close persistence. |
 | Details/settings | Native normal/small reader sizing, independent scrolling, splitter and unsaved-settings checks pass. Switching tabs does not incorrectly mark settings dirty. |
 | Web | Chromium desktop/phone checks pass for a 6,000-entry queue, duplicate occurrences, page races, shrinking queues, persistence, clear/undo, reconnect, expired sign-in, removed files and guest controls. Real desktop-bridge fixture captures were also checked. |
 | ReplayGain | Digital PCM tests pass: −6 dB gain ratio 0.5001, positive gain peak protection 1.0508 with a 0.95 declared peak, and untagged ratio 1.0000. No speaker was needed for these measurements. |
