@@ -1,4 +1,12 @@
-# Version 1.0.0 validation
+# Release validation
+
+## Version 1.0.1 maintenance update
+
+Version 1.0.1 moves **Mini player** after both main view choices and refreshes the current guides and main-window screenshots. The version 1.0.0 results below remain the broader validation baseline; they are not a claim that every check was rerun for this maintenance update.
+
+The 1.0.1 Release native-session harness passed all 20 checks. Normal and compact main-window screenshots were regenerated; the main-window layout was visually reviewed with Mini player after both view choices.
+
+## Version 1.0.0 baseline
 
 Validated on Windows on 24 November 2026. Automated fixtures use generated or fictional media and isolated data folders; they do not modify the installed collection.
 

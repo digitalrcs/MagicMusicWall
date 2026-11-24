@@ -1,6 +1,6 @@
 # Common questions
 
-Applies to Magic Music Wall **1.0.0**.
+Applies to Magic Music Wall **1.0.1**.
 
 [All guides](README.md) · [First-use walkthrough](GETTING-STARTED.md)
 
@@ -56,7 +56,7 @@ For help, read [Troubleshooting](TROUBLESHOOTING.md), then report the version, e
 
 Open **Manage folders** (also available in **Setup → Library**) and click **Clear added files**. Confirm to remove those entries from the library, playlists and PC queue. Your actual files stay on disk. This also clears entries left by older versions after removing their source folders.
 
-Starting in 0.9.15, **Remove selected source** removes its tracks automatically, except tracks still covered by another managed source. Use **Remove from library (keep file)** for individual selections.
+**Remove selected source** removes its tracks automatically, except tracks still covered by another managed source. Use **Remove from library (keep file)** for individual selections.
 
 ## Will my queue survive closing the app?
 
@@ -64,7 +64,7 @@ Yes, when **Setup → Sound → Restore my queue and position when opening the a
 
 ## Can I undo removing songs?
 
-**Undo** in Up next restores the most recent queue clear or removal. In **Manage folders**, **Undo library removal** restores catalog entries and playlist membership after removing a source or added files, provided no later catalog edit has changed the library. This library undo does not put songs back into the PC queue or restart playback. Neither operation deletes music from the drive.
+**Undo** in Up next restores the most recent queue clear, removal or reorder. In **Manage folders**, **Undo library removal** restores catalog entries and playlist membership after removing a source or added files, provided no later catalog edit has changed the library. This library undo does not put songs back into the PC queue or restart playback. Neither operation deletes music from the drive.
 
 ## Can I import playlists or make automatic playlists?
 

@@ -1,6 +1,6 @@
 # Find information and edit file tags
 
-Applies to Magic Music Wall **1.0.0**.
+Applies to Magic Music Wall **1.0.1**.
 
 [Documentation home](README.md)
 
@@ -60,13 +60,11 @@ Local lyrics can be embedded in the file, or in a `.lrc` / `.txt` file beside it
 
 ## Write artist, album and other tags
 
-1. Select one song or video and click **Edit file tags**. This is also on the collection/queue right-click menus and inside the song-information window.
+1. Right-click one song or video in the collection or queue and choose **Edit file tags…**. Alternatively, open its information window, choose **File tags**, then **Review and edit file tags…**.
 2. Click **Search online** using a clean artist/title. Remove file extensions, track-number prefixes or release-group text from the search if it prevents a match.
 3. Select the correct recording/release and click **Preview selected**.
 4. Compare **Current file tag** with **Proposed value**. Edit values if needed and check only the fields you want to write.
 5. Click **Save checked tags**. Read the filename and before/after changes in the confirmation, then choose **Save these changes**.
-
-![Metadata preview with individually selected fields](images/metadata.png)
 
 Online matches are suggestions. A song can appear on an original album, a compilation and several remasters with different years. Choose the release that matches your copy. You can leave an uncertain field unchecked.
 
@@ -86,8 +84,6 @@ Movie lookup uses TMDB and needs your own **API Read Access Token**:
 2. Click **Open TMDB API settings** and obtain a token through your TMDB account.
 3. Paste the long **API Read Access Token**, not the shorter API key, into the app.
 4. Click **Save settings**, then open a video's **Edit file tags** window and search its title.
-
-![Optional movie lookup configuration](images/setup-metadata.png)
 
 The token is encrypted for your Windows account. Leave the box blank to keep an existing token; check the removal option to clear it on save. A portable copy moved to a different Windows account may require entering the token again.
 

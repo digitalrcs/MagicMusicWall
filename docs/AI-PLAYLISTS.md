@@ -1,6 +1,6 @@
 # AI playlists and saved song notes
 
-Applies to Magic Music Wall **1.0.0**.
+Applies to Magic Music Wall **1.0.1**.
 
 This guide covers the current AI assistant, including the song/folder picker, incremental results and review modes.
 
@@ -43,7 +43,7 @@ Saved file tags, MusicBrainz genres/instrument credits and existing local tempo 
 
 ## Look up and save song information
 
-Open a song's existing information window (also available from the queue) and click **AI song notes…**. Alternatively, select exactly one recommendation and click **Song notes / web lookup**.
+Open a song's information window (also available from the queue), choose **AI notes**, then click **Generate or review notes…**. Alternatively, select exactly one recommendation and click **Song notes / web lookup**.
 
 - **Web lookup (MusicBrainz)** opens the existing sourced lookup and review window. Accepted information is saved in the library.
 - **Generate & save notes** asks the configured AI for listening notes based on the saved metadata and its knowledge. It has no live browser and has not listened to the song. It separates saved evidence, AI interpretation and unknown details.

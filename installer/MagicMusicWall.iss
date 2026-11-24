@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "1.0.0"
+  #define AppVersion "1.0.1"
 #endif
 #ifndef PayloadDirectory
   #error PayloadDirectory must point to a clean self-contained published application.
@@ -64,6 +64,13 @@ Name: "associatefiles"; Description: "Register music file types with MagicMusicW
 ; Portable launchers/markers are distributed in the portable ZIP only.
 Source: "{#PayloadDirectory}\*"; DestDir: "{app}"; Excludes: "Start-MagicMusicWall.cmd,portable.flag,Data\*"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "assets\DigitalRCS.ico"; DestDir: "{app}\Assets"; Flags: ignoreversion
+
+[InstallDelete]
+; Retired documentation screenshots only; never remove user library or media data.
+Type: files; Name: "{app}\OfflineDocs\docs\images\installer.png"
+Type: files; Name: "{app}\OfflineDocs\docs\images\playlists.png"
+Type: files; Name: "{app}\OfflineDocs\docs\images\metadata.png"
+Type: files; Name: "{app}\OfflineDocs\docs\images\setup-metadata.png"
 
 [Registry]
 ; Register choices per user; Windows owns the user's default-app selection.

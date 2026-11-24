@@ -1,13 +1,14 @@
 [CmdletBinding()]
 param(
-    [ValidatePattern('^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$')]
-    [string]$Version = '0.5.1',
+    [string]$Version,
     [string]$OutputDirectory
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $projectRoot = Split-Path -Parent $PSScriptRoot
+. (Join-Path $projectRoot 'installer\Packaging.Common.ps1')
+$Version = Get-MagicMusicWallVersion -ProjectRoot $projectRoot -RequestedVersion $Version
 $cacheDirectory = Join-Path $projectRoot 'artifacts\third-party-sources'
 New-Item -ItemType Directory -Path $cacheDirectory -Force | Out-Null
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {

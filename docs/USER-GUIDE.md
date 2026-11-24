@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **1.0.0**.
+Applies to Magic Music Wall **1.0.1**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
@@ -25,7 +25,7 @@ The device's name in the list does not by itself prove that a Bluetooth connecti
 
 1. Open **Manage folders**, click **Add folders…**, and choose a folder such as `D:\Music`, or choose **Add files…** in that window to add particular songs. The app catalogs your choices; files remain in their original locations.
 2. In **Folders**, double-click a folder name to enter it. Opening a folder adds nothing to the playback queue.
-3. Single-click a song to select it. Double-click its name to append it and play it immediately while keeping the queue. **+ Queue** appends without interrupting playback. Explicit **Play** actions may replace the queue.
+3. Single-click a song to select it. Double-click its name to play its existing queue entry, or append and play it if it is not queued. The rest of the queue stays intact. **+ Queue** appends without interrupting playback. Explicit **Play** actions may replace the queue.
 4. Use **Play folder** when you want every song in that folder and its subfolders. **Up next** is your current playback queue; saved playlists are separate.
 
 ![Folder and file grid](images/library.png)
@@ -87,8 +87,6 @@ The destination chooser opens only when adding songs. Clicking a playlist in the
 
 Click **Save queue** above **Up next**, enter a new playlist name, and confirm. The saved playlist opens; the current queue/playback continues. The left-side **+** dialog also offers **Current queue** when it contains songs.
 
-![A saved playlist and its play/queue controls](images/playlists.png)
-
 ### Play a saved playlist again
 
 - Click its name on the left to see its songs. Opening it clears the previous view's search filter.
@@ -98,13 +96,13 @@ Click **Save queue** above **Up next**, enter a new playlist name, and confirm. 
 
 Clearing **Up next** does not delete the saved playlist. Open that playlist and use **Play playlist** to load it again. With that playlist open and an empty queue, the bottom Play control also reloads it.
 
-Right-click a playlist name to rename/delete it. Right-click a track while browsing a playlist to move it up/down or remove it from that playlist. Clear search when arranging the full saved order. Deleting a playlist does not delete its media files.
+Right-click a playlist name to rename/delete it. Right-click a track while browsing a regular playlist to move it up/down or remove it from that playlist. Clear search when arranging the full saved order. Smart playlists use their rules instead of manual edits. Deleting a playlist does not delete its media files.
 
 ## Manage the current queue
 
 The queue is the order of items you are playing now. **Queue selected**, **+ Queue** and **+ Queue folder** append items; explicit Play actions can replace the queue with the items being started.
 
-Right-click a queue item to move or remove it, open **Song info / lyrics**, or **Edit file tags**. Ctrl/Shift selects multiple queue entries for removal. **Clear queue** empties the queue; **Undo** restores the most recent clear/removal. **Save queue** preserves the exact order including repeated tracks. Use **Play next** for selected library songs, or search Up next and choose **Find next** to locate an entry.
+Right-click a queue item to move or remove it, open **Song info / lyrics**, or **Edit file tags**. Ctrl/Shift selects multiple queue entries for removal. **Clear queue** empties the queue; **Undo** restores the most recent clear, removal or reorder. **Save queue** preserves the exact order including repeated tracks. Use **Play next** for selected library songs, or search Up next and choose **Find next** to locate an entry.
 
 Use the bottom controls for previous/next, pause, position, volume, shuffle and repeat. Shuffle takes effect on the next transition, including when toggled mid-queue. **View options → Repeat current track** repeats a naturally ending track; explicit Next still advances. The app saves volume, output, shuffle and repeat preferences. Session recovery saves queue order, duplicate occurrences and position; reopening is paused by default. Configure restore and optional automatic resume in **Setup → Sound**.
 
@@ -124,6 +122,7 @@ Open **Setup** and choose the tab for the setting you want. Click **Save setting
 
 | Tab | What you can configure |
 | --- | --- |
+| **AI** | Optional provider, server address, API key and model; connect and load available models. |
 | **Sound** | Audio output, volume, shuffle upcoming tracks, repeat queue/current track, session restore and optional automatic resume. ReplayGain track-tag volume leveling requires an app restart. Windows handles Bluetooth pairing. |
 | **Library** | Manage sources, rescan now/startup, optional watched folders and compact spacing. |
 | **Metadata** | Optional movie lookup token and provider information. Music lookup needs no API key. |
@@ -157,7 +156,7 @@ In **Articles**, double-click a result to load its excerpt. In **Overview & albu
 
 ## Adapt the workspace
 
-Drag the panel dividers to resize the library and queue. **View options** toggles either panel and compact/comfortable spacing. **Ctrl+L** toggles the library, **Ctrl+Q** the queue, and **F11** fullscreen listening. **Mini player** keeps compact transport controls available. **Pause visual motion** stops animation without stopping playback. Window geometry and panel preferences are saved.
+Drag the panel dividers to resize the library and queue. **View options** toggles either panel and compact/comfortable spacing. **Ctrl+L** toggles the library, **Ctrl+Q** the queue, and **F11** fullscreen listening. **Mini player**, after the **Music list** and **Playing music · visuals** choices, opens compact transport controls. **Pause visual motion** stops animation without stopping playback. Window size, maximized state and panel preferences are saved.
 
 Use **View options → Filter and sort library…** to group songs by artist/album, choose sort order, or show favorites, unplayed/recently played, missing metadata or unavailable tracks. Genre and year fields narrow the results. **Toggle favorite for selected songs** marks or unmarks selected tracks. **Create smart playlist…** saves rules instead of a fixed list; all chosen conditions must match and results update when opened.
 
@@ -173,4 +172,4 @@ Use **Setup → TV & data → Back up library…** for a ZIP of the library, set
 
 **Restore backup…** validates the archive, retains a recovery ZIP in the data folder, closes the player and restores before restarting. Files are replaced individually with rollback on ordinary errors; the retained recovery copy is also important if power loss interrupts the operation.
 
-Manage folders now shows import progress with **Cancel import** inside the popup. Removal confirmations preview affected tracks and playlists. **Undo library removal** restores catalog entries and playlist membership until a later catalog edit; it does not restore the PC queue or restart playback. Original media stays on disk.
+Manage folders shows import progress with **Cancel import** inside the popup. Removal confirmations preview affected tracks and playlists. **Undo library removal** restores catalog entries and playlist membership until a later catalog edit; it does not restore the PC queue or restart playback. Original media stays on disk.

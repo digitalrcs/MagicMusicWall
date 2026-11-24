@@ -34,7 +34,8 @@
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
      <RadioButton x:Name="LibraryMode" Content="Music list" GroupName="CenterMode" IsChecked="True" Checked="CenterMode_Changed" Foreground="{StaticResource TextBrush}" Margin="0,0,24,0"/>
-     <Button Content="Mini player" Click="MiniPlayer_Click" Padding="8,3" Margin="0,0,12,0"/><RadioButton x:Name="VisualMode" Content="Playing music · visuals" GroupName="CenterMode" Checked="CenterMode_Changed" Foreground="{StaticResource TextBrush}"/>
+     <RadioButton x:Name="VisualMode" Content="Playing music · visuals" GroupName="CenterMode" Checked="CenterMode_Changed" Foreground="{StaticResource TextBrush}"/>
+     <Button Content="Mini player" Click="MiniPlayer_Click" Padding="8,3" Margin="16,0,0,0"/>
     </StackPanel>
     <Grid Grid.Row="1" x:Name="VisualizerPanel" Visibility="Collapsed">
      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>

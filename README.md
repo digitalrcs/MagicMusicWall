@@ -13,16 +13,16 @@ Add the music and videos you already own, browse a compact folder/file grid, bui
 
 Keep your listening session between launches, edit the queue with undo, browse favorites and smart playlists, and control large queues from your phone. Adjustable panels and tabbed song details make everyday controls easier to reach. Private backup/restore, library health tools and ReplayGain support help keep an established collection usable. See the [user guide](docs/USER-GUIDE.md) and [release validation](docs/RELEASE-VALIDATION.md) for behavior and test limits.
 
-## Download version 1.0.0
+## Download version 1.0.1
 
 For **Windows 11 on Intel/AMD x64 PCs**. The .NET runtime and VLC playback engine are included; no separate runtime installation is needed.
 
 | Package | What to do |
 | --- | --- |
-| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v1.0.0/MagicMusicWall-1.0.0-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
-| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v1.0.0/MagicMusicWall-1.0.0-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
-| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v1.0.0/MagicMusicWall-1.0.0-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
-| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v1.0.0/SHA256SUMS.txt) | Verify the downloaded files. |
+| [Windows installer](https://github.com/digitalrcs/MagicMusicWall/releases/download/v1.0.1/MagicMusicWall-1.0.1-Setup-x64.exe) | Run it on this PC, or copy it to USB and install on another PC. |
+| [Portable ZIP](https://github.com/digitalrcs/MagicMusicWall/releases/download/v1.0.1/MagicMusicWall-1.0.1-Portable-x64.zip) | Extract the whole folder, then open **Start-MagicMusicWall.cmd**. |
+| [USB kit](https://github.com/digitalrcs/MagicMusicWall/releases/download/v1.0.1/MagicMusicWall-1.0.1-USB-Kit.zip) | Installer, portable ZIP, offline guides and checksums together. |
+| [Checksums](https://github.com/digitalrcs/MagicMusicWall/releases/download/v1.0.1/SHA256SUMS.txt) | Verify the downloaded files. |
 
 [All releases](https://github.com/digitalrcs/MagicMusicWall/releases) · [Install and USB instructions](docs/WINDOWS-INSTALLER.md) · [Full documentation](docs/README.md)
 
@@ -36,12 +36,10 @@ Download **Setup-x64.exe** from the release assets to install. GitHub's **Source
 
 1. Connect your stereo or headphones in Windows, then choose the device under **Listening on**.
 2. Open **Manage folders**, then choose **Add folders…** or **Add files…**. You can add local storage, a connected USB drive, or an accessible network share.
-3. Open a folder to browse its contents. Click a song name or **+ Queue** to add just that song to **Up next**.
+3. Double-click a folder to browse its contents. Single-click a song to select it, then click **+ Queue** to add just that song to **Up next**. Double-click a song to play its existing queue entry, or append and play it if it is not queued.
 4. Press Play. Save the queue as a playlist, or select songs and add them to Dinner, Jazz, Rock, 80's, or your own playlist.
 
 The directory grid shows the folders and files you added to your library. Search across them by title, artist, album, genre or folder name—for example, `Pink Floyd` or `Dark Side of the Moon`. Clearing the queue leaves saved playlists intact.
-
-![Saved playlist and playback queue](docs/images/playlists.png)
 
 ## What you can do
 
@@ -61,7 +59,7 @@ The directory grid shows the folders and files you added to your library. Search
 
 Online lookups are optional and send search text to the selected provider. Media files are not uploaded. Playback works offline when the media is locally available. Alexa, Matter, an ESP32, and an AI service are not required.
 
-![Review metadata before writing file tags](docs/images/metadata.png)
+![Song information organized into tabs](docs/images/song-details.png)
 
 ## A remote for your home
 

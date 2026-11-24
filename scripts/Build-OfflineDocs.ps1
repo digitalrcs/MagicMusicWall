@@ -28,6 +28,10 @@ foreach ($source in $sources) {
 }
 $images = Join-Path $projectRoot 'docs\images'
 if (Test-Path -LiteralPath $images) { Copy-Item -LiteralPath $images -Destination (Join-Path $docsOutput 'docs') -Recurse -Force }
+foreach ($retiredImage in @('installer.png', 'playlists.png', 'metadata.png', 'setup-metadata.png')) {
+    $retiredPath = Join-Path $docsOutput ('docs\images\' + $retiredImage)
+    if (Test-Path -LiteralPath $retiredPath -PathType Leaf) { Remove-Item -LiteralPath $retiredPath }
+}
 Copy-Item -LiteralPath (Join-Path $docsOutput 'README.html') -Destination (Join-Path $docsOutput 'index.html') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE.txt') -Destination $docsOutput -Force
 Write-Output (Join-Path $docsOutput 'index.html')

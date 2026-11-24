@@ -1,5 +1,12 @@
 # Changes
 
+## 1.0.1 — Mini player placement and current documentation
+
+- Keep the Music list and Playing music · visuals radio buttons together; place Mini player after both options.
+- Refresh the main-window screenshots and correct outdated playlist, queue and navigation instructions throughout the current guides.
+- Remove retired screenshots from the repository, offline documentation and existing Windows installations during upgrade. Preserve the historical changelog and third-party notices.
+- Derive the third-party source package's default version from the application instead of using an obsolete fixed version.
+
 
 ## 1.0.0 — Listening sessions and production usability
 

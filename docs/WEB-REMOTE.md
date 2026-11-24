@@ -1,6 +1,6 @@
 # Control the PC or listen in a browser
 
-Applies to Magic Music Wall **1.0.0**.
+Applies to Magic Music Wall **1.0.1**.
 
 [Documentation home](README.md)
 
@@ -18,7 +18,7 @@ The web remote is a page served by Magic Music Wall while the Windows app is ope
 
 You can bookmark the plain address. Without **Remember this browser**, access lasts for the browser session, up to eight hours. Remembered access survives an ordinary restart of the Windows app. It still requires the app to be running at the same reachable address.
 
-Existing **Show QR code**, **Copy remote link**, and listening links also work. They include a quick access key and do not require the passphrase.
+Expand **Advanced access links and QR codes** in Setup for **Show QR code**, **Copy remote link**, and listening links. They include a quick access key and do not require the passphrase.
 
 ![Current web remote with collection and playback controls](images/web-remote.png)
 
@@ -117,4 +117,4 @@ The header shows **Reconnecting…** when the PC cannot be reached. The page ret
 
 ## Guest queue access
 
-A host can share a separate guest link from **Setup → Remote**. Guests can browse the collection and append songs or folders to the PC queue. They cannot start/stop playback, change outputs or volume, remove/clear/reorder songs, open song information, or stream media to their browser. The destination header identifies guest mode. Share a full control link only with someone who should have those additional controls. The host can replace or disable guest access independently in Setup.
+A host can share a separate guest link from **Setup → Remote → Advanced access links and QR codes → Copy guest queue-only link**. Save settings after creating or revoking a link. Guests can browse the collection and append songs or folders to the PC queue. They cannot start/stop playback, change outputs or volume, remove/clear/reorder songs, open song information, or stream media to their browser. The destination header identifies guest mode. Share a full control link only with someone who should have those additional controls. The host can replace or disable guest access independently in Setup.

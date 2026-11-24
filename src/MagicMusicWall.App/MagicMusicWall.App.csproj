@@ -11,7 +11,7 @@
     <VlcWindowsArm64Enabled>false</VlcWindowsArm64Enabled>
     <AssemblyName>MagicMusicWall</AssemblyName>
     <ApplicationIcon>..\..\installer\assets\DigitalRCS.ico</ApplicationIcon>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Company>DigitalRCS.com</Company>
     <Description>Local music and video library for Windows</Description>
   </PropertyGroup>

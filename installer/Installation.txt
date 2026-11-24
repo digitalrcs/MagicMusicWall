@@ -11,7 +11,9 @@ The x64 application is intended for Windows 11 Intel/AMD PCs. Windows 11 ARM
 may run it through x64 emulation, but ARM operation has not been validated.
 
 Setup installs for your Windows account. It creates a Start menu shortcut;
-you can also choose a desktop shortcut. The default installation location is:
+you can also choose a desktop shortcut and optional music file associations.
+Windows may still ask you to choose Magic Music Wall as the default music app.
+The default installation location is:
   %LOCALAPPDATA%\Programs\MagicMusicWall
 
 Your saved library and settings are separate:
@@ -20,6 +22,11 @@ Your saved library and settings are separate:
 The installer does not copy music from another PC or change its tags. Add your
 music folders after installation. A USB drive or network source must remain
 connected when playing its files. Pair Bluetooth speakers on each PC.
+
+Use Manage folders to add folders or individual files. Opening an external
+music file appends it to an existing queue by default, preserving playback;
+an empty queue starts immediately. Change this in Setup > Sound by clearing
+Add external files to the existing queue if you prefer immediate replacement.
 
 Upgrade and removal
 
