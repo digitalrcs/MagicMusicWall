@@ -22,7 +22,7 @@ internal sealed class AiSongNotesWindow : Window
         var cancelButton = new Button { Content = "Cancel", Margin = new(0, 0, 8, 8) };
         buttons.Children.Add(generate); buttons.Children.Add(web); buttons.Children.Add(cancelButton);
         var status = new TextBlock { TextWrapping = TextWrapping.Wrap, Margin = new(0, 8, 0, 12) }; header.Children.Add(status);
-        var reader = new TextBox { IsReadOnly = true, TextWrapping = TextWrapping.Wrap, AcceptsReturn = true, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }; root.Children.Add(reader);
+        var reader = new TextBox { IsReadOnly = true, TextWrapping = TextWrapping.Wrap, AcceptsReturn = true, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }; root.Children.Add(reader); Content = Ui.ScrollPage(root, header, null, 340);
         CancellationTokenSource? pending = null;
         bool closed = false;
         void Display(AiSongNote note)

@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **0.9.17**.
+Applies to Magic Music Wall **0.9.18**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
@@ -146,3 +146,9 @@ Changes to folders/playlists and the main player's output, volume, shuffle and r
 For phone controls, QR codes and independent browser listening, continue to the [web remote guide](WEB-REMOTE.md).
 
 Double-click a track in **Up Next** to play that queue position. Scrollbar arrows, the scrollbar track/thumb, and empty queue space only navigate the list; they do not restart playback.
+
+## Compact information windows
+
+Library tools are ordered **Manage folders**, **Rescan library**, **Music constellation**, **AI playlist assistant**, then **Setup**.
+
+Song info groups MusicBrainz library info, AI song notes and Edit file tags on a wrapping action row. Song facts gives the selected article a large, independently scrollable reader. Scroll the whole popup to reach other controls when the window is short. MusicBrainz, AI notes and Metadata also keep their content usable with page scrolling at smaller window heights. Buttons have visible outlines and compact spacing, distinct from labels and input fields.

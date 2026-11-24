@@ -14,11 +14,11 @@
     </StackPanel>
     <StackPanel DockPanel.Dock="Bottom">
      <Expander x:Name="LibraryTools" Header="Library tools" ToolTip="Collapse these buttons to make more room for playlists" IsExpanded="True" Foreground="{StaticResource TextBrush}" Expanded="ToolsExpansion_Changed" Collapsed="ToolsExpansion_Changed"><StackPanel>
-     <Button Content="AI playlist assistant" Click="AiPlaylist_Click" Margin="0,8,0,0"/>
+     <Button Content="Manage folders" Click="ManageFolders_Click" HorizontalAlignment="Stretch" Margin="0,8,0,0"/>
+     <Button x:Name="RescanButton" Content="Rescan library" Click="Rescan_Click" HorizontalAlignment="Stretch" Margin="0,8,0,0"/>
      <Button Content="Music constellation" Click="MusicMap_Click" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Music constellation"/>
+     <Button Content="AI playlist assistant" Click="AiPlaylist_Click" Margin="0,8,0,0"/>
      <Button Content="⚙  Setup" Click="Setup_Click" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Setup"/>
-     <Button Content="Manage folders" Click="ManageFolders_Click" HorizontalAlignment="Stretch" Margin="0,12,0,8"/>
-     <Button x:Name="RescanButton" Content="Rescan library" Click="Rescan_Click" HorizontalAlignment="Stretch"/>
      </StackPanel></Expander>
      <Button Click="Brand_Click" Background="Transparent" Padding="5,4" HorizontalAlignment="Left" Margin="0,16,0,0" ToolTip="Visit DigitalRCS.com" AutomationProperties.Name="DigitalRCS.com website"><StackPanel Orientation="Horizontal"><Image Source="Assets/digitalrcs-logo.png" Width="28" Height="28"/><TextBlock Text="DigitalRCS.com" FontSize="12" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/></StackPanel></Button>
     </StackPanel>

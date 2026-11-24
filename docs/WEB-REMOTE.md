@@ -1,6 +1,6 @@
 # Control the PC or listen in a browser
 
-Applies to Magic Music Wall **0.9.17**.
+Applies to Magic Music Wall **0.9.18**.
 
 [Documentation home](README.md)
 

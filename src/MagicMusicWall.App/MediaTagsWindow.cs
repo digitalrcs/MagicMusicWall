@@ -95,7 +95,7 @@ internal sealed class MediaTagsWindow : Window
         footerButtons.Children.Add(_close); footerButtons.Children.Add(_saveButton); footer.Children.Add(footerButtons);
         DockPanel.SetDock(footer, Dock.Bottom); root.Children.Add(footer);
         root.Children.Add(EditorTable());
-        Content = root;
+        Content = Ui.ScrollPage(root, header, footer, 320);
 
         _matches.SelectionChanged += (_, _) => UpdateControls();
         _title.TextChanged += (_, _) => QueryChanged(); _artist.TextChanged += (_, _) => QueryChanged();

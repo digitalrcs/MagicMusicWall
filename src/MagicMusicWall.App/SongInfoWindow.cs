@@ -18,7 +18,7 @@ internal sealed class SongInfoWindow : Window
     private readonly TextBlock _album = Ui.Text("", 14, true);
     private readonly TextBlock _status = Ui.Text("Choose a viewer below. Online searches send artist and song details, never your audio files.", 12, true);
     private readonly ListBox _matches = new();
-    private readonly ListBox _articles = new() { MaxHeight = 130 };
+    private readonly ListBox _articles = new() { MaxHeight = 100 };
     private readonly TextBox _lyrics = Reader();
     private readonly ListBox _lyricChoices = new() { MaxHeight = 150, Visibility = Visibility.Collapsed };
     private readonly TextBox _article = Reader();
@@ -34,29 +34,31 @@ internal sealed class SongInfoWindow : Window
     {
         _item = item; _music = music; _facts = facts; _saveAlbum = saveAlbum;
         Ui.Theme(this);
-        Title = "Song info · Magic Music Wall"; Width = 840; Height = 840; MinWidth = 620; MinHeight = 650;
+        Title = "Song info · Magic Music Wall"; Width = 960; Height = Math.Min(940, SystemParameters.WorkArea.Height - 40); MinWidth = 620; MinHeight = 480;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        var root = new DockPanel { Margin = new Thickness(24) };
+        var root = new DockPanel { Margin = new Thickness(16) };
         var header = new StackPanel();
         header.Children.Add(Ui.Text(item.Title, 25));
         _album.Text = AlbumLabel(); header.Children.Add(_album);
+        var tools = new WrapPanel { Margin = new Thickness(0, 0, 0, 4) };
+        header.Children.Add(tools);
         if (enrich is not null)
         {
             var info = Ui.Button("MusicBrainz library info…", (_, _) => enrich(this));
-            info.HorizontalAlignment = HorizontalAlignment.Left; header.Children.Add(info);
+            info.HorizontalAlignment = HorizontalAlignment.Left; tools.Children.Add(info);
         }
         if (aiNotes is not null)
         {
             var notes = Ui.Button("AI song notes…", (_, _) => aiNotes(this));
-            notes.HorizontalAlignment = HorizontalAlignment.Left; header.Children.Add(notes);
+            notes.HorizontalAlignment = HorizontalAlignment.Left; tools.Children.Add(notes);
         }
         if (editTags is not null)
         {
             var edit = Ui.Button("Edit file tags…", (_, _) => { editTags(this); _album.Text = AlbumLabel(); });
             edit.HorizontalAlignment = HorizontalAlignment.Left;
-            header.Children.Add(edit);
+            tools.Children.Add(edit);
         }
-        var query = new Grid { Margin = new Thickness(0, 12, 0, 10) };
+        var query = new Grid { Margin = new Thickness(0, 4, 0, 4) };
         query.ColumnDefinitions.Add(new()); query.ColumnDefinitions.Add(new());
         var artistPanel = new StackPanel { Margin = new Thickness(0, 0, 8, 0) };
         artistPanel.Children.Add(Ui.Text("Artist for lookup", 12, true)); _artist.Text = item.Artist;
@@ -64,17 +66,27 @@ internal sealed class SongInfoWindow : Window
         var titlePanel = new StackPanel(); titlePanel.Children.Add(Ui.Text("Song title for lookup", 12, true)); _title.Text = item.Title;
         AutomationProperties.SetName(_title, "Lookup song title"); titlePanel.Children.Add(_title); Grid.SetColumn(titlePanel, 1); query.Children.Add(titlePanel);
         header.Children.Add(query);
-        var tabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 12) };
+        var tabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 4) };
         foreach (var name in new[] { "Info & albums", "Lyrics", "Song facts" })
         {
             var index = _tabs.Count;
             var button = Ui.Button(name, (_, _) => SelectTab(index)); _tabs.Add(button); tabs.Children.Add(button);
         }
         header.Children.Add(tabs); DockPanel.SetDock(header, Dock.Top); root.Children.Add(header);
-        DockPanel.SetDock(_status, Dock.Bottom); _status.Margin = new Thickness(0, 14, 0, 0); root.Children.Add(_status);
+        DockPanel.SetDock(_status, Dock.Bottom); _status.Margin = new Thickness(0, 8, 0, 0); root.Children.Add(_status);
         root.Children.Add(_views);
         _views.Children.Add(AlbumView()); _views.Children.Add(LyricsView()); _views.Children.Add(FactsView());
-        Content = root; SelectTab(0);
+        var page = Ui.ScrollPage(root, header, _status, 610);
+        AutomationProperties.SetName(page, "Song info page");
+        AutomationProperties.SetName(_article, "Article reader");
+        AutomationProperties.SetName(_lyrics, "Lyrics reader");
+        _article.ToolTip = "Read the selected article here. Scroll inside this area for more text.";
+        foreach (var list in new[] { _articles, _matches, _lyricChoices })
+        {
+            list.BorderThickness = new Thickness(1);
+            list.SetResourceReference(Control.BorderBrushProperty, "LineBrush");
+        }
+        Content = page; SelectTab(0);
         Loaded += async (_, _) => await Run(async () =>
         {
             var local = await Task.Run(() => LocalLyrics.Read(_item), _cancel.Token);
@@ -86,7 +98,7 @@ internal sealed class SongInfoWindow : Window
     }
 
     private string AlbumLabel() => $"{_item.Artist} · {(_item.Album.Length > 0 ? _item.Album : "Album unknown")} · {_item.DurationText}";
-    private static TextBox Reader() => new() { IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, AcceptsReturn = true, FontSize = 15, Padding = new Thickness(16), IsReadOnlyCaretVisible = true };
+    private static TextBox Reader() => new() { IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, AcceptsReturn = true, FontSize = 15, Padding = new Thickness(12), Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(19, 24, 33)), IsReadOnlyCaretVisible = true };
     private Button Action(string label, Func<Task> action)
     {
         var button = Ui.Button(label, async (_, _) => await Run(action)); _actions.Add(button); return button;
@@ -166,7 +178,7 @@ internal sealed class SongInfoWindow : Window
                 ShowLyrics(choice.Lyrics); _status.Text = choice.Lyrics.Message ?? "Selected lyrics version loaded.";
                 return Task.CompletedTask;
             }));
-            button.Content = Ui.Text(caption, 13); button.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+            button.HorizontalAlignment = HorizontalAlignment.Stretch; button.Content = Ui.Text(caption, 13); button.HorizontalContentAlignment = HorizontalAlignment.Stretch;
             _lyricChoices.Items.Add(button);
         }
         _lyrics.Text = result.Instrumental ? "Instrumental — no sung lyrics are listed for this recording." : result.PlainText.Length > 0 ? result.PlainText : result.SyncedText.Length > 0 ? result.SyncedText : result.Message ?? "No matching lyrics found.";
@@ -178,7 +190,8 @@ internal sealed class SongInfoWindow : Window
     {
         var panel = new DockPanel();
         DockTop(panel, Ui.Text("Search Wikipedia for background, credits and recording history. Choose the matching article; similar titles may refer to a different song.", 13, true));
-        DockTop(panel, Action("Find song facts", async () =>
+        var actions = new WrapPanel();
+        actions.Children.Add(Action("Find song facts", async () =>
         {
             _articles.Items.Clear(); _article.Clear(); _articleCredit.Text = ""; _articleUrl = ""; _status.Text = "Finding Wikipedia articles…";
             var result = await _facts.SearchAsync(_artist.Text, _title.Text, _cancel.Token);
@@ -190,8 +203,7 @@ internal sealed class SongInfoWindow : Window
             }
             _status.Text = result.Count == 0 ? "No matching articles found. Try adjusting the artist or title." : "Select an article and choose Read selected article.";
         }));
-        DockTop(panel, _articles);
-        var actions = new WrapPanel();
+
         actions.Children.Add(Action("Read selected article", async () =>
         {
             if (_articles.SelectedItem is not ListBoxItem { Tag: FactArticle selected }) { _status.Text = "Select a matching article first."; return; }
@@ -202,7 +214,7 @@ internal sealed class SongInfoWindow : Window
             _status.Text = "Excerpt loaded. Open the source for the full article and its references.";
         }));
         actions.Children.Add(Action("Open article source", () => { OpenSource(_articleUrl); return Task.CompletedTask; }));
-        DockTop(panel, actions); Bottom(panel, _articleCredit); panel.Children.Add(_article); return panel;
+        DockTop(panel, actions); DockTop(panel, _articles); DockTop(panel, Ui.Text("Selected article", 12, true)); Bottom(panel, _articleCredit); panel.Children.Add(_article); return panel;
     }
 
     private void SelectTab(int index)

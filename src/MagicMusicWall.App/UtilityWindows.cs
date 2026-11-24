@@ -17,8 +17,16 @@ namespace MagicMusicWall.App;
 internal static class Ui
 {
     public static void Theme(Window window) => window.SetResourceReference(FrameworkElement.StyleProperty, typeof(Window));
-    public static TextBlock Text(string text, double size = 14, bool muted = false) => new() { Text = text, FontSize = size, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 12), Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(muted ? "#A3A9BD" : "#F4F3F8")) };
-    public static Button Button(string text, RoutedEventHandler action) { var button = new Button { Content = text, Margin = new Thickness(0, 6, 8, 6) }; button.Click += action; return button; }
+    public static ScrollViewer ScrollPage(FrameworkElement content, FrameworkElement header, FrameworkElement? footer, double bodyHeight)
+    {
+        var page = new ScrollViewer { Content = content, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
+        void Resize() => content.Height = Math.Max(Math.Max(0, page.ActualHeight - content.Margin.Top - content.Margin.Bottom), header.ActualHeight + (footer?.ActualHeight ?? 0) + bodyHeight);
+        page.SizeChanged += (_, _) => Resize(); header.SizeChanged += (_, _) => Resize();
+        if (footer is not null) footer.SizeChanged += (_, _) => Resize();
+        return page;
+    }
+    public static TextBlock Text(string text, double size = 14, bool muted = false) => new() { Text = text, FontSize = size, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 8), Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(muted ? "#A3A9BD" : "#F4F3F8")) };
+    public static Button Button(string text, RoutedEventHandler action) { var button = new Button { Content = text, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 4, 8, 4) }; button.Click += action; return button; }
 }
 
 internal sealed class TextPrompt : Window

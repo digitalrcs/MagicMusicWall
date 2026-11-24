@@ -83,7 +83,7 @@ internal sealed class MusicBrainzWindow : Window
         DockPanel.SetDock(_remove, Dock.Bottom); savedView.Children.Add(_remove);
         AutomationProperties.SetName(_details, "Saved MusicBrainz information"); savedView.Children.Add(_details);
         _views.Items.Add(new TabItem { Header = "Saved info", Content = savedView });
-        root.Children.Add(body); Content = root;
+        root.Children.Add(body); Content = Ui.ScrollPage(root, header, footer, 420);
         _grid.SelectionChanged += (_, _) => { if (_grid.SelectedItem is Row row) { _artist.Text = row.Item.Artist; _title.Text = row.Item.Title; _album.Text = row.Item.Album; } _candidateRow = null; _candidates.Items.Clear(); ShowSaved(); UpdateActions(); };
         _candidates.SelectionChanged += (_, _) => UpdateActions();
         Closed += (_, _) => { _closed = true; _cancellation?.Cancel(); };
