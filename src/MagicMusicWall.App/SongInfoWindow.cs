@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Automation;
 using MagicMusicWall.Core;
 
@@ -27,7 +28,7 @@ internal sealed class SongInfoWindow : Window
     private readonly List<Button> _actions = [];
     private readonly Grid _views = new();
     private readonly List<Button> _tabs = [];
-    private string _lyricsUrl = "", _articleUrl = "";
+    private string _articleUrl = "";
     private bool _busy, _closed;
 
     public SongInfoWindow(MediaItem item, MusicLookupService music, SongFactsService facts, Action<RecordingMatch?> saveAlbum, Action<Window>? editTags = null, Action<Window>? enrich = null, Action<Window>? aiNotes = null)
@@ -86,6 +87,8 @@ internal sealed class SongInfoWindow : Window
             list.BorderThickness = new Thickness(1);
             list.SetResourceReference(Control.BorderBrushProperty, "LineBrush");
         }
+        _articles.MouseDoubleClick += Articles_DoubleClick;
+        _matches.MouseDoubleClick += Matches_DoubleClick;
         Content = page; SelectTab(0);
         Loaded += async (_, _) => await Run(async () =>
         {
@@ -160,7 +163,6 @@ internal sealed class SongInfoWindow : Window
                 _status.Text = result?.Message ?? "No local lyrics found.";
             }
         }));
-        actions.Children.Add(Action("Open lyrics source", () => { OpenSource(_lyricsUrl); return Task.CompletedTask; }));
         DockTop(panel, actions); DockTop(panel, _lyricChoices); Bottom(panel, _lyricsCredit); panel.Children.Add(_lyrics); return panel;
     }
 
@@ -183,7 +185,6 @@ internal sealed class SongInfoWindow : Window
         }
         _lyrics.Text = result.Instrumental ? "Instrumental — no sung lyrics are listed for this recording." : result.PlainText.Length > 0 ? result.PlainText : result.SyncedText.Length > 0 ? result.SyncedText : result.Message ?? "No matching lyrics found.";
         _lyricsCredit.Text = result.Found ? $"{result.SourceName} · {result.MatchedTitle} · {result.MatchedArtist}\n{result.MatchedAlbum}" : result.SourceName;
-        _lyricsUrl = result.SourceUrl;
     }
 
     private UIElement FactsView()
@@ -201,20 +202,47 @@ internal sealed class SongInfoWindow : Window
                 var entry = new StackPanel(); entry.Children.Add(Ui.Text(candidate.Title, 16)); entry.Children.Add(Ui.Text(candidate.Description, 12, true));
                 _articles.Items.Add(new ListBoxItem { Content = entry, Tag = candidate });
             }
-            _status.Text = result.Count == 0 ? "No matching articles found. Try adjusting the artist or title." : "Select an article and choose Read selected article.";
+            _status.Text = result.Count == 0 ? "No matching articles found. Try adjusting the artist or title." : "Double-click an article to read it, or choose Read selected article.";
         }));
 
         actions.Children.Add(Action("Read selected article", async () =>
         {
             if (_articles.SelectedItem is not ListBoxItem { Tag: FactArticle selected }) { _status.Text = "Select a matching article first."; return; }
-            _status.Text = "Loading article…";
-            var article = await _facts.GetArticleAsync(selected.Id, _cancel.Token);
-            if (_closed) return;
-            _article.Text = article.Title + "\n\n" + article.Text; _articleUrl = article.Url; _articleCredit.Text = article.Attribution;
-            _status.Text = "Excerpt loaded. Open the source for the full article and its references.";
+            await ReadArticleAsync(selected);
         }));
         actions.Children.Add(Action("Open article source", () => { OpenSource(_articleUrl); return Task.CompletedTask; }));
         DockTop(panel, actions); DockTop(panel, _articles); DockTop(panel, Ui.Text("Selected article", 12, true)); Bottom(panel, _articleCredit); panel.Children.Add(_article); return panel;
+    }
+
+    private static ListBoxItem? ClickedResult(ListBox list, MouseButtonEventArgs e) =>
+        e.ChangedButton == MouseButton.Left && e.OriginalSource is DependencyObject source
+            ? ItemsControl.ContainerFromElement(list, source) as ListBoxItem : null;
+
+    private async void Articles_DoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (_busy || _closed || ClickedResult(_articles, e) is not { Tag: FactArticle selected } row) return;
+        e.Handled = true;
+        _articles.SelectedItem = row;
+        await Run(() => ReadArticleAsync(selected));
+    }
+
+    private async void Matches_DoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (_busy || _closed || ClickedResult(_matches, e) is not { Tag: RecordingMatch selected } row) return;
+        e.Handled = true;
+        _matches.SelectedItem = row;
+        await Run(() => { OpenSource(selected.SourceUrl); return Task.CompletedTask; });
+    }
+
+    private async Task ReadArticleAsync(FactArticle selected)
+    {
+        _status.Text = "Loading article…";
+        var article = await _facts.GetArticleAsync(selected.Id, _cancel.Token);
+        if (_closed) return;
+        _article.Text = article.Title + "\n\n" + article.Text;
+        _article.ScrollToHome();
+        _articleUrl = article.Url; _articleCredit.Text = article.Attribution;
+        _status.Text = "Excerpt loaded. Open the source for the full article and its references.";
     }
 
     private void SelectTab(int index)

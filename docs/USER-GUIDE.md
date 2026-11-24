@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **0.9.18**.
+Applies to Magic Music Wall **0.9.19**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
@@ -152,3 +152,5 @@ Double-click a track in **Up Next** to play that queue position. Scrollbar arrow
 Library tools are ordered **Manage folders**, **Rescan library**, **Music constellation**, **AI playlist assistant**, then **Setup**.
 
 Song info groups MusicBrainz library info, AI song notes and Edit file tags on a wrapping action row. Song facts gives the selected article a large, independently scrollable reader. Scroll the whole popup to reach other controls when the window is short. MusicBrainz, AI notes and Metadata also keep their content usable with page scrolling at smaller window heights. Buttons have visible outlines and compact spacing, distinct from labels and input fields.
+
+In **Song facts**, double-click an article result to load it directly in the reader. **Read selected article** remains available. In **Info & albums**, double-click a recording result to open its MusicBrainz source page; this does not change your saved album. The Lyrics tab keeps its lookup and reload controls, without an Open lyrics source button.
