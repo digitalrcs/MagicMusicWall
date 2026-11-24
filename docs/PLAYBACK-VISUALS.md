@@ -1,6 +1,6 @@
-# Playback visuals (version 0.9.19)
+# Playback visuals (version 1.0.0)
 
-Applies to Magic Music Wall **0.9.19**.
+Applies to Magic Music Wall **1.0.0**.
 
 ## More room for playlists
 
@@ -44,3 +44,8 @@ Visuals use Windows output loopback via [NAudio](https://github.com/naudio/NAudi
 Capture stops when playback pauses, you return to the list, the window is minimized, or the app closes. Selecting another output restarts capture on that device. If capture fails, music can still play; use **Reconnect visuals** to retry. Muted or silent output produces little or no spectrum activity. Windows output volume and device behavior affect the signal.
 
 Casting and browser-only playback happen on other devices and cannot feed these desktop visuals. Choose a PC audio output to use them. These are desktop visuals; they are not streamed to the web remote.
+
+
+## Focused listening
+
+Use **View options → Fullscreen listening** or F11 to expand the visuals. Press Escape or F11 to return. **Pause visual motion** freezes animation while audio continues. **Mini player** opens compact transport controls. Ctrl+L and Ctrl+Q toggle the library and queue panels; their widths and visibility are remembered.

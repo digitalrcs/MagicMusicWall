@@ -10,9 +10,13 @@ namespace MagicMusicWall.App;
 
 internal sealed class AiPlaylistWindow : Window
 {
-    private readonly TextBox _question = new() { Text = "Suggest relaxing songs for dinner", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Height = 80 };
-    private readonly ListBox _scope = new() { DisplayMemberPath = "Name", MinWidth = 0 };
-    private readonly CheckBox _first = new() { Content = "Stop when enough matches are found", IsChecked = true, Margin = new(0, 8, 0, 10) };
+    private readonly TextBox _question = new() { Text = "Suggest relaxing songs for dinner", AcceptsReturn = true, MaxLength = 2000, TextWrapping = TextWrapping.Wrap, Height = 80 };
+    private readonly ComboBox _scope = new() { DisplayMemberPath = "Name", MinWidth = 0 };
+    private readonly ComboBox _first = new() { ItemsSource = new[] { "Quick suggestions", "Whole collection review" }, SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Left, MinWidth = 230 };
+    private readonly CheckBox _excludeQueued = new() { Content = "Exclude songs already queued", Margin = new(0,8,0,8) };
+    private readonly ComboBox _savedPrompts = new() { MinWidth = 260, MaxWidth = 550 };
+    private readonly Func<IReadOnlySet<string>> _queuedIds;
+    private readonly Action<IReadOnlyList<string>, bool> _saveOptions;
     private readonly ObservableCollection<Row> _rows = [];
     private readonly TextBlock _selectionSummary = new() { TextWrapping = TextWrapping.Wrap };
     private readonly Button _choose = new() { Content = "Choose songs / folders…", VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Left };
@@ -36,12 +40,12 @@ internal sealed class AiPlaylistWindow : Window
     private sealed record Row(string Id, string Display);
 
     public AiPlaylistWindow(Func<AppPreferences> settings, IEnumerable<MusicPlaylist> playlists,
-        string? selectedPlaylist, Func<string?, IReadOnlyList<string>, Task<AiSong[]>> inventory, Func<IReadOnlyList<string>, bool, Task> apply, Action<string, Window> notes, IReadOnlyList<string> selectedIds, Func<IReadOnlyList<string>, IReadOnlyList<string>?> pick)
+        string? selectedPlaylist, Func<string?, IReadOnlyList<string>, Task<AiSong[]>> inventory, Func<IReadOnlyList<string>, bool, Task> apply, Action<string, Window> notes, IReadOnlyList<string> selectedIds, Func<IReadOnlyList<string>, IReadOnlyList<string>?> pick, Func<IReadOnlySet<string>> queuedIds, Action<IReadOnlyList<string>, bool> saveOptions)
     {
         Ui.Theme(this);
         _chosen = selectedIds; _pick = pick;
-        _settings = settings; _inventory = inventory; _apply = apply;
-        Title = "AI playlist assistant"; Width = 940; Height = 840; MinWidth = 760; MinHeight = 700;
+        _settings = settings; _inventory = inventory; _apply = apply; _queuedIds = queuedIds; _saveOptions = saveOptions;
+        Title = "AI playlist assistant"; Width = 940; Height = 840; MinWidth = 660; MinHeight = 500;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         var top = new StackPanel { Margin = new(24) };
         var pageScroll = new ScrollViewer
@@ -50,14 +54,14 @@ internal sealed class AiPlaylistWindow : Window
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, CanContentScroll = false
         };
         Content = pageScroll;
-        // The page owns scrolling. Scope and results expand with their contents.
+        // The page owns scrolling; the source chooser stays compact.
         ScrollViewer.SetVerticalScrollBarVisibility(_scope, ScrollBarVisibility.Disabled);
         ScrollViewer.SetHorizontalScrollBarVisibility(_scope, ScrollBarVisibility.Disabled);
         ScrollViewer.SetVerticalScrollBarVisibility(_results, ScrollBarVisibility.Disabled);
         ScrollViewer.SetHorizontalScrollBarVisibility(_results, ScrollBarVisibility.Disabled);
         ScrollViewer.SetCanContentScroll(_results, false);
         // ListBox templates still contain a ScrollViewer: route the wheel to the page.
-        foreach (var list in new[] { _scope, _results })
+        foreach (var list in new[] { _results })
             list.PreviewMouseWheel += (_, e) =>
             {
                 var step = SystemParameters.WheelScrollLines < 0 ? pageScroll.ViewportHeight : SystemParameters.WheelScrollLines * 16;
@@ -77,6 +81,23 @@ internal sealed class AiPlaylistWindow : Window
         var searchContent = new StackPanel(); searchSection.Child = searchContent;
         searchContent.Children.Add(Ui.Text("What would you like to hear?", 14));
         searchContent.Children.Add(_question);
+        var saved = new WrapPanel { Margin = new(0,8,0,0) }; saved.Children.Add(_savedPrompts);
+        _savedPrompts.ItemsSource = settings().AiSavedPrompts.ToArray();
+        System.Windows.Automation.AutomationProperties.SetName(_savedPrompts, "Saved music requests");
+        saved.Children.Add(Ui.Button("Use saved", (_, _) => { if (_savedPrompts.SelectedItem is string prompt) _question.Text = prompt; }));
+        saved.Children.Add(Ui.Button("Save request", (_, _) =>
+        {
+            var prompt = _question.Text.Trim(); if (prompt.Length == 0) return;
+            var prompts = _settings().AiSavedPrompts.Append(prompt).Distinct(StringComparer.Ordinal).TakeLast(30).ToArray();
+            _saveOptions(prompts, _excludeQueued.IsChecked == true); _savedPrompts.ItemsSource = prompts; _savedPrompts.SelectedItem = prompt;
+        }));
+        saved.Children.Add(Ui.Button("Remove saved", (_, _) =>
+        {
+            if (_savedPrompts.SelectedItem is not string prompt) return;
+            var prompts = _settings().AiSavedPrompts.Where(value => value != prompt).ToArray();
+            _saveOptions(prompts, _excludeQueued.IsChecked == true); _savedPrompts.ItemsSource = prompts;
+        }));
+        searchContent.Children.Add(saved);
         var options = new Grid { Margin = new(0, 16, 0, 0) };
         options.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         options.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(24) });
@@ -103,6 +124,11 @@ internal sealed class AiPlaylistWindow : Window
         limitColumn.Children.Add(new TextBlock { Text = "1–100 songs", Margin = new(0, 8, 0, 0), FontSize = 12 });
         _first.Margin = new(0, 16, 0, 0);
         searchContent.Children.Add(_first);
+        searchContent.Children.Add(Ui.Text("Quick suggestions stops when enough matches are found. Whole collection review considers every song in your chosen source before finishing.", 12));
+        _excludeQueued.IsChecked = settings().AiExcludeQueued; searchContent.Children.Add(_excludeQueued);
+        _excludeQueued.Click += (_, _) => _saveOptions(_settings().AiSavedPrompts, _excludeQueued.IsChecked == true);
+        _scope.SelectionChanged += (_, _) => { _excludeQueued.IsEnabled = (_scope.SelectedItem as Scope)?.Id != "$queue"; };
+        System.Windows.Automation.AutomationProperties.SetName(_first, "Recommendation review scope");
         System.Windows.Automation.AutomationProperties.SetName(_question, "Music request");
         System.Windows.Automation.AutomationProperties.SetName(_scope, "Search in");
         System.Windows.Automation.AutomationProperties.SetName(_limit, "Maximum songs");
@@ -226,16 +252,17 @@ internal sealed class AiPlaylistWindow : Window
         var question = _question.Text.Trim();
         var scope = (_scope.SelectedItem as Scope)?.Id;
         var settings = _settings();
-        var first = _first.IsChecked == true;
+        var first = _first.SelectedIndex == 0;
+        var excluded = _excludeQueued.IsChecked == true && scope != "$queue" ? _queuedIds() : new HashSet<string>();
         var chosen = _chosen.ToArray();
         _status.Text = $"Preparing library for {settings.AiProvider}…";
         _rows.Clear(); _actions.IsEnabled = false;
         using var cancel = new CancellationTokenSource(); _cancel = cancel;
-        _scope.IsEnabled = _choose.IsEnabled = _first.IsEnabled = _question.IsEnabled = _limit.IsEnabled = false;
+        _scope.IsEnabled = _choose.IsEnabled = _first.IsEnabled = _question.IsEnabled = _limit.IsEnabled = _excludeQueued.IsEnabled = _savedPrompts.IsEnabled = false;
         try
         {
             SetSearching(true);
-            var songs = await _inventory(scope, chosen);
+            var songs = (await _inventory(scope, chosen)).Where(song => !excluded.Contains(song.Id)).ToArray();
             cancel.Token.ThrowIfCancellationRequested();
             if (songs.Length == 0) { _status.Text = "No available music in this scope."; return; }
             using var http = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan };
@@ -274,7 +301,8 @@ internal sealed class AiPlaylistWindow : Window
             _cancel = null;
             SetSearching(false);
             _actions.IsEnabled = _rows.Count > 0;
-            _scope.IsEnabled = _choose.IsEnabled = _first.IsEnabled = _question.IsEnabled = _limit.IsEnabled = true;
+            _scope.IsEnabled = _choose.IsEnabled = _first.IsEnabled = _question.IsEnabled = _limit.IsEnabled = _savedPrompts.IsEnabled = true;
+            _excludeQueued.IsEnabled = (_scope.SelectedItem as Scope)?.Id != "$queue";
         }
     }
     private async Task Apply(bool play)

@@ -10,7 +10,7 @@
  <Grid Margin="26">
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <StackPanel Margin="0,0,0,20"><TextBlock Text="Setup" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="Your music, your devices, your home." Style="{StaticResource Help}" Margin="0,6,0,0"/></StackPanel>
-  <TabControl x:Name="SettingsTabs" Grid.Row="1" Background="#191C25" BorderThickness="0" Foreground="{StaticResource TextBrush}" Padding="20">
+  <TabControl x:Name="SettingsTabs" SelectedIndex="1" Grid.Row="1" Background="#191C25" BorderThickness="0" Foreground="{StaticResource TextBrush}" Padding="20">
    <TabItem Header="AI">
     <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
      <TextBlock Text="AI playlist assistant" FontSize="22"/>
@@ -33,14 +33,20 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
      <TextBlock Text="Listen through your stereo" FontSize="22"/>
      <TextBlock Text="Pair and connect your stereo in Windows, refresh the list, then choose its audio output." Style="{StaticResource Help}"/>
-     <WrapPanel><Button Content="Bluetooth settings" Click="Bluetooth_Click" Margin="0,0,8,0"/><Button Content="Refresh outputs" Click="RefreshAudio_Click"/></WrapPanel>
+     <WrapPanel><Button Content="Bluetooth settings" Click="Bluetooth_Click" Margin="0,0,8,0"/><Button Content="Refresh outputs" Click="RefreshAudio_Click" Margin="0,0,8,0"/><Button Content="Play test tone" Click="TestOutput_Click"/></WrapPanel>
      <TextBlock Text="Preferred audio output" Style="{StaticResource Label}"/>
      <ComboBox x:Name="AudioOutput" DisplayMemberPath="Name" AutomationProperties.Name="Preferred audio output"/>
      <TextBlock Text="Your preferred device stays saved when disconnected. Playback pauses if the output changes. Reconnect and refresh outputs, then press Play." Style="{StaticResource Help}"/>
      <DockPanel Margin="0,12,0,8"><TextBlock Text="Volume" FontWeight="SemiBold"/><TextBlock Text="{Binding ElementName=Volume, Path=Value, StringFormat={}{0:0}%}" HorizontalAlignment="Right"/></DockPanel>
      <Slider x:Name="Volume" Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" AutomationProperties.Name="Saved volume"/>
-     <CheckBox x:Name="Shuffle" Content="Shuffle when starting a new queue" Margin="0,26,0,15"/>
+     <CheckBox x:Name="Shuffle" Content="Shuffle upcoming tracks" Margin="0,26,0,15"/>
      <CheckBox x:Name="RepeatQueue" Content="Repeat the queue"/>
+     <CheckBox x:Name="RepeatOne" Content="Repeat the current track" Margin="0,10,0,0"/>
+     <CheckBox x:Name="LevelPlaybackVolume" Content="Use ReplayGain track tags for volume leveling (restart app to apply)" Margin="0,10,0,0"/>
+     <TextBlock Text="Listening session" Style="{StaticResource Label}"/>
+     <CheckBox x:Name="RestoreSession" Content="Restore my queue and position when opening the app"/>
+     <CheckBox x:Name="ResumePlayback" Content="Automatically resume if music was playing" Margin="0,10,0,0"/>
+     <TextBlock Text="Restored sessions start paused unless automatic resume is selected." Style="{StaticResource Help}"/>
      <TextBlock Text="Files opened from Windows" Style="{StaticResource Label}"/>
      <CheckBox x:Name="QueueExternalFiles" Content="Add external files to the existing queue" AutomationProperties.Name="Add external files to the existing queue"/>
      <TextBlock Text="Keep the current track playing or paused and add opened files at the end. If the queue is empty, playback starts immediately. Uncheck to replace the queue and play the opened files immediately. Click Save settings to apply." Style="{StaticResource Help}"/>
@@ -53,6 +59,8 @@
      <TextBlock Text="Add folders from this PC, a connected USB drive, or an accessible network share. Windows handles access to shared folders." Style="{StaticResource Help}"/>
      <ListBox x:Name="Folders" DisplayMemberPath="Path" Height="170" Background="#101218" AutomationProperties.Name="Configured library folders"/>
      <WrapPanel Margin="0,10,0,10"><Button x:Name="AddFolder" Content="Add folder" Click="AddFolder_Click" Margin="0,0,8,8"/><Button x:Name="ManageFolders" Content="Manage folders" Click="ManageFolders_Click" Margin="0,0,8,8"/><Button x:Name="Rescan" Content="Rescan now" Click="Rescan_Click" Margin="0,0,0,8"/></WrapPanel>
+     <CheckBox x:Name="CompactLayout" Content="Use compact spacing" Margin="0,10,0,8"/>
+     <CheckBox x:Name="WatchFolders" Content="Watch source folders for changes while the app is open" Margin="0,10,0,8"/>
      <CheckBox x:Name="RescanStartup" Content="Rescan library folders when the app starts" Margin="0,12,0,8"/>
      <TextBlock Text="Folders and playlists are saved as you edit them. Scanning reads your media; it does not move your files. Missing drives keep their saved entries." Style="{StaticResource Help}"/>
     </StackPanel></ScrollViewer>
@@ -97,12 +105,13 @@
      <TextBox x:Name="RemoteAddressLink" IsReadOnly="True" TextWrapping="Wrap" AutomationProperties.Name="Plain remote web address"/>
      <WrapPanel Margin="0,10,0,0"><Button Content="Copy web address" Click="CopyAddress_Click" Margin="0,0,8,8"/><Button Content="Open sign-in page" Click="OpenAddress_Click" Margin="0,0,8,8"/></WrapPanel>
      <TextBlock x:Name="RemoteStatus" Text="Save your settings to start the remote." Style="{StaticResource Help}" Margin="0,14,0,10"/>
-     <TextBlock Text="Quick access links &amp; QR codes" Style="{StaticResource Label}"/>
+     <Expander Header="Advanced access links and QR codes" Margin="0,10,0,0"><StackPanel>
      <TextBox x:Name="RemoteLink" IsReadOnly="True" TextWrapping="Wrap" MinHeight="64" AutomationProperties.Name="Remote control link"/>
      <WrapPanel Margin="0,10,0,0"><Button Content="Show QR code" Click="ShowQr_Click" Margin="0,0,8,8"/><Button Content="Copy remote link" Click="CopyRemote_Click" Margin="0,0,8,8"/><Button Content="Open remote page" Click="OpenRemote_Click" Margin="0,0,8,8"/><Button Content="Replace access link" Click="RotateLink_Click" Margin="0,0,0,8"/></WrapPanel>
      <WrapPanel><Button Content="Listening QR code" Click="ShowListeningQr_Click" Margin="0,0,8,8"/><Button Content="Copy listening link" Click="CopyListening_Click" Margin="0,0,0,8"/></WrapPanel>
      <TextBlock Text="The listening link opens with browser playback selected. Tap a track to start; supported formats depend on the browser. Each browser plays independently of the PC." Style="{StaticResource Help}" FontSize="12"/>
      <TextBlock Text="Anyone with the passphrase or a quick access link on your network can control playback and, when enabled, stream your library. Changing the passphrase signs out remembered browsers; Replace access link revokes both old links and remembered browsers after saving. Use a passphrase unique to this app on your trusted home network: the page uses local HTTP. If Windows asks, allow private-network access." Style="{StaticResource Help}" FontSize="12"/>
+     <Button Content="Copy guest queue-only link" Click="CopyGuest_Click" Margin="0,10,0,8"/><Button Content="Revoke guest link" Click="RevokeGuest_Click"/><TextBlock Text="Guests can browse and add tracks to the PC queue. They cannot change playback, remove songs or stream files. Save settings after creating or revoking a link." Style="{StaticResource Help}"/></StackPanel></Expander>
     </StackPanel></ScrollViewer>
    </TabItem>
    <TabItem Header="TV &amp; data">
@@ -117,6 +126,7 @@
      <Separator Background="{StaticResource LineBrush}" Margin="0,8"/>
      <TextBlock Text="Library &amp; settings location" Style="{StaticResource Label}"/>
      <TextBox x:Name="DataLocation" IsReadOnly="True" TextWrapping="Wrap" AutomationProperties.Name="Settings location"/>
+     <WrapPanel><Button Content="Back up library…" Click="BackupLibrary_Click" Margin="0,10,8,8"/><Button Content="Restore backup…" Click="RestoreLibrary_Click" Margin="0,10,0,8"/></WrapPanel>
      <Button Content="Open data folder" Click="OpenData_Click" HorizontalAlignment="Left" Margin="0,10,0,0"/>
      <TextBlock Text="Back up this folder to preserve your playlists and preferences. Music and movies remain in their original folders." Style="{StaticResource Help}"/>
      <StackPanel Orientation="Horizontal" Margin="0,8,0,0"><Image Source="Assets/digitalrcs-logo.png" Width="32" Height="32"/><TextBlock x:Name="AppVersionLabel" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="10,0,0,0"/></StackPanel>

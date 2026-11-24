@@ -13,13 +13,13 @@ public partial class MainWindow
     private void MusicMap_Click(object sender, RoutedEventArgs e)
     {
         if (_closing || !CanEdit()) return;
-        if (_musicMap is not null) { FocusMusicMap(); _musicMap.Activate(); return; }
+        if (_musicMap is not null) { _musicMap.Activate(); return; }
         _musicMapStamp = MusicMapStamp();
         _musicMap = new MusicMapWindow(BuildMusicMap, QueueFromMusicMap,
             id => ShowSongInfo(_catalog.Document.Items.FirstOrDefault(item => item.Id == id)), AnalyzeMusicMap,
-            ids => { ShowMusicBrainz(ids, _musicMap ?? (Window)this); return Task.CompletedTask; }) { Owner = this };
+            ids => { ShowMusicBrainz(ids, _musicMap ?? (Window)this); return Task.CompletedTask; }, () => _current?.Id) { Owner = this };
         _musicMap.Closed += (_, _) => _musicMap = null;
-        FocusMusicMap();
+        if (!_musicMap.HasSavedExploration) FocusMusicMap();
         _musicMap.Show();
     }
 

@@ -32,6 +32,8 @@ public partial class MainWindow : Window
     private long _resumeTime;
     private bool _resumePaused;
     private MediaItem? _current;
+    private int _recordedPlayVersion;
+    private readonly bool _replayGainEnabled;
 
     public MainWindow(string[]? startupFiles = null)
     {
@@ -50,7 +52,8 @@ public partial class MainWindow : Window
             catch (Exception ex) { portableMessage = $"Portable library could not update its folder paths: {ex.Message}"; }
         }
         LibVLCSharp.Shared.Core.Initialize();
-        _vlc = PlaybackEngine.Create(_settings.Volume);
+        _replayGainEnabled = _settings.LevelPlaybackVolume;
+        _vlc = PlaybackEngine.Create(_settings.Volume, replayGain: _replayGainEnabled);
         _player = new MediaPlayer(_vlc);
         _player.SetAudioOutput("mmdevice");
         _player.Mute = false;
@@ -60,10 +63,12 @@ public partial class MainWindow : Window
         _player.Playing += Player_Playing;
         _player.AudioDevice += Player_AudioDevice;
         QueueList.ItemsSource = _queue;
+        InitializeQueueInteractions();
         _queue.CollectionChanged += (_, _) => QueueTitle.Text = $"UP NEXT · {_queue.Count}";
         InitializeCasting();
         InitializePreferences();
         _ready = true;
+        InitializeWorkspace();
         InitializeVisuals();
         Volatile.Write(ref _requestedVolume, _settings.Volume);
         VolumeSlider.Value = _settings.Volume;
@@ -78,7 +83,10 @@ public partial class MainWindow : Window
         if (portableMessage is not null) Status(portableMessage);
         Loaded += async (_, _) =>
         {
+            await RestoreListeningSessionAsync();
+            if (_closing) return;
             if (startupFiles is { Length: > 0 }) await OpenFilesAsync(startupFiles);
+            if (_closing) return;
             await ConfigureRemote();
             var i = Array.IndexOf(App.Arguments, "--import");
             if (i >= 0 && i + 1 < App.Arguments.Length) await ImportPaths([App.Arguments[i + 1]]);
@@ -88,7 +96,7 @@ public partial class MainWindow : Window
 
     private void Status(string text) { StatusText.Text = text; StatusText.ToolTip = text; }
     private void Error(Exception ex) { Status(ex.Message); MessageBox.Show(this, ex.Message, "Magic Music Wall", MessageBoxButton.OK, MessageBoxImage.Warning); }
-    private static string FormatTime(long milliseconds) { var t = TimeSpan.FromMilliseconds(Math.Max(0, milliseconds)); return t.TotalHours >= 1 ? t.ToString(@"h\:mm\:ss") : t.ToString(@"m\:ss"); }
+    private static string FormatTime(long milliseconds) { var t = TimeSpan.FromTicks(Math.Clamp(milliseconds, 0, ListeningSession.MaximumPositionMilliseconds) * TimeSpan.TicksPerMillisecond); return t.TotalHours >= 1 ? t.ToString(@"h\:mm\:ss") : t.ToString(@"m\:ss"); }
     private List<MediaItem> Selection() => MediaGrid.SelectedItems.OfType<MediaItem>().ToList();
     private List<MediaItem> _viewResults = [];
     private List<object> _browserItems = [];
@@ -116,8 +124,7 @@ public partial class MainWindow : Window
         IEnumerable<MediaItem> items = _catalog.Document.Items;
         if (CurrentPlaylist is { } playlist)
         {
-            var lookup = items.ToDictionary(x => x.Id);
-            items = playlist.ItemIds.Where(lookup.ContainsKey).Select(id => lookup[id]);
+            items = _catalog.PlaylistItems(playlist.Id);
             ViewTitle.Text = playlist.Name;
         }
         else
@@ -130,6 +137,7 @@ public partial class MainWindow : Window
         }
         items = ConfigureFolders(items);
         if (_folderPage is not null) ViewTitle.Text = _folderPage.Title;
+        items = ApplyLibraryFilters(items);
         var results = LibraryCatalog.Search(items, SearchBox.Text).ToList();
         _viewResults = results;
         QueuePlaylistButton.Visibility = CurrentPlaylist is null ? Visibility.Collapsed : Visibility.Visible;
@@ -137,13 +145,14 @@ public partial class MainWindow : Window
         QueuePlaylistButton.Content = string.IsNullOrWhiteSpace(SearchBox.Text) ? "+ Queue playlist" : "+ Queue matches";
         _browserItems = (_folderPage?.Folders.Cast<object>() ?? []).Concat(results).ToList();
         MediaGrid.ItemsSource = _browserItems;
+        ApplyLibraryGrouping();
         if (MediaGrid.Items.Count > 0) MediaGrid.ScrollIntoView(MediaGrid.Items[0]);
         LibrarySummary.Text = $"{results.Count:N0} {(results.Count == 1 ? "item" : "items")}  ·  {_catalog.Document.Folders.Count} source folders  ·  {_catalog.Document.Items.Count:N0} in your library";
         SearchHint.Visibility = string.IsNullOrEmpty(SearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
         if (_folderPage is not null) LibrarySummary.Text = $"{_folderPage.Folders.Count:N0} folders · {_folderPage.Descendants.Count:N0} items here · {_catalog.Document.Items.Count:N0} in your library";
         EmptyPanel.Visibility = results.Count == 0 && (_folderPage?.Folders.Count ?? 0) == 0 ? Visibility.Visible : Visibility.Collapsed;
         EmptyTitle.Text = _catalog.Document.Items.Count == 0 ? "Make room for your music" : CurrentPlaylist is not null && SearchBox.Text.Length == 0 ? "This playlist is empty" : "No matches yet";
-        EmptyDescription.Text = _catalog.Document.Items.Count == 0 ? "Use Manage folders to add folders or individual files.\nYour original files stay right where they are." : CurrentPlaylist is not null && SearchBox.Text.Length == 0 ? "Browse your library and select songs. Choose this playlist\nin the dropdown on the right, then Add selected to playlist." : "Try a different artist, album, title, or folder name.";
+        EmptyDescription.Text = _catalog.Document.Items.Count == 0 ? "Use Manage folders to add folders or individual files.\nYour original files stay right where they are." : CurrentPlaylist is not null && SearchBox.Text.Length == 0 ? "Browse your library and select songs. Use Add to playlist\nand choose this playlist as the destination." : "Try a different artist, album, title, or folder name.";
         EmptyLibraryButton.Content = _catalog.Document.Items.Count == 0 ? "Manage folders" : "Browse your library";
         RefreshMusicMapIfChanged();
     }
@@ -161,7 +170,7 @@ public partial class MainWindow : Window
         if (!_ready || _scanning || _updatingPlaylistControls || PlaylistsList.SelectedItem is not MusicPlaylist p) return;
         OpenPlaylist(p);
     }
-    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) { if (!_updatingPlaylistControls) RefreshView(); }
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) { if (!_updatingPlaylistControls) ScheduleLibrarySearch(); }
     private void ClearSearch_Click(object sender, RoutedEventArgs e) => SearchBox.Clear();
     private async void Window_Drop(object sender, DragEventArgs e)
     {
@@ -214,7 +223,7 @@ public partial class MainWindow : Window
     private void ManageFolders_Click(object sender, RoutedEventArgs e)
     {
         if (!CanEdit()) return;
-        new FolderWindow(_catalog, CanRemoveLibraryItems, ReconcileRemovedLibraryItemsAsync, AddSetupFolder, AddSetupFiles) { Owner = this }.ShowDialog();
+        new FolderWindow(_catalog, CanRemoveLibraryItems, ReconcileRemovedLibraryItemsAsync, AddSetupFolder, AddSetupFiles, () => _scanCancel?.Cancel(), () => StatusText.Text) { Owner = this }.ShowDialog();
         RefreshPlaylists();
         RefreshView();
     }
@@ -222,14 +231,14 @@ public partial class MainWindow : Window
     {
         if (!CanEdit()) return;
         var selected = Selection().DistinctBy(i => i.Id).ToList();
-        var queued = _queue.DistinctBy(i => i.Id).ToList();
+        var queued = _queue.ToList();
         var draft = CreatePlaylistWindow.Show(this, selected.Count, queued.Count);
         if (draft is null) return;
         var items = draft.Source switch { PlaylistSeed.Selected => selected, PlaylistSeed.Queue => queued, _ => [] };
         try
         {
             var p = _catalog.CreatePlaylist(draft.Name);
-            if (items.Count > 0) _catalog.AddToPlaylist(p.Id, items.Select(i => i.Id));
+            if (items.Count > 0) _catalog.SetPlaylistItems(p.Id, items.Select(i => i.Id));
             RefreshPlaylists(p.Id); OpenPlaylist(p);
             Status($"Created {p.Name} with {p.ItemIds.Count} saved songs.");
         }
@@ -252,7 +261,9 @@ public partial class MainWindow : Window
     {
         if (!CanEdit()) return;
         var selection = Selection();
-        if (PlaylistDestinationBox.SelectedItem is not MusicPlaylist p || selection.Count == 0) { Status("Select one or more tracks and a destination playlist first."); return; }
+        if (selection.Count == 0) { Status("Select one or more tracks first."); return; }
+        var p = ChoosePlaylistDestination();
+        if (p is null) return;
         try { _catalog.AddToPlaylist(p.Id, selection.Select(i => i.Id)); RefreshPlaylists(p.Id); RefreshView(); Status($"Saved selection to {p.Name}. {p.ItemIds.Count} songs in this playlist."); } catch (Exception ex) { Error(ex); }
     }
     private void RemoveFromPlaylist_Click(object sender, RoutedEventArgs e)
@@ -265,6 +276,7 @@ public partial class MainWindow : Window
     private void MovePlaylist(int offset)
     {
         if (!CanEdit() || CurrentPlaylist is not { } p || MediaGrid.SelectedItem is not MediaItem item) return;
+        if (p.Rule is not null) { Status("Smart playlists are ordered by their rule. Save a regular playlist to reorder songs."); return; }
         var index = p.ItemIds.IndexOf(item.Id); var target = index + offset;
         if (index < 0 || target < 0 || target >= p.ItemIds.Count) return;
         (p.ItemIds[index], p.ItemIds[target]) = (p.ItemIds[target], p.ItemIds[index]);
@@ -296,14 +308,12 @@ public partial class MainWindow : Window
 
     private async void PlayResults_Click(object sender, RoutedEventArgs e) => await StartQueue((_folderPlaybackItems ?? _viewResults).ToList());
     private async void PlaySelected_Click(object sender, RoutedEventArgs e) => await StartQueue(Selection());
-    private void MediaGrid_KeyDown(object sender, KeyEventArgs e)
+    private async void MediaGrid_KeyDown(object sender, KeyEventArgs e)
     {
         // Buttons handle their own Enter/Space actions. Only handle the focused row here.
         if (e.Key != Key.Enter || e.OriginalSource is not ListBoxItem && !ReferenceEquals(e.OriginalSource, MediaGrid)) return;
         e.Handled = true;
-        if (MediaGrid.SelectedItem is FolderEntry folder) OpenFolder(folder.Path);
-        else if (MediaGrid.SelectedItem is MediaItem item && !_queueChanging && !_closing)
-        { _queue.Add(item); Status($"Added {item.Title} to the queue."); }
+        if (MediaGrid.SelectedItem is { } selected) await ActivateLibraryItem(selected);
     }
     private void MediaGrid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
@@ -326,17 +336,21 @@ public partial class MainWindow : Window
         if (ShuffleBox.IsChecked == true && start == 0) Random.Shared.Shuffle(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(items));
         start = Math.Clamp(start, 0, items.Count - 1);
         if (!File.Exists(items[start].Path)) { Status($"File unavailable: {items[start].Path}. The existing queue has been kept."); return; }
+        RememberQueueUndo();
+        _pendingSessionPosition = null;
         _queue.Clear(); foreach (var item in items) _queue.Add(item);
         await PlayIndex(Math.Max(0, start));
     }
     private void QueueSelected_Click(object sender, RoutedEventArgs e) { if (_queueChanging) return; foreach (var item in Selection()) _queue.Add(item); Status($"Queue contains {_queue.Count} items."); }
-    private async Task PlayIndex(int index, long resume = 0, bool paused = false)
+    private async Task PlayIndex(int index, long? resume = null, bool paused = false, bool recordPlay = true)
     {
         if (_closing || index < 0 || index >= _queue.Count) return;
         if (!CastReadyForNewPlayback() || !LocalAudioReady()) return;
         using var rendererLease = _cast.Acquire();
         var renderer = rendererLease?.Value;
         var item = _queue[index];
+        var resumePosition = resume ?? (index == _queueIndex ? _pendingSessionPosition : null) ?? 0;
+        _pendingSessionPosition = null;
         if (!File.Exists(item.Path))
         {
             ++_playVersion; _queueIndex = index; _current = null;
@@ -345,11 +359,12 @@ public partial class MainWindow : Window
             Status($"File unavailable: {item.Path}. Reconnect the source or skip to the next item."); return;
         }
         _queueIndex = index; _current = item;
-        QueueList.SelectedIndex = index; QueueList.ScrollIntoView(item);
+        QueueList.SelectedIndex = index; ScrollQueueIndexIntoView(index);
         NowTitle.Text = item.Title; NowArtist.Text = string.IsNullOrWhiteSpace(item.Artist) ? Path.GetFileName(item.Path) : item.Artist;
         var version = ++_playVersion;
+        if (!recordPlay) _recordedPlayVersion = version; // An output-route restart is not a new listening event.
         ResetAudioRouteCheck();
-        _resumeTime = resume; _resumePaused = paused;
+        _resumeTime = resumePosition; _resumePaused = paused;
         if (item.IsVideo && renderer is null) EnsureVideoWindow();
         Status($"Opening {item.Title}…");
         try
@@ -363,6 +378,11 @@ public partial class MainWindow : Window
                 if (!_player.SetRenderer(renderer)) throw new InvalidOperationException("VLC could not select that playback destination.");
                 ApplyRequestedAudio(muted, recreate: renderer is null);
                 using var media = new Media(_vlc, new Uri(item.Path));
+                // VLC 3 needs local tags parsed before opening the audio output for
+                // ReplayGain to affect the first play. This worker holds the playback
+                // gate so shutdown cannot dispose the engine during parsing.
+                if (_replayGainEnabled) media.Parse(MediaParseOptions.ParseLocal, 5000).GetAwaiter().GetResult();
+                if (version != _playVersion || _closing) return false;
                 Volatile.Write(ref _activeVersion, version);
                 return _player.Play(media);
             });
@@ -382,7 +402,7 @@ public partial class MainWindow : Window
         Dispatcher.BeginInvoke(async () =>
         {
             if (_closing || _queueChanging || version != _playVersion || _player.State != VLCState.Ended) return;
-            if (!await AdvanceQueue()) { PauseButton.Content = "▶"; Status("Queue finished."); }
+            if (!await AdvanceQueue(naturalEnd: true)) { PauseButton.Content = "▶"; Status("Queue finished."); }
         });
     }
     private void Player_Error(object? sender, EventArgs e) => Dispatcher.BeginInvoke(() => { if (!_closing) Status("Playback failed. Check the file, audio device, or casting connection."); });
@@ -395,7 +415,13 @@ public partial class MainWindow : Window
             var time = _resumeTime; var paused = _resumePaused;
             _resumeTime = 0; _resumePaused = false;
             if (time > 0 || paused) await Playback(() => { if (version != _playVersion) return false; if (time > 0 && _player.IsSeekable) _player.Time = time; if (paused) _player.SetPause(true); return true; });
-            if (!_closing && version == _playVersion && _audioRouteWarning is null) Status($"Playing {_current?.Title} · {_cast.Name}");
+            if (!_closing && version == _playVersion && !paused && _current is not null && _recordedPlayVersion != version)
+            {
+                _recordedPlayVersion = version;
+                try { _catalog.RecordPlayed(_current.Id); }
+                catch (Exception ex) { LogCleanup(ex); }
+            }
+            if (!_closing && version == _playVersion && _audioRouteWarning is null) Status($"{(paused ? "Paused" : "Playing")} {_current?.Title} · {_cast.Name}");
             await CheckAudioRoute();
         });
     }
@@ -412,14 +438,16 @@ public partial class MainWindow : Window
         if (!_player.IsPlaying && !await PrepareAudioResume()) return;
         await Playback(() => { _player.Pause(); return true; });
     }
-    private async Task<bool> AdvanceQueue()
+    private async Task<bool> AdvanceQueue(bool naturalEnd = false)
     {
         // False means exhausted; route warnings must not be overwritten with
         // "Queue finished" when a device temporarily prevents advancement.
         if (_queueChanging || _closing || !CastReadyForNewPlayback() || !LocalAudioReady()) return true;
-        int next = QueueAdvance.Next(_queue, _queueIndex, ShuffleBox.IsChecked == true, RepeatBox.IsChecked == true);
+        int next = naturalEnd
+            ? QueueAdvance.NextAfterTrackEnds(_queue, _queueIndex, ShuffleBox.IsChecked == true, RepeatBox.IsChecked == true, _settings.RepeatOne)
+            : QueueAdvance.Next(_queue, _queueIndex, ShuffleBox.IsChecked == true, RepeatBox.IsChecked == true);
         if (next < 0) return false;
-        await PlayIndex(next);
+        await PlayIndex(next, 0);
         return true;
     }
     private async void Next_Click(object sender, RoutedEventArgs e) => await AdvanceQueue();
@@ -434,15 +462,17 @@ public partial class MainWindow : Window
         var index = QueueList.ItemContainerGenerator.IndexFromContainer(row);
         if (index < 0 || index >= _queue.Count) return;
         e.Handled = true;
-        await PlayIndex(index);
+        await PlayIndex(index, 0);
     }
     private async void ClearQueue_Click(object sender, RoutedEventArgs e) => await ClearQueueAsync();
     private async Task ClearQueueAsync()
     {
-        if (_queueChanging) return;
+        if (_queueChanging || _closing) return;
+        RememberQueueUndo();
         _queueChanging = true;
         try
         {
+            _pendingSessionPosition = null;
             ++_playVersion;
             await Playback(() => { _player.Stop(); return true; });
             _queue.Clear(); _queueIndex = -1; _current = null;
@@ -458,75 +488,49 @@ public partial class MainWindow : Window
         if (_queueChanging) return;
         var i = QueueList.SelectedIndex; var target = i + offset;
         if (i < 0 || target < 0 || target >= _queue.Count) return;
-        _queue.Move(i, target);
-        if (_queueIndex == i) _queueIndex = target; else if (_queueIndex == target) _queueIndex = i;
-        QueueList.SelectedIndex = target;
+        MoveQueueItem(i, target);
     }
     private async void QueueRemove_Click(object sender, RoutedEventArgs e)
     {
         if (_queueChanging || _closing) return;
-        var index = QueueList.SelectedIndex;
-        if (index < 0 || index >= _queue.Count) return;
-        try { await RemoveQueueItem(index, _queue[index].Id); }
+        var selected = SelectedQueueIndices();
+        try { await RemoveQueueItems(selected); }
         catch (Exception ex) { Error(ex); }
     }
 
     private async Task RemoveQueueItem(int index, string? expectedItemId)
     {
         if (_queueChanging || _closing) throw new InvalidOperationException("The player is busy. Try again shortly.");
-        // A remote's queue may be stale. Match both the position and song before
-        // changing anything, including stopping the currently playing item.
         if (index < 0 || index >= _queue.Count || _queue[index].Id != expectedItemId)
             throw new ArgumentException("The queue changed. Refresh the remote and choose the track again.");
-
-        _queueChanging = true;
-        try
-        {
-            var removingCurrent = index == _queueIndex;
-            if (removingCurrent)
-            {
-                ++_playVersion;
-                await Playback(() => { _player.Stop(); return true; });
-                _current = null;
-            }
-            _queue.RemoveAt(index);
-            if (index < _queueIndex) _queueIndex--;
-            else if (removingCurrent) _queueIndex = -1;
-
-            if (removingCurrent || _queue.Count == 0)
-            {
-                NowTitle.Text = "Nothing playing yet";
-                NowArtist.Text = _queue.Count == 0 ? "Queue is empty" : "Choose a queued track to play";
-                if (_queue.Count == 0) { _queueIndex = -1; _current = null; }
-                else await PlayIndex(Math.Min(index, _queue.Count - 1));
-            }
-        }
-        finally { _queueChanging = false; }
+        await RemoveQueueItems([index]);
     }
     private void SaveQueue_Click(object sender, RoutedEventArgs e)
     {
         if (!CanEdit() || _queue.Count == 0) return;
-        var queuedIds = _queue.Select(i => i.Id).Distinct().ToList();
+        var queuedIds = _queue.Select(i => i.Id).ToList();
         var name = TextPrompt.Show(this, "Save queue", "New playlist name", "");
         if (name is null) return;
-        try { var p = _catalog.CreatePlaylist(name); _catalog.AddToPlaylist(p.Id, queuedIds); RefreshPlaylists(p.Id); OpenPlaylist(p); Status($"Saved queue as {p.Name} with {p.ItemIds.Count} songs."); } catch (Exception ex) { Error(ex); }
+        try { var p = _catalog.CreatePlaylist(name); _catalog.SetPlaylistItems(p.Id, queuedIds); RefreshPlaylists(p.Id); OpenPlaylist(p); Status($"Saved queue as {p.Name} with {p.ItemIds.Count} songs."); } catch (Exception ex) { Error(ex); }
     }
     private void UpdatePlayback()
     {
         if (_closing) return;
+        CheckpointListeningSession();
         _updatingTime = true;
         if (_seeking && (_seekVersion != _playVersion || !_player.IsSeekable)) SeekSlider.CancelSeek();
-        var length = Math.Max(1, _player.Length);
+        var length = Math.Max(1, _pendingSessionPosition.HasValue ? (long)((_current?.DurationSeconds ?? 0) * 1000) : _player.Length);
         if (!_seeking) SeekSlider.Maximum = length;
-        if (!_seeking) SeekSlider.Value = Math.Max(0, _player.Time);
+        if (!_seeking) SeekSlider.Value = Math.Max(0, _pendingSessionPosition ?? _player.Time);
         SeekSlider.IsEnabled = _player.IsSeekable;
-        ElapsedText.Text = FormatTime(_seeking ? (long)SeekSlider.Value : _player.Time); DurationText.Text = FormatTime(_player.Length);
+        ElapsedText.Text = FormatTime(_seeking ? (long)SeekSlider.Value : _pendingSessionPosition ?? _player.Time); DurationText.Text = FormatTime(length);
         UpdateSeekMarks();
         PauseButton.Content = _player.IsPlaying ? "Ⅱ" : "▶";
         VolumeText.Text = _player.Mute ? "Muted" : $"{_settings.Volume}%";
         _updatingTime = false;
         _ = CheckAudioRoute();
         RefreshVisualizerCapture();
+        UpdateWorkspacePlayback();
     }
     private async void Volume_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
@@ -607,6 +611,7 @@ public partial class MainWindow : Window
         _closing = true; _timer.Stop(); _saveTimer.Stop(); ++_playVersion; IsEnabled = false;
         try
         {
+            await SaveListeningSessionAsync();
             await StopMusicMapAnalysis();
             try { _settings.Save(App.DataDirectory); } catch (Exception ex) { LogCleanup(ex); }
             try { await StopCastingDiscoveryAsync(); } catch (Exception ex) { LogCleanup(ex); }

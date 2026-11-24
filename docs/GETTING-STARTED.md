@@ -1,6 +1,6 @@
 # Get started with Magic Music Wall
 
-Applies to Magic Music Wall **0.9.19**.
+Applies to Magic Music Wall **1.0.0**.
 
 [All guides](README.md) · [Download the latest release](https://github.com/digitalrcs/MagicMusicWall/releases/latest)
 
@@ -17,9 +17,9 @@ The installer is unsigned. Use the official release and follow your PC's securit
 ## 2. Hear your first song
 
 1. Connect your speakers or pair your Bluetooth stereo in Windows. Confirm another Windows app can play through it.
-2. In Magic Music Wall, select that device under **Listening on**. Refresh the device list with **↻** if necessary.
+2. In Magic Music Wall, select that device from the audio-output list beside the bottom playback controls. Use **View options → Refresh audio outputs** if necessary.
 3. Open **Manage folders**, click **Add folders…**, and choose your music folder. Wait for the scan to finish.
-4. In **Folders**, open a folder and click a song's **+ Queue**. It should appear in **Up next**.
+4. In **Folders**, double-click a folder to open it, then click a song's **+ Queue**. It should appear in **Up next**.
 5. Press the bottom **Play** button and adjust the volume.
 
 Opening a folder only browses it. **+ Queue** adds one song; **+ Queue folder** adds its indexed contents. Explicit Play actions can replace the queue. If there is no sound, start with [audio troubleshooting](TROUBLESHOOTING.md#no-sound-or-the-wrong-output).
@@ -28,7 +28,7 @@ Opening a folder only browses it. **+ Queue** adds one song; **+ Queue folder** 
 
 ## 3. Keep a playlist
 
-Queue a few songs, click **Save** above **Up next**, and give the playlist a name such as **Evening favorites**. Later, click its name on the left and choose **Play playlist**. Clearing the queue does not erase the playlist. See [playlist instructions](USER-GUIDE.md#make-a-playlist) to add, remove or reorder songs.
+Queue a few songs, click **Save queue** above **Up next**, and give the playlist a name such as **Evening favorites**. Later, click its name on the left and choose **Play playlist**. Clearing the queue does not erase the playlist. See [playlist instructions](USER-GUIDE.md#make-a-playlist) to add, remove or reorder songs.
 
 ## 4. Explore the constellation
 
@@ -57,8 +57,10 @@ The browser player is not a synchronized mirror of the desktop player's position
 
 ## After adding more music
 
-For files added outside the app to an existing source, click **Rescan library**. For a new source, use **Manage folders → Add folders…**. Then use **Lookup missing** or **Analyze sound** if you want those extra map details. The app does not continuously watch every folder.
+For files added outside the app to an existing source, click **Rescan library**. For a new source, use **Manage folders → Add folders…**. Then use **Lookup missing** or **Analyze sound** if you want those extra map details. For automatic refresh while the app is open, enable **Setup → Library → Watch source folders for changes while the app is open**. Changes are grouped before rescanning; disconnected sources remain indexed.
 
-Close the app before backing up its active data folder, found in **Setup → TV & data**. Back up the music separately: playlists refer to files and do not contain copies of them.
+Use **Setup → TV & data → Back up library…** to save a private ZIP containing the library, settings and listening session. Keep music, sound-analysis caches and AI notes backed up separately; they are not included. **Restore backup…** validates the ZIP, retains a recovery backup, then closes and restarts the player.
+
+Your queue order, duplicate entries and current position are saved automatically. Reopening restores the session paused by default; enable automatic resume in **Setup → Sound** only if you want playback to begin on launch. **Undo** in Up next reverses the latest queue clear/removal. **Manage folders → Undo library removal** restores the last removed catalog entries and playlist membership until a later catalog edit; it does not restart playback or restore the PC queue.
 
 [Common questions](FAQ.md) · [Troubleshooting](TROUBLESHOOTING.md) · [All guides](README.md)

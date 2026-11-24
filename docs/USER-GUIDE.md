@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **0.9.19**.
+Applies to Magic Music Wall **1.0.0**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
@@ -11,8 +11,8 @@ Click **Library tools** at the bottom left to hide or show the tool buttons and 
 ## Connect a speaker or stereo
 
 1. Open **Bluetooth settings** from Magic Music Wall and pair/connect your receiver in Windows. For wired speakers, make sure Windows can play through them.
-2. Return to the app and refresh the output list with **↻**, or use **Setup → Sound → Refresh outputs**.
-3. Select the device under **Listening on**. Start at a comfortable volume.
+2. Return to the app and use **View options → Refresh audio outputs**, or **Setup → Sound → Refresh outputs**.
+3. Select the device in the audio-output list beside the bottom playback controls. Start at a comfortable volume.
 4. Add and play a song using the steps below.
 
 The device's name in the list does not by itself prove that a Bluetooth connection is healthy. If sound is choppy or absent, use the [audio troubleshooting steps](TROUBLESHOOTING.md#no-sound-or-the-wrong-output).
@@ -24,8 +24,8 @@ The device's name in the list does not by itself prove that a Bluetooth connecti
 **Shuffle:** turning on Shuffle during playback takes effect on the next song, including desktop Next, web-remote Next and automatic advancement. A random remaining entry moves into the next queue position, leaving already-played entries in place. Repeat starts another pass when the queue ends. Turning Shuffle off resumes the visible queue order. If only one unplayed entry remains, that is the next song; Shuffle does not replay earlier entries unless Repeat is on.
 
 1. Open **Manage folders**, click **Add folders…**, and choose a folder such as `D:\Music`, or choose **Add files…** in that window to add particular songs. The app catalogs your choices; files remain in their original locations.
-2. In **Folders**, click a folder name to enter it. Opening a folder adds nothing to the playback queue.
-3. Click a song's filename or **+ Queue** to append only that song. Press the bottom **Play** button to start the queue, or use the separate **Play** button on the song's row to play it immediately.
+2. In **Folders**, double-click a folder name to enter it. Opening a folder adds nothing to the playback queue.
+3. Single-click a song to select it. Double-click its name to append it and play it immediately while keeping the queue. **+ Queue** appends without interrupting playback. Explicit **Play** actions may replace the queue.
 4. Use **Play folder** when you want every song in that folder and its subfolders. **Up next** is your current playback queue; saved playlists are separate.
 
 ![Folder and file grid](images/library.png)
@@ -62,7 +62,7 @@ For a visual way to explore the collection, click **Music constellation** on the
 
 Searching a collection covers all its library folders, even if you were inside one folder. Searching a selected playlist stays inside that playlist. All words must match somewhere in the item's information; for example, `quartet evening` can match an artist and album together.
 
-Scanning does not move or delete media. If a USB drive or share is disconnected, its saved entries remain. Reconnect it and rescan. Scans are manual unless you enable **Rescan library folders when the app starts** in Setup.
+Scanning does not move or delete media. If a USB drive or share is disconnected, its saved entries remain. Reconnect it and rescan. Scans are manual unless you enable startup rescanning or **Watch source folders for changes while the app is open** in Setup. Watched changes are grouped before rescanning; missing drives remain in the catalog.
 
 ## Make a playlist
 
@@ -73,19 +73,19 @@ Scanning does not move or delete media. If a USB drive or share is disconnected,
 1. Find the songs you want and check their boxes. Ctrl/Shift selection on rows also works.
 2. Click **+** next to **Playlists** on the left.
 3. Enter a name, such as **Dinner**, and choose **Selected songs** under **Start with**. Use a different name if that playlist already exists.
-4. Click **Create**. The new playlist opens with those songs and becomes the destination on the right.
+4. Click **Create**. The new playlist opens with those songs.
 
 ### Add more songs later
 
 1. Return to **All music** and select the songs.
-2. Under **Add songs to playlist** on the right, choose the destination playlist.
-3. Click **Add selected to playlist**.
+2. Click **Add to playlist…** above the collection.
+3. Choose a regular playlist in the dialog, then click **Add to playlist**.
 
-Choose the destination on the right after selecting songs. Clicking a playlist in the left sidebar changes what you are browsing.
+The destination chooser opens only when adding songs. Clicking a playlist in the left sidebar changes what you are browsing. Smart playlists are filled by rules and cannot accept manual additions.
 
 ### Save the current queue
 
-Click **Save** above **Up next**, enter a new playlist name, and confirm. The saved playlist opens; the current queue/playback continues. The left-side **+** dialog also offers **Current queue** when it contains songs.
+Click **Save queue** above **Up next**, enter a new playlist name, and confirm. The saved playlist opens; the current queue/playback continues. The left-side **+** dialog also offers **Current queue** when it contains songs.
 
 ![A saved playlist and its play/queue controls](images/playlists.png)
 
@@ -104,9 +104,9 @@ Right-click a playlist name to rename/delete it. Right-click a track while brows
 
 The queue is the order of items you are playing now. **Queue selected**, **+ Queue** and **+ Queue folder** append items; explicit Play actions can replace the queue with the items being started.
 
-Right-click a queue item to move or remove it, open **Song info / lyrics**, or **Edit file tags**. **Clear** empties the queue. Save it as a playlist if you want to reuse it later.
+Right-click a queue item to move or remove it, open **Song info / lyrics**, or **Edit file tags**. Ctrl/Shift selects multiple queue entries for removal. **Clear queue** empties the queue; **Undo** restores the most recent clear/removal. **Save queue** preserves the exact order including repeated tracks. Use **Play next** for selected library songs, or search Up next and choose **Find next** to locate an entry.
 
-Use the bottom controls for previous/next, pause, position, volume, shuffle and repeat. Shuffle applies when starting a new queue. The app saves your volume, selected output, shuffle and repeat preferences.
+Use the bottom controls for previous/next, pause, position, volume, shuffle and repeat. Shuffle takes effect on the next transition, including when toggled mid-queue. **View options → Repeat current track** repeats a naturally ending track; explicit Next still advances. The app saves volume, output, shuffle and repeat preferences. Session recovery saves queue order, duplicate occurrences and position; reopening is paused by default. Configure restore and optional automatic resume in **Setup → Sound**.
 
 ## Play a video or use a TV
 
@@ -124,11 +124,11 @@ Open **Setup** and choose the tab for the setting you want. Click **Save setting
 
 | Tab | What you can configure |
 | --- | --- |
-| **Sound** | Preferred audio output, volume, shuffle for new queues, and queue repeat. Windows handles Bluetooth pairing. |
-| **Library** | Add/manage source folders, rescan now, and choose whether to rescan at startup. |
+| **Sound** | Audio output, volume, shuffle upcoming tracks, repeat queue/current track, session restore and optional automatic resume. ReplayGain track-tag volume leveling requires an app restart. Windows handles Bluetooth pairing. |
+| **Library** | Manage sources, rescan now/startup, optional watched folders and compact spacing. |
 | **Metadata** | Optional movie lookup token and provider information. Music lookup needs no API key. |
 | **Remote** | Enable the web page, allow browser playback, set a sign-in passphrase, choose a PC address/port, and copy the web address or QR access links. |
-| **TV & data** | Choose defaults for file-sharing address/port and open the active library/settings folder. A sharing port of `0` selects an available port. |
+| **TV & data** | Choose defaults for file-sharing address/port and open the active library/settings folder, and create/restore private backups. A sharing port of `0` selects an available port. |
 
 Changes to folders/playlists and the main player's output, volume, shuffle and repeat are also saved as you use them. A Chromecast selection applies to the current session. File sharing starts only after **Start sharing this file**; saving its defaults does not start it.
 
@@ -151,6 +151,26 @@ Double-click a track in **Up Next** to play that queue position. Scrollbar arrow
 
 Library tools are ordered **Manage folders**, **Rescan library**, **Music constellation**, **AI playlist assistant**, then **Setup**.
 
-Song info groups MusicBrainz library info, AI song notes and Edit file tags on a wrapping action row. Song facts gives the selected article a large, independently scrollable reader. Scroll the whole popup to reach other controls when the window is short. MusicBrainz, AI notes and Metadata also keep their content usable with page scrolling at smaller window heights. Buttons have visible outlines and compact spacing, distinct from labels and input fields.
+Song info has **Overview & albums**, **Lyrics**, **Articles**, **MusicBrainz**, **AI notes** and **File tags** tabs. Saved information is readable in one workspace; reviewed metadata changes still use the guarded editors. Drag the article divider to resize the results and excerpt reader. The page scrolls when the window is short. Buttons have visible outlines and compact spacing, distinct from labels and fields.
 
-In **Song facts**, double-click an article result to load it directly in the reader. **Read selected article** remains available. In **Info & albums**, double-click a recording result to open its MusicBrainz source page; this does not change your saved album. The Lyrics tab keeps its lookup and reload controls, without an Open lyrics source button.
+In **Articles**, double-click a result to load its excerpt. In **Overview & albums**, double-click a recording to open its MusicBrainz source without changing the saved album. [Current screenshots and details](METADATA.md).
+
+## Adapt the workspace
+
+Drag the panel dividers to resize the library and queue. **View options** toggles either panel and compact/comfortable spacing. **Ctrl+L** toggles the library, **Ctrl+Q** the queue, and **F11** fullscreen listening. **Mini player** keeps compact transport controls available. **Pause visual motion** stops animation without stopping playback. Window geometry and panel preferences are saved.
+
+Use **View options → Filter and sort library…** to group songs by artist/album, choose sort order, or show favorites, unplayed/recently played, missing metadata or unavailable tracks. Genre and year fields narrow the results. **Toggle favorite for selected songs** marks or unmarks selected tracks. **Create smart playlist…** saves rules instead of a fixed list; all chosen conditions must match and results update when opened.
+
+## Exchange playlists and check library health
+
+**View options → Import M3U playlist…** imports a local M3U/M3U8 playlist and indexes accessible media it references. Duplicate occurrences and their order are retained. Unsupported online streams are rejected. Export a selected saved playlist from its right-click menu as a UTF-8 M3U8 file; smart playlists export their current results as a snapshot. The playlist contains paths, not media copies.
+
+**View options → Library health…** lists unavailable files, missing metadata and possible duplicates. Duplicate suggestions use matching title, artist and rounded duration; review versions before deciding what to remove. **Relink selected missing file…** asks you to confirm the moved file's new location while retaining its library ID and playlist references. No media is moved or edited.
+
+## Back up and restore
+
+Use **Setup → TV & data → Back up library…** for a ZIP of the library, settings and listening session. Keep it private because settings include remote-access information. Music, AI notes and sound-analysis caches are not included; back those up separately. Windows-protected credentials may require reentry on another account.
+
+**Restore backup…** validates the archive, retains a recovery ZIP in the data folder, closes the player and restores before restarting. Files are replaced individually with rollback on ordinary errors; the retained recovery copy is also important if power loss interrupts the operation.
+
+Manage folders now shows import progress with **Cancel import** inside the popup. Removal confirmations preview affected tracks and playlists. **Undo library removal** restores catalog entries and playlist membership until a later catalog edit; it does not restore the PC queue or restart playback. Original media stays on disk.

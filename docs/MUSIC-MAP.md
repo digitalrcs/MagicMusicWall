@@ -1,12 +1,12 @@
 # Explore your music constellation
 
-Applies to Magic Music Wall **0.9.19**.
+Applies to Magic Music Wall **1.0.0**.
 
 [Documentation home](README.md)
 
 The **Music constellation** is an animated network of artists, albums and songs already in your library. Select a name to explore its connections. Links act like springs: stronger relationships pull names closer, and related neighbors form groups as the network settles. It opens in a separate window, so you can keep using the main player.
 
-![Music constellation using demonstration artists and analyzed samples](images/music-constellation.png)
+![Music constellation using demonstration songs and metadata relationships](images/music-constellation.png)
 
 ## Open and explore
 
@@ -20,9 +20,11 @@ The result list is paged so a large collection remains usable. **← Previous** 
 
 ## Start from the music you are using
 
-Opening or reopening the constellation focuses on the current music, then the selected queue/library item, selected/open indexed folder, or first queued song. Artist/Album/Song view changes preserve the musical selection. Folder focus limits the map to its indexed music. With no available context, the alphabetical list remains the fallback.
+On first use, the constellation focuses on the current music, selected queue/library item, selected/open indexed folder, or first queued song. Later visits restore the last exploration: item type, similarity mode, search, genre, scope, selection, back history, zoom and pan. Reopening an already open window keeps its exploration intact.
 
-The current track has priority over a different highlighted queue item. This focus is applied when you open or reopen the map; it does not continuously follow every playback change while you explore. Click **Music constellation** in the player again to refocus. Choose **All music** to leave a folder scope.
+Enable **Follow now playing** to refocus when the playing song changes. Leave it off to browse independently. Artist/Album/Song view changes preserve the musical selection. Choose **All music** to leave a folder or artist scope. Optional view state is stored locally in `constellation-view.json`.
+
+**More like this · queue 20 songs** appends up to 20 distinct related songs, excluding the seed selection, using the current similarity mode. For artist/album selections it samples up to 20 seed songs. It does not replace the existing queue or interrupt playback. Existing related-item reasons and coverage indicators explain the evidence; a sparse library or Sound mode without analysis may produce fewer matches.
 
 ## Move around the constellation
 

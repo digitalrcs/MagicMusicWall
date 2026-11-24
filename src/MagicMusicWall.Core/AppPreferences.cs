@@ -18,6 +18,8 @@ public sealed class AppPreferences
     public string AiKeyProtected { get; set; } = "";
     public string AiKeyEndpoint { get; set; } = "";
     public string AiKeyProvider { get; set; } = "";
+    public List<string> AiSavedPrompts { get; set; } = [];
+    public bool AiExcludeQueued { get; set; } = true;
 
     public bool LibraryToolsExpanded { get; set; } = true;
     public int VisualizationMode { get; set; }
@@ -28,6 +30,20 @@ public sealed class AppPreferences
     public string AudioDeviceName { get; set; } = "";
     public bool Shuffle { get; set; }
     public bool RepeatQueue { get; set; }
+    public bool RepeatOne { get; set; }
+    public bool RestoreSession { get; set; } = true;
+    public bool ResumePlayback { get; set; }
+    public bool CompactLayout { get; set; }
+    public double WindowWidth { get; set; } = 1420;
+    public double WindowHeight { get; set; } = 900;
+    public bool WindowMaximized { get; set; }
+    public double LibraryPanelWidth { get; set; } = 220;
+    public double QueuePanelWidth { get; set; } = 310;
+    public bool LibraryPanelVisible { get; set; } = true;
+    public bool QueuePanelVisible { get; set; } = true;
+    public bool WatchFolders { get; set; }
+    public bool LevelPlaybackVolume { get; set; }
+    public string GuestAccessToken { get; set; } = "";
     public bool QueueExternalFiles { get; set; } = true;
     public bool RescanOnStartup { get; set; }
     public bool CollectionGridView { get; set; }
@@ -70,7 +86,12 @@ public sealed class AppPreferences
         }
     }
 
-    public AppPreferences Copy() => (AppPreferences)MemberwiseClone();
+    public AppPreferences Copy()
+    {
+        var copy = (AppPreferences)MemberwiseClone();
+        copy.AiSavedPrompts = [.. AiSavedPrompts];
+        return copy;
+    }
 
     public void Save(string directory)
     {
@@ -116,6 +137,11 @@ public sealed class AppPreferences
     {
         VisualizationPower = double.IsFinite(VisualizationPower) ? Math.Clamp(VisualizationPower, 0.5, 3) : 1.6;
         Volume = Math.Clamp(Volume, 0, 100);
+        WindowWidth = double.IsFinite(WindowWidth) ? Math.Clamp(WindowWidth, 1120, 7680) : 1420;
+        WindowHeight = double.IsFinite(WindowHeight) ? Math.Clamp(WindowHeight, 720, 4320) : 900;
+        LibraryPanelWidth = double.IsFinite(LibraryPanelWidth) ? Math.Clamp(LibraryPanelWidth, 180, 420) : 220;
+        QueuePanelWidth = double.IsFinite(QueuePanelWidth) ? Math.Clamp(QueuePanelWidth, 240, 600) : 310;
+        GuestAccessToken ??= "";
         if (SharingPort is < 0 or > 65535) SharingPort = 0;
         if (RemotePort is < 1 or > 65535) RemotePort = 8787;
         AudioDeviceId ??= "";
@@ -131,5 +157,6 @@ public sealed class AppPreferences
         AiKeyProtected ??= "";
         AiKeyEndpoint ??= "";
         AiKeyProvider ??= "";
+        AiSavedPrompts = (AiSavedPrompts ?? []).Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => p.Length > 2000 ? p[..2000] : p).Distinct().Take(30).ToList();
     }
 }

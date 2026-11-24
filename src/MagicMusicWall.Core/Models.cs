@@ -20,6 +20,9 @@ public sealed class MediaItem
     public double DurationSeconds { get; set; }
     public bool IsVideo { get; set; }
     public bool IsAvailable { get; set; } = true;
+    public bool Favorite { get; set; }
+    public int PlayCount { get; set; }
+    public DateTimeOffset? LastPlayedUtc { get; set; }
     // Library-only enrichment; these values never replace or write the file's own tags.
     public MusicBrainzInfo? MusicBrainz { get; set; }
 
@@ -45,6 +48,7 @@ public sealed class MusicPlaylist
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = "";
     public List<string> ItemIds { get; set; } = [];
+    public SmartPlaylistRule? Rule { get; set; }
 }
 
 public sealed class LibraryDocument

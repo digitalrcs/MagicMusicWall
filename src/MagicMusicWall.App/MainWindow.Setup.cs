@@ -109,7 +109,7 @@ public partial class MainWindow
         if (updated.RemoteAccessToken.Length < 32) updated.RemoteAccessToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         var restart = updated.RemoteEnabled != _settings.RemoteEnabled || updated.RemoteAddress != _settings.RemoteAddress ||
             updated.RemotePort != _settings.RemotePort || updated.RemoteAccessToken != _settings.RemoteAccessToken ||
-            updated.RemotePassphraseHash != _settings.RemotePassphraseHash ||
+            updated.RemotePassphraseHash != _settings.RemotePassphraseHash || updated.GuestAccessToken != _settings.GuestAccessToken ||
             updated.BrowserPlaybackEnabled != _settings.BrowserPlaybackEnabled;
         updated.Save(App.DataDirectory);
         _saveTimer.Stop();
@@ -117,6 +117,7 @@ public partial class MainWindow
         try
         {
             _settings = updated;
+            ApplyWorkspacePreferences();
             Volatile.Write(ref _requestedVolume, updated.Volume);
             VolumeSlider.Value = updated.Volume;
             VolumeText.Text = $"{updated.Volume}%";
@@ -144,7 +145,7 @@ public partial class MainWindow
                 _settings.RemoteAccessToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
                 _settings.Save(App.DataDirectory);
             }
-            await _remote.StartAsync(NetworkAddresses.Resolve(_settings.RemoteAddress), _settings.RemotePort, _settings.RemoteAccessToken, new RemoteBridge(this), _settings.RemotePassphraseHash);
+            await _remote.StartAsync(NetworkAddresses.Resolve(_settings.RemoteAddress), _settings.RemotePort, _settings.RemoteAccessToken, new RemoteBridge(this), _settings.RemotePassphraseHash, _settings.GuestAccessToken);
         }
         catch (Exception ex) { _remoteError = $"Web remote could not start: {ex.Message}"; Status(_remoteError); }
     }
@@ -156,8 +157,7 @@ public partial class MainWindow
         if (!string.IsNullOrEmpty(playlistId))
         {
             var playlist = _catalog.Document.Playlists.FirstOrDefault(p => p.Id == playlistId) ?? throw new ArgumentException("Playlist not found.");
-            var lookup = items.ToDictionary(i => i.Id);
-            items = playlist.ItemIds.Where(lookup.ContainsKey).Select(id => lookup[id]);
+            items = _catalog.PlaylistItems(playlist.Id);
         }
         else items = items.OrderBy(i => i.Artist, StringComparer.CurrentCultureIgnoreCase).ThenBy(i => i.Album, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(i => i.DiscNumber).ThenBy(i => i.TrackNumber).ThenBy(i => i.Title);
@@ -170,6 +170,10 @@ public partial class MainWindow
         switch (command.Action)
         {
             case "clear-queue": await ClearQueueAsync(); break;
+            case "undo-queue": await UndoQueueAsync(); break;
+            case "queue-next":
+                QueueNextItems([_catalog.Document.Items.FirstOrDefault(i => i.Id == command.ItemId) ?? throw new ArgumentException("Track not found.")]);
+                break;
             case "queue-folder":
             case "queue-selection":
                 // Resolve the complete batch before mutating the queue; stale IDs
@@ -180,7 +184,7 @@ public partial class MainWindow
                 var index = command.QueueIndex!.Value;
                 if (index >= _queue.Count || _queue[index].Id != command.ItemId)
                     throw new ArgumentException("The queue changed. Refresh the remote and choose the track again.");
-                await PlayIndex(index);
+                await PlayIndex(index, 0);
                 break;
             case "remove-queue-item":
                 await RemoveQueueItem(command.QueueIndex!.Value, command.ItemId);
@@ -195,6 +199,7 @@ public partial class MainWindow
             case "play-results": await StartQueue(RemoteResults(command.Query ?? "", command.PlaylistId)); break;
             case "shuffle": ShuffleBox.IsChecked = command.Enabled!.Value; break;
             case "repeat": RepeatBox.IsChecked = command.Enabled!.Value; break;
+            case "repeat-one": _settings.RepeatOne = command.Enabled!.Value; _settings.Save(App.DataDirectory); break;
             case "refresh-audio": RefreshAudio(); break;
             case "audio-output":
                 if (_cast.Renderer is not null) throw new InvalidOperationException("Stop casting in the Windows app before changing PC audio output.");
@@ -232,7 +237,7 @@ public partial class MainWindow
         }
     }
 
-    private sealed partial class RemoteBridge(MainWindow main) : IRemoteControl, IRemoteSongInformation
+    private sealed partial class RemoteBridge(MainWindow main) : IRemoteControl, IRemoteSongInformation, IRemoteQueue
     {
         public Task<RemoteState> GetStateAsync(CancellationToken cancellationToken) => main.Dispatcher.InvokeAsync(() =>
         {
@@ -240,10 +245,17 @@ public partial class MainWindow
             return new RemoteState(main._current?.Id, main.NowTitle.Text, main.NowArtist.Text, main._player.IsPlaying,
                 Math.Max(0, main._player.Time), Math.Max(0, main._player.Length), main._settings.Volume,
                 main._cast.Renderer is not null ? main._cast.Name : main.AudioOutputLabel,
-                main._queue.Take(500).Select(ToRemote).ToList(), main._catalog.Document.Playlists.Select(p => new RemotePlaylist(p.Id, p.Name, p.ItemIds.Count)).ToList(),
+                main._queue.Take(500).Select(ToRemote).ToList(), main._catalog.Document.Playlists.Select(p => new RemotePlaylist(p.Id, p.Name, main._catalog.PlaylistItems(p.Id).Count)).ToList(),
                 main._current is null ? -1 : main._queueIndex, main._settings.BrowserPlaybackEnabled,
                 main.ShuffleBox.IsChecked == true, main.RepeatBox.IsChecked == true, main._settings.AudioDeviceId,
-                main.SetupAudioChoices().Select(d => new RemoteAudioOutput(d.Id, d.Name)).ToList(), main._cast.Renderer is null);
+                main.SetupAudioChoices().Select(d => new RemoteAudioOutput(d.Id, d.Name)).ToList(), main._cast.Renderer is null,
+                main._queue.Count, main._current is null ? null : ToRemote(main._current), main._settings.RepeatOne);
+        }, DispatcherPriority.Background, cancellationToken).Task;
+
+        public Task<RemoteQueuePage> GetQueueAsync(int offset, int limit, CancellationToken cancellationToken) => main.Dispatcher.InvokeAsync(() =>
+        {
+            if (main._closing) throw new InvalidOperationException("The player is closing.");
+            return new RemoteQueuePage(main._queue.Skip(offset).Take(limit).Select(ToRemote).ToList(), offset, main._queue.Count);
         }, DispatcherPriority.Background, cancellationToken).Task;
 
         public Task<RemoteLibrary> GetLibraryAsync(string query, string? playlistId, CancellationToken cancellationToken) => main.Dispatcher.InvokeAsync(() =>

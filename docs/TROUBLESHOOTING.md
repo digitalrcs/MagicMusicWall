@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Applies to Magic Music Wall **0.9.19**.
+Applies to Magic Music Wall **1.0.0**.
 
 [Documentation home](README.md)
 
@@ -42,7 +42,7 @@ Click the playlist name on the left to browse its saved songs. Check its sidebar
 
 An **Empty playlist** starts with no songs. To add songs, browse the library, select them, choose the destination under **Add songs to playlist** on the right, then click **Add selected to playlist**.
 
-**Clear** above **Up next** only clears the playback queue. Click **Play playlist** to reload the saved playlist. **Queue playlist** appends it to the current queue. A single song's filename/**+ Queue** only adds that one song.
+**Clear queue** above **Up next** only clears the playback queue. Click **Play playlist** to reload the saved playlist. **Queue playlist** appends it to the current queue. A song's **+ Queue** button adds that one song. A single click selects a row; double-click plays it without replacing the existing queue.
 
 ## The phone page will not open
 
@@ -97,7 +97,7 @@ Successful writes display the original-file backup path. If the file was saved b
 
 ## The constellation selects the wrong music or shows few connections
 
-The player focuses on the current track first when opening or reopening the constellation. A different highlighted queue item does not override the current track. With no current music, it tries selected queue/library music, a selected/open folder, then the first queued song. Click **Music constellation** in the main player again to refocus; it does not continuously jump while you explore. If there is no usable context, the alphabetical fallback is expected.
+The constellation restores your last exploration. Enable **Follow now playing** to follow track changes; leave it off to explore independently. **More like this** adds related tracks without replacing the queue.
 
 Clear map search/genre filters and choose **All music** if results seem missing. Use **Metadata** or **Blended** before sound analysis; **Sound** needs analyzed audio on both sides of a connection. Check the coverage line. Missing tags and incomplete MusicBrainz coverage can leave few relationships. A rebuild does not automatically fetch online information or analyze sound. See [the three separate scan actions](GETTING-STARTED.md).
 
@@ -126,3 +126,16 @@ Select **Playing music · visuals** and raise the vertical **Visual power** slid
 ## Shuffle still plays in order
 
 Use version 0.9.10 or later. Earlier releases shuffled newly started lists but did not apply the checkbox to an already-playing queue. Turn on **Shuffle**, then press **Next** or let the current song finish. The player chooses randomly from remaining entries and moves the chosen entry into the next visible queue position. It can occasionally pick the entry that was already next. If only one unplayed entry remains, it must play that entry. Enable **Repeat queue** for another pass; disabling Shuffle resumes the visible queue order. Desktop Next, automatic advancement and web-remote Control PC Next use the same selection logic. Browser-only playback uses its own queue.
+
+
+## Restoring a listening session
+
+In **Setup → Sound**, enable **Restore my queue and position**. The app checkpoints the exact queue, including repeated songs, and restores paused. Automatic resume is a separate option. Missing catalog entries are skipped; unavailable drives keep their indexed entries. **Undo** restores the most recent clear/remove/reorder without deleting files.
+
+## Volume differs between tracks
+
+Enable ReplayGain in **Setup → Sound**, save, and restart the app. It uses existing track gain tags with peak protection; it does not analyze or write tags. Untagged files keep their existing level. Gapless playback and crossfade are not guaranteed.
+
+## A guest cannot change playback
+
+Guest links intentionally allow browsing and appending to the PC queue only. The owner passphrase or owner access link is required for transport, output changes, removals and browser streaming. Revoke the guest link in Setup and save to stop its access.

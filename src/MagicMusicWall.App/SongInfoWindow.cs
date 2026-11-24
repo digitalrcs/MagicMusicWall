@@ -19,7 +19,7 @@ internal sealed class SongInfoWindow : Window
     private readonly TextBlock _album = Ui.Text("", 14, true);
     private readonly TextBlock _status = Ui.Text("Choose a viewer below. Online searches send artist and song details, never your audio files.", 12, true);
     private readonly ListBox _matches = new();
-    private readonly ListBox _articles = new() { MaxHeight = 100 };
+    private readonly ListBox _articles = new();
     private readonly TextBox _lyrics = Reader();
     private readonly ListBox _lyricChoices = new() { MaxHeight = 150, Visibility = Visibility.Collapsed };
     private readonly TextBox _article = Reader();
@@ -41,24 +41,6 @@ internal sealed class SongInfoWindow : Window
         var header = new StackPanel();
         header.Children.Add(Ui.Text(item.Title, 25));
         _album.Text = AlbumLabel(); header.Children.Add(_album);
-        var tools = new WrapPanel { Margin = new Thickness(0, 0, 0, 4) };
-        header.Children.Add(tools);
-        if (enrich is not null)
-        {
-            var info = Ui.Button("MusicBrainz library info…", (_, _) => enrich(this));
-            info.HorizontalAlignment = HorizontalAlignment.Left; tools.Children.Add(info);
-        }
-        if (aiNotes is not null)
-        {
-            var notes = Ui.Button("AI song notes…", (_, _) => aiNotes(this));
-            notes.HorizontalAlignment = HorizontalAlignment.Left; tools.Children.Add(notes);
-        }
-        if (editTags is not null)
-        {
-            var edit = Ui.Button("Edit file tags…", (_, _) => { editTags(this); _album.Text = AlbumLabel(); });
-            edit.HorizontalAlignment = HorizontalAlignment.Left;
-            tools.Children.Add(edit);
-        }
         var query = new Grid { Margin = new Thickness(0, 4, 0, 4) };
         query.ColumnDefinitions.Add(new()); query.ColumnDefinitions.Add(new());
         var artistPanel = new StackPanel { Margin = new Thickness(0, 0, 8, 0) };
@@ -68,7 +50,7 @@ internal sealed class SongInfoWindow : Window
         AutomationProperties.SetName(_title, "Lookup song title"); titlePanel.Children.Add(_title); Grid.SetColumn(titlePanel, 1); query.Children.Add(titlePanel);
         header.Children.Add(query);
         var tabs = new WrapPanel { Margin = new Thickness(0, 0, 0, 4) };
-        foreach (var name in new[] { "Info & albums", "Lyrics", "Song facts" })
+        foreach (var name in new[] { "Overview & albums", "Lyrics", "Articles", "MusicBrainz", "AI notes", "File tags" })
         {
             var index = _tabs.Count;
             var button = Ui.Button(name, (_, _) => SelectTab(index)); _tabs.Add(button); tabs.Children.Add(button);
@@ -77,7 +59,13 @@ internal sealed class SongInfoWindow : Window
         DockPanel.SetDock(_status, Dock.Bottom); _status.Margin = new Thickness(0, 8, 0, 0); root.Children.Add(_status);
         root.Children.Add(_views);
         _views.Children.Add(AlbumView()); _views.Children.Add(LyricsView()); _views.Children.Add(FactsView());
-        var page = Ui.ScrollPage(root, header, _status, 610);
+        _views.Children.Add(DetailView("Saved library information", "MusicBrainz information enriches your library and constellation. It does not write your audio files.",
+            () => _item.MusicBrainz is { } info ? $"{info.Title} · {info.Artist}\n{info.Album}\nFirst release: {info.FirstReleaseDate}\n\nGenres: {string.Join(", ", info.Genres)}\nTags: {string.Join(", ", info.Tags)}\nInstruments: {string.Join(", ", info.Instruments)}\n\n{string.Join("\n", info.Credits)}\n\nRetrieved {info.RetrievedUtc.LocalDateTime:g}" : "No MusicBrainz information saved. Open review to find and confirm the correct recording.", "Review MusicBrainz…", enrich));
+        _views.Children.Add(DetailView("Saved AI notes", "AI notes are interpretations, not verified facts. Generating notes sends song metadata to your configured AI provider.",
+            () => { try { return AiSongNotes.Load(App.DataDirectory, _item.Id)?.Text ?? "No notes saved for this song."; } catch { return "Saved notes could not be read."; } }, "Generate or review notes…", aiNotes));
+        _views.Children.Add(DetailView("Physical file tags", "The reviewed editor previews changes and creates a backup before writing. Library album corrections and MusicBrainz information do not change these tags.",
+            () => $"File: {_item.Path}\n\nTitle: {_item.Title}\nArtist: {_item.Artist}\nAlbum from file: {_item.TaggedAlbum}\nGenre: {_item.Genre}\nYear: {_item.Year}\nTrack: {_item.TrackNumber} · Disc: {_item.DiscNumber}\n\nThese are the last indexed values. Open the editor to read current file tags.", "Review and edit file tags…", editTags));
+        var page = Ui.ScrollPage(root, header, _status, 420);
         AutomationProperties.SetName(page, "Song info page");
         AutomationProperties.SetName(_article, "Article reader");
         AutomationProperties.SetName(_lyrics, "Lyrics reader");
@@ -137,7 +125,7 @@ internal sealed class SongInfoWindow : Window
             _saveAlbum(match); _album.Text = AlbumLabel(); _status.Text = $"Album saved in your library: {match.Album}. Your media file was not changed.";
             return Task.CompletedTask;
         }));
-        actions.Children.Add(Action("Open MusicBrainz source", () => { if (_matches.SelectedItem is ListBoxItem { Tag: RecordingMatch match }) OpenSource(match.SourceUrl); return Task.CompletedTask; }));
+        actions.Children.Add(Action("Open MusicBrainz ↗", () => { if (_matches.SelectedItem is ListBoxItem { Tag: RecordingMatch match }) OpenSource(match.SourceUrl); return Task.CompletedTask; }));
         actions.Children.Add(Action("Restore album from file tag", () => { _saveAlbum(null); _album.Text = AlbumLabel(); _status.Text = "Restored the album from the original file tag."; return Task.CompletedTask; }));
         Bottom(panel, actions); panel.Children.Add(_matches);
         return panel;
@@ -210,8 +198,27 @@ internal sealed class SongInfoWindow : Window
             if (_articles.SelectedItem is not ListBoxItem { Tag: FactArticle selected }) { _status.Text = "Select a matching article first."; return; }
             await ReadArticleAsync(selected);
         }));
-        actions.Children.Add(Action("Open article source", () => { OpenSource(_articleUrl); return Task.CompletedTask; }));
-        DockTop(panel, actions); DockTop(panel, _articles); DockTop(panel, Ui.Text("Selected article", 12, true)); Bottom(panel, _articleCredit); panel.Children.Add(_article); return panel;
+        actions.Children.Add(Action("Read full article ↗", () => { OpenSource(_articleUrl); return Task.CompletedTask; }));
+        DockTop(panel, actions); Bottom(panel, _articleCredit);
+        var split = new Grid();
+        split.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star), MinHeight = 70 });
+        split.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        split.RowDefinitions.Add(new RowDefinition { Height = new GridLength(3, GridUnitType.Star), MinHeight = 180 });
+        split.Children.Add(_articles);
+        var divider = new GridSplitter { Height = 7, HorizontalAlignment = HorizontalAlignment.Stretch, ResizeDirection = GridResizeDirection.Rows, Margin = new Thickness(0, 4, 0, 4) };
+        divider.SetResourceReference(Control.BackgroundProperty, "LineBrush");
+        AutomationProperties.SetName(divider, "Resize article results and reader"); Grid.SetRow(divider, 1); split.Children.Add(divider);
+        var reader = new DockPanel(); DockTop(reader, Ui.Text("Article excerpt · open the source for the full article", 12, true)); reader.Children.Add(_article);
+        Grid.SetRow(reader, 2); split.Children.Add(reader); panel.Children.Add(split); return panel;
+    }
+
+    private UIElement DetailView(string title, string help, Func<string> text, string actionLabel, Action<Window>? open)
+    {
+        var panel = new DockPanel();
+        DockTop(panel, Ui.Text(title, 18)); DockTop(panel, Ui.Text(help, 13, true));
+        var reader = Reader(); reader.Text = text();
+        if (open is not null) DockTop(panel, Action(actionLabel, () => { open(this); reader.Text = text(); _album.Text = AlbumLabel(); return Task.CompletedTask; }));
+        panel.Children.Add(reader); return panel;
     }
 
     private static ListBoxItem? ClickedResult(ListBox list, MouseButtonEventArgs e) =>

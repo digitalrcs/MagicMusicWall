@@ -2,6 +2,9 @@ namespace MagicMusicWall.Core;
 
 public static class QueueAdvance
 {
+    public static int NextAfterTrackEnds<T>(IList<T> queue, int current, bool shuffle, bool repeatQueue, bool repeatOne, Random? random = null)
+        => repeatOne && current >= 0 && current < queue.Count ? current : Next(queue, current, shuffle, repeatQueue, random);
+
     // Move the randomly chosen unplayed entry into the next slot. The prefix
     // remains playback history, so Previous and the visible queue stay coherent.
     public static int Next<T>(IList<T> queue, int current, bool shuffle, bool repeat, Random? random = null)

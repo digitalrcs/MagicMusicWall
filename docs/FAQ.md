@@ -1,6 +1,6 @@
 # Common questions
 
-Applies to Magic Music Wall **0.9.19**.
+Applies to Magic Music Wall **1.0.0**.
 
 [All guides](README.md) · [First-use walkthrough](GETTING-STARTED.md)
 
@@ -57,3 +57,27 @@ For help, read [Troubleshooting](TROUBLESHOOTING.md), then report the version, e
 Open **Manage folders** (also available in **Setup → Library**) and click **Clear added files**. Confirm to remove those entries from the library, playlists and PC queue. Your actual files stay on disk. This also clears entries left by older versions after removing their source folders.
 
 Starting in 0.9.15, **Remove selected source** removes its tracks automatically, except tracks still covered by another managed source. Use **Remove from library (keep file)** for individual selections.
+
+## Will my queue survive closing the app?
+
+Yes, when **Setup → Sound → Restore my queue and position when opening the app** is enabled. Exact queue order and repeated entries are retained. The restored session starts paused unless automatic resume is enabled. Entries removed from the library are not brought back by session recovery.
+
+## Can I undo removing songs?
+
+**Undo** in Up next restores the most recent queue clear or removal. In **Manage folders**, **Undo library removal** restores catalog entries and playlist membership after removing a source or added files, provided no later catalog edit has changed the library. This library undo does not put songs back into the PC queue or restart playback. Neither operation deletes music from the drive.
+
+## Can I import playlists or make automatic playlists?
+
+Use **View options → Import M3U playlist…** for local `.m3u`/`.m3u8` files. Ordered duplicate entries are retained; online-stream playlists are unsupported. Right-click a saved playlist to export a UTF-8 `.m3u8` snapshot. Music files are not copied.
+
+**View options → Create smart playlist…** supports favorites, unplayed tracks, plays in the last 30 days, and an optional genre. All selected rules must match. Results are reevaluated when opened; save the resulting queue as a regular playlist if you want to arrange its tracks manually.
+
+## What does a backup include?
+
+**Setup → TV & data → Back up library…** includes `library.json`, `settings.json` and `session.json` when present. It does not include music files, AI notes or sound-analysis caches. Keep the ZIP private: settings can include remote-access credentials. Windows-protected provider credentials may need reentering on another account or PC.
+
+Restore validates the complete archive before replacing supported files and retains a `before-restore-…zip` recovery copy in the data folder. The app closes before restoring and restarts afterward. Individual files are replaced atomically and ordinary restore errors roll back completed replacements; keep the recovery copy in case power loss interrupts the multi-file operation.
+
+## Can the app fix moved files or identify duplicates?
+
+Open **View options → Library health…** to review unavailable files, incomplete metadata and possible duplicate groups. Duplicate suggestions compare title, artist and rounded duration; they are not audio fingerprints or proof that recordings are identical. **Relink selected missing file…** lets you confirm a replacement path while preserving the library ID and playlists. It does not move, delete or write the media file.

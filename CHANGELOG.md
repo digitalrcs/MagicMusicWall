@@ -1,5 +1,19 @@
 # Changes
 
+
+## 1.0.0 — Listening sessions and production usability
+
+- Restore the exact queue, repeated entries, current occurrence and position; start paused by default, with optional automatic resume. Atomic periodic session checkpoints and recovery copy.
+- Queue play-next, repeat-one, drag reorder, multi-remove, search, explicit deduplication and undo. Saved playlists preserve repeated tracks and order.
+- Resizable/collapsible side panels, compact spacing, bottom audio output, embedded artwork, library filtering/sorting/grouping, mini player, fullscreen visuals, motion pause and keyboard/media-key controls.
+- Manage folders includes progress/cancel, removal preview and undo. Library health reviews unavailable files, metadata gaps and possible duplicates; reviewed relinking keeps playlist identity.
+- Favorites, local play history, smart playlists and local M3U/M3U8 import/export. Optional watched-folder rescans.
+- Unified song-detail tabs, a resizable article reader, retained guarded file-tag editors, and consistent row activation.
+- Web queue paging beyond 500 entries, persistent browser queues, reconnect feedback, repeat-one/play-next/undo and restricted guest queue links enforced by the server.
+- Reusable AI playlist requests, explicit quick/whole-collection scope, queued-track exclusion; constellation remembers exploration and optionally follows playback.
+- Optional ReplayGain track normalization with peak protection; playback-output test tone. Private library/settings/session ZIP backup and validated restore with recovery copy.
+- Refreshed guides and demonstration screenshots; expanded unit, native-session, digital-audio and browser regressions. Physical Bluetooth/TV behavior remains hardware dependent; no gapless/crossfade guarantee.
+
 ## 0.9.10
 
 - Add click-to-seek and a live formatted time preview while dragging the playback slider. Show duration-based time marks below the bar and cancel abandoned or stale-track drags safely.

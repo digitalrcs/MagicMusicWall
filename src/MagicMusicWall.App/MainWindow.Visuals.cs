@@ -20,7 +20,7 @@ public partial class MainWindow
         MusicVisual.Power = VisualPowerSlider.Value;
         _visualTimer.Tick += (_, _) =>
         {
-            if (WindowState != WindowState.Minimized)
+            if (WindowState != WindowState.Minimized && !_motionPaused)
                 MusicVisual.Advance(_visualCapture, _player.IsPlaying && _cast.Renderer is null);
         };
         _visualsInitialized = true;

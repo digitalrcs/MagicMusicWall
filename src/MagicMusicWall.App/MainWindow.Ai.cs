@@ -12,7 +12,9 @@ public partial class MainWindow
         if (_closing || !CanEdit()) return;
         if (_aiPlaylist is not null) { _aiPlaylist.Activate(); return; }
         _aiPlaylist = new AiPlaylistWindow(() => Preferences, _catalog.Document.Playlists,
-            (PlaylistsList.SelectedItem as MusicPlaylist)?.Id, AiInventory, ApplyAiSongs, (id, owner) => ShowAiNotes(id, owner), SelectedAiIds(), PickAiSongs) { Owner = this };
+            (PlaylistsList.SelectedItem as MusicPlaylist)?.Id, AiInventory, ApplyAiSongs, (id, owner) => ShowAiNotes(id, owner), SelectedAiIds(), PickAiSongs,
+            () => _queue.Select(item => item.Id).ToHashSet(StringComparer.Ordinal),
+            (prompts, excludeQueued) => { _settings.AiSavedPrompts = prompts.ToList(); _settings.AiExcludeQueued = excludeQueued; try { _settings.Save(App.DataDirectory); } catch (Exception ex) { Error(ex); } }) { Owner = this };
         _aiPlaylist.Closed += (_, _) => _aiPlaylist = null;
         _aiPlaylist.Show();
     }
@@ -43,7 +45,7 @@ public partial class MainWindow
         if (scope is not null)
         {
             var ids = scope == "$selection" ? selectedIds.ToHashSet() : scope == "$queue" ? _queue.Select(x => x.Id).ToHashSet()
-                : (_catalog.Document.Playlists.FirstOrDefault(x => x.Id == scope)?.ItemIds ?? []).ToHashSet();
+                : _catalog.PlaylistItems(scope).Select(item => item.Id).ToHashSet();
             items = items.Where(x => ids.Contains(x.Id)).ToArray();
         }
         // Copy the metadata before leaving the dispatcher. Never pass file paths to a provider.

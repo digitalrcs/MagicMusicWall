@@ -56,7 +56,7 @@ internal sealed class TextPrompt : Window
 
 internal sealed class FolderWindow : Window
 {
-    public FolderWindow(LibraryCatalog catalog, Func<bool> canRemove, Func<Task> libraryChanged, Func<Window, Task> addFolders, Func<Window, Task> addFiles)
+    public FolderWindow(LibraryCatalog catalog, Func<bool> canRemove, Func<Task> libraryChanged, Func<Window, Task> addFolders, Func<Window, Task> addFiles, Action? cancelScan = null, Func<string>? scanStatus = null)
     {
         Ui.Theme(this);
         Title = "Library folders"; Width = 730; Height = 500; MinWidth = 590; MinHeight = 400; WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -64,44 +64,66 @@ internal sealed class FolderWindow : Window
         var heading = Ui.Text("Your library sources", 24); DockPanel.SetDock(heading, Dock.Top); panel.Children.Add(heading);
         var help = Ui.Text("Removing a source also removes its tracks from the library, playlists and PC queue. Tracks covered by another source stay. Files on disk are never deleted.", 13, true); DockPanel.SetDock(help, Dock.Top); panel.Children.Add(help);
         var list = new ListBox { DisplayMemberPath = "Path" };
+        var empty = Ui.Text("No managed folders yet. Choose Add folders… to index a source, or Add files… for individual tracks.", 14, true);
+        empty.Margin = new Thickness(12); empty.IsHitTestVisible = false;
+        var sourceView = new Grid(); sourceView.Children.Add(list); sourceView.Children.Add(empty);
         var actions = new StackPanel();
         var added = Ui.Text("", 13, true);
         var busy = false;
         Button clear = null!;
-        async Task Change(Func<Task> change)
+        Button undo = null!;
+        var progress = Ui.Text("", 12, true);
+        var cancel = Ui.Button("Cancel import", (_, _) => { cancelScan?.Invoke(); progress.Text = "Cancelling... imported files are kept."; });
+        cancel.Visibility = Visibility.Collapsed;
+        var operation = new StackPanel(); operation.Children.Add(progress); operation.Children.Add(cancel);
+        DockPanel.SetDock(operation, Dock.Bottom); panel.Children.Add(operation);
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+        timer.Tick += (_, _) => { if (busy && scanStatus is not null) progress.Text = scanStatus(); };
+        Closed += (_, _) => timer.Stop();
+        async Task Change(Func<Task> change, bool importing = false)
         {
             if (busy || !canRemove()) return;
-            busy = true; actions.IsEnabled = false;
+            busy = true; actions.IsEnabled = false; cancel.Visibility = importing && cancelScan is not null ? Visibility.Visible : Visibility.Collapsed; if (importing) timer.Start();
             try { await change(); }
             catch (Exception ex) { MessageBox.Show(this, ex.Message, "Library folders"); }
-            finally { busy = false; actions.IsEnabled = true; Refresh(); }
+            finally { busy = false; timer.Stop(); cancel.Visibility = Visibility.Collapsed; actions.IsEnabled = true; if (importing && scanStatus is not null) progress.Text = scanStatus(); Refresh(); }
         }
         var remove = Ui.Button("Remove selected source", async (_, _) =>
         {
             if (list.SelectedItem is not LibraryFolder folder || !canRemove()) return;
-            if (MessageBox.Show(this, "Remove this source and its tracks from the library, playlists and PC queue? Files stay on disk. Tracks covered by another source are kept.", "Remove library source", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+            var preview = catalog.PreviewFolderRemoval(folder.Id);
+            if (MessageBox.Show(this, $"Remove this source? {preview.Tracks:N0} tracks will leave the library and PC queue; {preview.Playlists:N0} playlists will change. Files stay on disk. Tracks covered by another source are kept. Undo is available until your next library edit.", "Remove library source", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
             await Change(async () => { catalog.RemoveFolder(folder.Id); await libraryChanged(); });
         });
         clear = Ui.Button("Clear added files", async (_, _) =>
         {
             if (!canRemove()) return;
-            var count = FolderBrowser.Browse(catalog.Document.Folders, catalog.Document.Items, FolderBrowser.LooseFiles).Files.Count;
-            if (count == 0 || MessageBox.Show(this, $"Remove all {count:N0} added files from the library, playlists and PC queue? Files stay on disk. Managed folder tracks are kept.", "Clear added files", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+            var preview = catalog.PreviewAddedFilesRemoval();
+            var count = preview.Tracks;
+            if (count == 0 || MessageBox.Show(this, $"Remove all {count:N0} added files from the library and PC queue? {preview.Playlists:N0} playlists will change. Files stay on disk. Managed folder tracks are kept. Undo is available until your next library edit.", "Clear added files", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
             await Change(async () => { catalog.ClearAddedFiles(); await libraryChanged(); });
         });
         void Refresh()
         {
             list.ItemsSource = catalog.Document.Folders.ToList();
+            empty.Visibility = catalog.Document.Folders.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             var count = FolderBrowser.Browse(catalog.Document.Folders, catalog.Document.Items, FolderBrowser.LooseFiles).Files.Count;
             added.Text = $"Added files: {count:N0} outside your managed folders, including entries kept by older versions.";
-            clear.IsEnabled = count > 0;
+            clear.IsEnabled = count > 0; undo.IsEnabled = catalog.CanUndoRemoval;
         }
         var sources = new WrapPanel();
-        sources.Children.Add(Ui.Button("Add folders…", async (_, _) => await Change(() => addFolders(this))));
-        sources.Children.Add(Ui.Button("Add files…", async (_, _) => await Change(() => addFiles(this))));
+        sources.Children.Add(Ui.Button("Add folders…", async (_, _) => await Change(() => addFolders(this), true)));
+        sources.Children.Add(Ui.Button("Add files…", async (_, _) => await Change(() => addFiles(this), true)));
         sources.Children.Add(remove);
-        actions.Children.Add(sources); actions.Children.Add(added); actions.Children.Add(clear);
-        DockPanel.SetDock(actions, Dock.Bottom); panel.Children.Add(actions); panel.Children.Add(list); Content = panel;
+        undo = Ui.Button("Undo library removal", async (_, _) => await Change(async () =>
+        {
+            if (catalog.UndoRemoval()) { await libraryChanged(); progress.Text = "Library and playlists restored. Add tracks to the queue when ready; playback was not restarted."; }
+            else progress.Text = "Undo is no longer available after another library edit.";
+        }));
+        undo.ToolTip = "Restore the last removed library entries and playlist membership. The PC queue is not restored.";
+        var removal = new WrapPanel(); removal.Children.Add(clear); removal.Children.Add(undo);
+        actions.Children.Add(sources); actions.Children.Add(added); actions.Children.Add(removal);
+        DockPanel.SetDock(actions, Dock.Bottom); panel.Children.Add(actions); panel.Children.Add(sourceView); Content = panel;
         Closing += (_, e) => { if (busy) e.Cancel = true; };
         Refresh();
     }

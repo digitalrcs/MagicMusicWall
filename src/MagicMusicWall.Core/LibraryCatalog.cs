@@ -312,7 +312,7 @@ public sealed partial class LibraryCatalog
         ArgumentNullException.ThrowIfNull(itemIds);
         lock (_gate)
         {
-            var list = FindPlaylist(playlistId).ItemIds;
+            var list = EditablePlaylist(playlistId).ItemIds;
             var known = Document.Items.Select(i => i.Id).ToHashSet(StringComparer.Ordinal);
             var added = list.ToHashSet(StringComparer.Ordinal);
             foreach (var id in itemIds) if (known.Contains(id) && added.Add(id)) list.Add(id);
@@ -323,19 +323,15 @@ public sealed partial class LibraryCatalog
     public void RemoveFromPlaylist(string playlistId, IEnumerable<string> itemIds)
     {
         var removed = itemIds.ToHashSet(StringComparer.Ordinal);
-        lock (_gate) { FindPlaylist(playlistId).ItemIds.RemoveAll(removed.Contains); SaveLocked(); }
+        lock (_gate) { EditablePlaylist(playlistId).ItemIds.RemoveAll(removed.Contains); SaveLocked(); }
     }
 
     public void RemoveFolder(string folderId)
     {
         lock (_gate)
         {
-            var folder = Document.Folders.FirstOrDefault(f => f.Id == folderId);
-            if (folder is null) return;
-            var candidates = FolderBrowser.Browse([folder], Document.Items, folder.Path).Descendants.Select(i => i.Id).ToHashSet(StringComparer.Ordinal);
-            Document.Folders.RemoveAll(f => f.Id == folderId);
-            var loose = FolderBrowser.Browse(Document.Folders, Document.Items, FolderBrowser.LooseFiles).Files;
-            RemoveItems(loose.Where(i => candidates.Contains(i.Id)).Select(i => i.Id));
+            if (Document.Folders.All(f => f.Id != folderId)) return;
+            RemoveWithUndo(FolderRemovalIds(folderId), folderId);
         }
     }
 
@@ -353,9 +349,7 @@ public sealed partial class LibraryCatalog
         var removed = ids.ToHashSet(StringComparer.Ordinal);
         lock (_gate)
         {
-            Document.Items.RemoveAll(i => removed.Contains(i.Id));
-            foreach (var playlist in Document.Playlists) playlist.ItemIds.RemoveAll(removed.Contains);
-            SaveLocked();
+            RemoveWithUndo(removed);
         }
     }
 
@@ -475,7 +469,13 @@ public sealed partial class LibraryCatalog
         }
         if (doc.Playlists.Any(p => p == null || string.IsNullOrWhiteSpace(p.Id) || p.ItemIds == null)
             || doc.Folders.Any(f => f == null || string.IsNullOrWhiteSpace(f.Path))) throw new InvalidDataException("Invalid folder or playlist.");
-        foreach (var playlist in doc.Playlists) playlist.ItemIds = playlist.ItemIds.Where(ids.Contains).Distinct(StringComparer.Ordinal).ToList();
+        foreach (var playlist in doc.Playlists)
+        {
+            playlist.ItemIds = playlist.ItemIds.Where(ids.Contains).ToList();
+            if (playlist.Rule is { } rule)
+                try { _ = SmartPlaylists.Evaluate([], rule); }
+                catch (ArgumentException ex) { throw new InvalidDataException("Invalid smart playlist rule.", ex); }
+        }
         return doc;
     }
 

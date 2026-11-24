@@ -1,8 +1,8 @@
 # AI playlists and saved song notes
 
-Applies to Magic Music Wall **0.9.19**.
+Applies to Magic Music Wall **1.0.0**.
 
-This guide covers the current AI assistant, including the song/folder picker, incremental results and early-stop option.
+This guide covers the current AI assistant, including the song/folder picker, incremental results and review modes.
 
 The assistant recommends music already in your library. It does not download songs, use Spotify, or send audio files for listening. AI is optional; ordinary playback works without it.
 
@@ -28,7 +28,7 @@ Keys are encrypted using Windows protection for the current Windows account. Lea
    - `Choose only songs tagged with a release year in the 1980s.`
    - `Suggest quiet songs from this playlist for dinner.`
 4. Set **Max songs** (1–100).
-5. Leave **Stop when enough matches are found** checked for an early finish, or uncheck it to review the whole scope and keep the best matches. Click **Recommend** to review a list without changing playback.
+5. Choose **Quick suggestions** for an early finish, or **Whole collection review** to review the whole scope and keep the best matches. Click **Recommend** to review a list without changing playback.
 6. Review the reasons. All results are initially selected. Select the songs you want, then choose **Add selected to queue** or **Play selected**.
 
 **Recommend & play** explicitly requests immediate playback after a complete, successful review and replaces the queue. **Play selected** also replaces the queue. Normal player shuffle and output settings still apply. A textual request that says "play" does not bypass the Recommend preview button. Save the resulting queue as a playlist with the existing playlist controls.
@@ -62,3 +62,15 @@ If connection fails, check the server, URL, model and key. HTTP 401/403 usually 
 The development checks include a live LM Studio recommendation and song-note request using synthetic metadata. OpenAI, Claude and DeepSeek adapters are implemented but have not been tested with paid live accounts in this change.
 
 Provider references: [LM Studio compatibility](https://lmstudio.ai/docs/developer/openai-compat), [OpenAI Chat Completions](https://developers.openai.com/api/reference/chat-completions/overview), [Claude Messages](https://platform.claude.com/docs/en/api/messages/create), [DeepSeek Chat Completions](https://api-docs.deepseek.com/api/create-chat-completion/).
+
+![AI playlist assistant with reusable requests and review modes](images/ai-playlist.png)
+
+The screenshot uses demonstration library metadata.
+
+## Save requests and avoid queued songs
+
+Use **Save request** to keep the current request locally, then select it in **Saved music requests** and choose **Use saved** on a later visit. **Remove saved** removes only that reusable request. Up to 30 requests are retained in settings.
+
+Choose **Quick suggestions** to stop when enough matches have been found, or **Whole collection review** to consider every song in the selected source. Whole collection review can require more requests and time; both modes retain their match reasons and reviewed-song counts.
+
+**Exclude songs already queued** filters out a snapshot of the current queue before requesting recommendations. It is remembered between visits. When the source is **Current queue**, the exclusion is disabled because the queue itself is the intended source.

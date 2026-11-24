@@ -1,0 +1,9 @@
+{
+  "name": "magicmusicwall-web-checks",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Isolated browser regression checks for the embedded remote page",
+  "scripts": { "test": "node checks.cjs" },
+  "devDependencies": { "playwright": "1.61.1" },
+  "engines": { "node": ">=20" }
+}

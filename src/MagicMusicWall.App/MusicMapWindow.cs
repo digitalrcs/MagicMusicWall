@@ -81,8 +81,9 @@ internal sealed partial class MusicMapWindow : Window
 
     public MusicMapWindow(Func<bool, Task<MusicMapIndex>> rebuild, Func<IReadOnlyList<string>, Task> enqueue, Action<string> songInfo,
         Func<IProgress<MusicMapScanProgress>, CancellationToken, Task<MusicMapScanResult>> analyze,
-        Func<IReadOnlyList<string>?, Task> enrich)
+        Func<IReadOnlyList<string>?, Task> enrich, Func<string?>? nowPlaying = null)
     {
+        _nowPlaying = nowPlaying ?? (() => null);
         _rebuild = rebuild; _enqueue = enqueue; _songInfo = songInfo; _analyze = analyze; _enrich = enrich;
         Ui.Theme(this);
         Title = "Magic Music Wall · Music constellation";
@@ -145,6 +146,7 @@ internal sealed partial class MusicMapWindow : Window
         var navigation = new DockPanel { Margin = new Thickness(0, 0, 0, 10) };
         _back = Button("← Back", Back); DockPanel.SetDock(_back, Dock.Left); navigation.Children.Add(_back);
         var all = Button("All music", () => ResetScope()); DockPanel.SetDock(all, Dock.Left); navigation.Children.Add(all);
+        DockPanel.SetDock(_followPlaying, Dock.Left); navigation.Children.Add(_followPlaying);
         _scopeLabel.VerticalAlignment = VerticalAlignment.Center; _scopeLabel.Margin = new Thickness(10, 0, 0, 0); navigation.Children.Add(_scopeLabel);
         mapPanel.Children.Add(navigation);
         _map.LayoutTransform = _scale;
@@ -220,10 +222,11 @@ internal sealed partial class MusicMapWindow : Window
         _search.TextChanged += (_, _) => { if (!_updating) { _searchTimer.Stop(); _searchTimer.Start(); } };
         _searchTimer.Tick += (_, _) => { _searchTimer.Stop(); Filter(); };
         _search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _searchTimer.Stop(); Filter(); } };
-        Loaded += async (_, _) => await Rebuild(false);
+        Loaded += async (_, _) => { await Rebuild(false); RestoreExploration(); _followTimer.Start(); };
         _libraryTimer.Tick += async (_, _) => { _libraryTimer.Stop(); if (!_busy && _libraryDirty) await Rebuild(false); };
-        Closed += (_, _) => { _closed = true; _searchTimer.Stop(); _libraryTimer.Stop(); _analysisCancellation?.Cancel(); StopNetworkMotion(); };
+        Closed += (_, _) => { SaveExploration(); _followTimer.Stop(); _closed = true; _searchTimer.Stop(); _libraryTimer.Stop(); _analysisCancellation?.Cancel(); StopNetworkMotion(); };
         InitializeNetworkMotion();
+        InitializeExploration();
         ShowDetails(null);
     }
 
@@ -458,6 +461,16 @@ internal sealed partial class MusicMapWindow : Window
             actions.Children.Add(queueTracks); actions.Children.Add(info); _details.Children.Add(list); _details.Children.Add(actions);
             _details.Children.Add(Text("Ctrl-click or Shift-click to select several songs.", 11, true));
         }
+        _details.Children.Add(Button("More like this · queue 20 songs", async () =>
+        {
+            var seeds = entity.TrackIds.Select(id => _songs.GetValueOrDefault(id)).Where(song => song is not null).Take(20).ToArray();
+            var own = entity.TrackIds.ToHashSet(StringComparer.Ordinal);
+            var ids = seeds.SelectMany(song => _index!.Related(song!.Id, 20, Similarity))
+                .OrderByDescending(match => match.Score).SelectMany(match => match.Entity.TrackIds)
+                .Where(id => !own.Contains(id)).Distinct(StringComparer.Ordinal).Take(20).ToArray();
+            if (ids.Length == 0) { _status.Text = "No related songs found with this similarity mode. Try Metadata or analyze more music."; return; }
+            await Queue(ids);
+        }));
         _details.Children.Add(Section("Related music"));
         var matches = _index!.Related(entity.Id, 18, Similarity);
         if (matches.Count == 0) _details.Children.Add(Text(Similarity == MusicMapSimilarity.Sound ? "Choose Analyze sound to create local sound comparisons. Unanalyzed music can still be queued." : "No related music found. Explore All music, improve saved tags, or choose Analyze sound.", 12, true));

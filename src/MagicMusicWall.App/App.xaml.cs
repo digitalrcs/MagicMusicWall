@@ -13,6 +13,7 @@ public partial class App : Application
     public static string DataDirectory { get; private set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MagicMusicWall");
     public static string[] Arguments { get; private set; } = [];
     public static bool IsPortable { get; private set; }
+    internal static string? RestoreBackupOnExit { get; set; }
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -61,5 +62,27 @@ public partial class App : Application
         }
         catch (Exception ex) { File.AppendAllText(Path.Combine(DataDirectory, "errors.log"), ex + "\n"); MessageBox.Show(ex.Message, "Magic Music Wall could not start"); Shutdown(1); }
     }
-    protected override void OnExit(ExitEventArgs e) { _activationStop.Cancel(); _instanceMutex?.ReleaseMutex(); _instanceMutex?.Dispose(); base.OnExit(e); }
+    protected override void OnExit(ExitEventArgs e)
+    {
+        _activationStop.Cancel();
+        var restart = false;
+        if (RestoreBackupOnExit is { } archive)
+        {
+            try { LibraryBackup.Restore(DataDirectory, archive); restart = true; }
+            catch (Exception ex) { MessageBox.Show("Restore did not complete. Your pre-restore backup is retained in the app data folder.\n\n" + ex.Message, "Restore failed", MessageBoxButton.OK, MessageBoxImage.Error); }
+        }
+        _instanceMutex?.ReleaseMutex(); _instanceMutex?.Dispose();
+        base.OnExit(e);
+        if (restart && Environment.ProcessPath is { } executable)
+        {
+            try
+            {
+                var start = new System.Diagnostics.ProcessStartInfo(executable) { UseShellExecute = false };
+                if (IsPortable) start.ArgumentList.Add("--portable");
+                else { start.ArgumentList.Add("--data-dir"); start.ArgumentList.Add(DataDirectory); }
+                System.Diagnostics.Process.Start(start);
+            }
+            catch (Exception ex) { MessageBox.Show("Backup restored. Reopen Magic Music Wall manually.\n\n" + ex.Message, "Restore complete"); }
+        }
+    }
 }

@@ -31,7 +31,8 @@ public sealed record RemoteState(string? CurrentId, string Title, string Artist,
     long PositionMs, long DurationMs, int Volume, string Output,
     IReadOnlyList<RemoteItem> Queue, IReadOnlyList<RemotePlaylist> Playlists, int CurrentQueueIndex = -1, bool BrowserPlaybackEnabled = false,
     bool Shuffle = false, bool RepeatQueue = false, string AudioOutputId = "",
-    IReadOnlyList<RemoteAudioOutput>? AudioOutputs = null, bool CanChangeAudioOutput = true);
+    IReadOnlyList<RemoteAudioOutput>? AudioOutputs = null, bool CanChangeAudioOutput = true,
+    int QueueTotal = -1, RemoteItem? CurrentQueueItem = null, bool RepeatOne = false);
 public sealed record RemoteLibrary(IReadOnlyList<RemoteItem> Items, int Total);
 public sealed record RemoteCommand(string Action, string? ItemId = null, string? PlaylistId = null,
     string? Query = null, int? Volume = null, long? PositionMs = null, int? QueueIndex = null, string? FolderId = null,
@@ -58,12 +59,14 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
     public string? BaseUrl { get { lock (_stateLock) return _baseUrl; } }
 
     /// <summary>Starts on one local IPv4 address. Port zero chooses a free port for diagnostics/tests.</summary>
-    public async Task StartAsync(string address, int port, string accessToken, IRemoteControl control, string passphraseHash = "")
+    public async Task StartAsync(string address, int port, string accessToken, IRemoteControl control, string passphraseHash = "", string guestAccessToken = "")
     {
         var bindAddress = ValidateAddress(address);
         if (port is < 0 or > 65535) throw new ArgumentOutOfRangeException(nameof(port));
         if (string.IsNullOrEmpty(accessToken) || accessToken.Length is < 32 or > 512 || accessToken.Any(c => c <= 32 || c > 126))
             throw new ArgumentException("Create a remote access key before starting remote control.", nameof(accessToken));
+        if (guestAccessToken.Length > 0 && (guestAccessToken.Length is < 32 or > 512 || guestAccessToken.Any(c => c <= 32 || c > 126) || guestAccessToken == accessToken))
+            throw new ArgumentException("Guest access requires its own valid key.", nameof(guestAccessToken));
         ArgumentNullException.ThrowIfNull(control);
 
         await _lifecycle.WaitAsync().ConfigureAwait(false);
@@ -78,6 +81,8 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
             var logo = ReadResource("MagicMusicWall.Streaming.digitalrcs-logo.png");
             var tokenHash = SHA256.HashData(Encoding.UTF8.GetBytes(accessToken));
             var signIn = new RemoteSignIn(accessToken, passphraseHash);
+            var guestHash = guestAccessToken.Length == 0 ? null : SHA256.HashData(Encoding.UTF8.GetBytes(guestAccessToken));
+            bool IsGuest(HttpRequest request) => guestHash is not null && Authorized(request, guestHash) && !IsAuthorized(request);
             bool IsAuthorized(HttpRequest request) => Authorized(request, tokenHash) || signIn.Authorized(request);
             var lifetime = new CancellationTokenSource();
             var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
@@ -124,7 +129,7 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
                 }
                 if (context.Request.Path.StartsWithSegments("/api"))
                 {
-                    if (!IsAuthorized(context.Request))
+                    if (!IsAuthorized(context.Request) && !IsGuest(context.Request))
                     {
                         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                         context.Response.Headers.WWWAuthenticate = "Bearer";
@@ -132,6 +137,9 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
                         return;
                     }
                 }
+                if (IsGuest(context.Request) && context.Request.Path.StartsWithSegments("/api") &&
+                    context.Request.Path.Value is not ("/api/access" or "/api/state" or "/api/queue" or "/api/library" or "/api/folders" or "/api/command"))
+                { context.Response.StatusCode = StatusCodes.Status403Forbidden; return; }
                 try { await next(context).ConfigureAwait(false); }
                 catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested || lifetime.IsCancellationRequested)
                 {
@@ -147,6 +155,7 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
             application.MapGet("/", () => Results.Text(page, "text/html; charset=utf-8"));
             application.MapGet("/brand-logo.png", () => Results.Bytes(logo, "image/png"));
             signIn.MapRoutes(application, IsAuthorized);
+            application.MapGet("/api/access", (HttpContext context) => Results.Json(new { queueOnly = IsGuest(context.Request) }));
             application.MapGet("/api/folders", async (HttpContext context) =>
             {
                 var folder = context.Request.Query["folder"];
@@ -168,7 +177,31 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
             {
                 using var request = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted, lifetime.Token);
                 var state = await control.GetStateAsync(request.Token).ConfigureAwait(false);
+                if (IsGuest(context.Request)) state = state with { BrowserPlaybackEnabled = false, AudioOutputs = [], CanChangeAudioOutput = false };
                 await context.Response.WriteAsJsonAsync(state, JsonOptions, request.Token).ConfigureAwait(false);
+            });
+            application.MapGet("/api/queue", async (HttpContext context) =>
+            {
+                var args = context.Request.Query;
+                var offset = 0;
+                var limit = 100;
+                if (args.Keys.Any(key => key is not ("offset" or "limit")) ||
+                    (args.TryGetValue("offset", out var start) && (start.Count != 1 || !int.TryParse(start, NumberStyles.None, CultureInfo.InvariantCulture, out offset))) ||
+                    (args.TryGetValue("limit", out var size) && (size.Count != 1 || !int.TryParse(size, NumberStyles.None, CultureInfo.InvariantCulture, out limit))) ||
+                    offset < 0 || limit is < 1 or > 500)
+                {
+                    await BadRequest(context, "Choose a valid queue page (1–500 tracks).");
+                    return;
+                }
+                using var request = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted, lifetime.Token);
+                RemoteQueuePage page;
+                if (control is IRemoteQueue queue) page = await queue.GetQueueAsync(offset, limit, request.Token);
+                else
+                {
+                    var state = await control.GetStateAsync(request.Token);
+                    page = new(state.Queue.Skip(offset).Take(limit).ToArray(), offset, state.Queue.Count);
+                }
+                await context.Response.WriteAsJsonAsync(page with { Items = page.Items.Take(limit).ToArray() }, JsonOptions, request.Token);
             });
             application.MapGet("/api/library", async (HttpContext context) =>
             {
@@ -232,6 +265,8 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
                     await BadRequest(context, "The playback command or its values are not valid.");
                     return;
                 }
+                if (IsGuest(context.Request) && command!.Action is not ("queue-item" or "queue-selection" or "queue-folder"))
+                { context.Response.StatusCode = StatusCodes.Status403Forbidden; return; }
                 if (command!.Action is "resolve-selection" or "resolve-folder")
                 {
                     if (control is not IRemoteQueueSelection selection) { await FolderNotFound(context); return; }
@@ -263,7 +298,7 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
                 else
                 {
                     try { await control.ExecuteAsync(command, request.Token).ConfigureAwait(false); }
-                    catch (ArgumentException) when (command.Action == "remove-queue-item")
+                    catch (ArgumentException) when (command.Action is "remove-queue-item" or "play-queue-item")
                     {
                         context.Response.StatusCode = StatusCodes.Status409Conflict;
                         await context.Response.WriteAsJsonAsync(new { error = "The queue changed. Refresh it and try removing the song again." });
@@ -471,20 +506,20 @@ public sealed partial class RemoteControlServer : IAsyncDisposable
     private static bool ValidCommand(RemoteCommand? command)
     {
         if (command is null || command.ItemId?.Length > 128 || command.PlaylistId?.Length > 128 || command.Query?.Length > 256 ||
-            command.AudioOutputId?.Length > 1024 || command.Volume is < 0 or > 100 || command.PositionMs < 0 || command.QueueIndex is < 0 or > 499 ||
+            command.AudioOutputId?.Length > 1024 || command.Volume is < 0 or > 100 || command.PositionMs < 0 || command.QueueIndex < 0 ||
             (command.FolderId is not null && !ValidFolderId(command.FolderId)) ||
             (command.ItemIds?.Length ?? 0) + (command.FolderIds?.Length ?? 0) > 500 ||
             command.ItemIds?.Any(id => string.IsNullOrWhiteSpace(id) || id.Length > 128) == true ||
             command.FolderIds?.Any(id => !ValidFolderId(id)) == true) return false;
         return command.Action switch
         {
-            "play" or "pause" or "toggle" or "next" or "previous" or "play-results" or "clear-queue" => true,
-            "play-item" or "queue-item" => !string.IsNullOrWhiteSpace(command.ItemId),
+            "play" or "pause" or "toggle" or "next" or "previous" or "play-results" or "clear-queue" or "undo-queue" => true,
+            "play-item" or "queue-item" or "queue-next" => !string.IsNullOrWhiteSpace(command.ItemId),
             "play-queue-item" or "remove-queue-item" => !string.IsNullOrWhiteSpace(command.ItemId) && command.QueueIndex.HasValue,
             "play-playlist" => !string.IsNullOrWhiteSpace(command.PlaylistId),
             "play-folder" or "queue-folder" or "resolve-folder" => true,
             "queue-selection" or "resolve-selection" => (command.ItemIds?.Length ?? 0) + (command.FolderIds?.Length ?? 0) > 0,
-            "shuffle" or "repeat" => command.Enabled.HasValue,
+            "shuffle" or "repeat" or "repeat-one" => command.Enabled.HasValue,
             "audio-output" => command.AudioOutputId is not null,
             "refresh-audio" => true,
             "volume" => command.Volume.HasValue,

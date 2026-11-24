@@ -20,7 +20,7 @@ public partial class MainWindow
             {
                 ++_playVersion;
                 await Playback(() => { _player.Stop(); return true; });
-                _current = null; _queueIndex = -1;
+                _current = null; _queueIndex = -1; _pendingSessionPosition = null;
                 NowTitle.Text = "Nothing playing yet";
                 NowArtist.Text = "Choose a queued track to play";
             }

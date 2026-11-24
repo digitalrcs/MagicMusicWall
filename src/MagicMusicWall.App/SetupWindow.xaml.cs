@@ -10,7 +10,7 @@ public partial class SetupWindow : Window
 {
     private readonly MainWindow _main;
     private AppPreferences _draft;
-    private bool _busy;
+    private bool _busy, _dirty;
 
     internal SetupWindow(MainWindow main)
     {
@@ -21,6 +21,12 @@ public partial class SetupWindow : Window
         Volume.Value = _draft.Volume;
         Shuffle.IsChecked = _draft.Shuffle;
         RepeatQueue.IsChecked = _draft.RepeatQueue;
+        RepeatOne.IsChecked = _draft.RepeatOne;
+        RestoreSession.IsChecked = _draft.RestoreSession;
+        ResumePlayback.IsChecked = _draft.ResumePlayback;
+        CompactLayout.IsChecked = _draft.CompactLayout;
+        WatchFolders.IsChecked = _draft.WatchFolders;
+        LevelPlaybackVolume.IsChecked = _draft.LevelPlaybackVolume;
         QueueExternalFiles.IsChecked = _draft.QueueExternalFiles;
         RescanStartup.IsChecked = _draft.RescanOnStartup;
         RemoteEnabled.IsChecked = _draft.RemoteEnabled;
@@ -34,7 +40,16 @@ public partial class SetupWindow : Window
         InitializeAi();
         RefreshMetadataSettings();
         RefreshFolders(); RefreshRemote();
-        Closing += (_, e) => { if (_busy) { e.Cancel = true; SaveStatus.Text = "Please wait for the current operation to finish."; } };
+        AddHandler(TextBox.TextChangedEvent, new TextChangedEventHandler((_, e) => { if (e.OriginalSource is TextBox { IsReadOnly: false }) _dirty = true; }));
+        AddHandler(System.Windows.Controls.Primitives.Selector.SelectionChangedEvent, new SelectionChangedEventHandler((_, e) => { if (e.OriginalSource is ComboBox) _dirty = true; }));
+        AddHandler(System.Windows.Controls.Primitives.ToggleButton.CheckedEvent, new RoutedEventHandler((_, e) => { if (e.OriginalSource is CheckBox or PasswordBox) _dirty = true; }));
+        AddHandler(System.Windows.Controls.Primitives.ToggleButton.UncheckedEvent, new RoutedEventHandler((_, e) => { if (e.OriginalSource is CheckBox or PasswordBox) _dirty = true; }));
+        AddHandler(System.Windows.Controls.Primitives.RangeBase.ValueChangedEvent, new RoutedPropertyChangedEventHandler<double>((_, _) => _dirty = true));
+        AddHandler(PasswordBox.PasswordChangedEvent, new RoutedEventHandler((_, e) => { if (e.OriginalSource is CheckBox or PasswordBox) _dirty = true; }));
+        Closing += (_, e) => {
+            if (_busy) { e.Cancel = true; SaveStatus.Text = "Please wait for the current operation to finish."; }
+            else if (_dirty && MessageBox.Show(this, "Discard unsaved settings? Library folder changes have already been saved.", "Unsaved settings", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) e.Cancel = true;
+        };
     }
 
     private static void FillAddresses(ComboBox box, string saved)
@@ -58,9 +73,16 @@ public partial class SetupWindow : Window
             ? "Passphrase saved. Leave both fields blank to keep it."
             : "No passphrase saved yet. QR access links still work.";
     }
+    private async void TestOutput_Click(object sender, RoutedEventArgs e) => await RunOperation(async () => { await _main.TestAudioOutput((AudioOutput.SelectedItem as AudioChoice)?.Id ?? "", (int)Volume.Value); SaveStatus.Text = "Test tone sent at up to 30% volume. Verify that you heard it on the selected device."; });
     private void RefreshAudio_Click(object sender, RoutedEventArgs e) => LoadAudio((AudioOutput.SelectedItem as AudioChoice)?.Id ?? "", true);
     private void Bluetooth_Click(object sender, RoutedEventArgs e) => _main.OpenExternal("ms-settings:bluetooth");
     private void OpenData_Click(object sender, RoutedEventArgs e) { Directory.CreateDirectory(App.DataDirectory); _main.OpenExternal(App.DataDirectory); }
+    private async void BackupLibrary_Click(object sender, RoutedEventArgs e) => await RunOperation(() => _main.BackupLibrary(this));
+    private void RestoreLibrary_Click(object sender, RoutedEventArgs e)
+    {
+        try { if (!_main.PrepareLibraryRestore(this)) return; _dirty = false; Close(); _main.Close(); }
+        catch (Exception ex) { SaveStatus.Text = ex.Message; App.RestoreBackupOnExit = null; }
+    }
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
     private void TmdbSettings_Click(object sender, RoutedEventArgs e) => _main.OpenExternal("https://www.themoviedb.org/settings/api");
     private void RefreshMetadataSettings() => TmdbTokenStatus.Text = string.IsNullOrEmpty(_draft.TmdbTokenProtected)
@@ -112,7 +134,14 @@ public partial class SetupWindow : Window
         if ((Shuffle.IsChecked == true) != _draft.Shuffle) updated.Shuffle = Shuffle.IsChecked == true;
         if ((RepeatQueue.IsChecked == true) != _draft.RepeatQueue) updated.RepeatQueue = RepeatQueue.IsChecked == true;
         updated.RemoteAccessToken = _draft.RemoteAccessToken;
+        updated.GuestAccessToken = _draft.GuestAccessToken;
         if (newPassphraseHash is not null) updated.RemotePassphraseHash = newPassphraseHash;
+        updated.RepeatOne = RepeatOne.IsChecked == true;
+        updated.RestoreSession = RestoreSession.IsChecked == true;
+        updated.ResumePlayback = ResumePlayback.IsChecked == true;
+        updated.CompactLayout = CompactLayout.IsChecked == true;
+        updated.WatchFolders = WatchFolders.IsChecked == true;
+        updated.LevelPlaybackVolume = LevelPlaybackVolume.IsChecked == true;
         updated.QueueExternalFiles = QueueExternalFiles.IsChecked == true;
         updated.RescanOnStartup = RescanStartup.IsChecked == true;
         updated.RemoteEnabled = RemoteEnabled.IsChecked == true;
@@ -134,8 +163,15 @@ public partial class SetupWindow : Window
         Volume.Value = _draft.Volume;
         Shuffle.IsChecked = _draft.Shuffle;
         RepeatQueue.IsChecked = _draft.RepeatQueue;
+        RepeatOne.IsChecked = _draft.RepeatOne;
+        RestoreSession.IsChecked = _draft.RestoreSession;
+        ResumePlayback.IsChecked = _draft.ResumePlayback;
+        CompactLayout.IsChecked = _draft.CompactLayout;
+        WatchFolders.IsChecked = _draft.WatchFolders;
+        LevelPlaybackVolume.IsChecked = _draft.LevelPlaybackVolume;
         LoadAudio(_draft.AudioDeviceId);
         RefreshRemote();
+        _dirty = false;
     }
 
     private void CopyRemote_Click(object sender, RoutedEventArgs e)
@@ -144,6 +180,15 @@ public partial class SetupWindow : Window
         try { Clipboard.SetText(_main.RemoteLink); SaveStatus.Text = "Remote link copied. Open it on a device on your home network."; }
         catch (Exception ex) { SaveStatus.Text = $"Could not copy the link: {ex.Message}"; }
     }
+
+    private void CopyGuest_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(_main.RemoteAddressLink)) { SaveStatus.Text = "Enable the remote and save settings first."; return; }
+        if (_draft.GuestAccessToken.Length < 32) { _draft.GuestAccessToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)); _dirty = true; }
+        try { Clipboard.SetText(_main.RemoteAddressLink + "#key=" + Uri.EscapeDataString(_draft.GuestAccessToken)); SaveStatus.Text = "Guest link copied. Save settings to activate it."; }
+        catch (Exception ex) { SaveStatus.Text = ex.Message; }
+    }
+    private void RevokeGuest_Click(object sender, RoutedEventArgs e) { _draft.GuestAccessToken = ""; _dirty = true; SaveStatus.Text = "Save settings to revoke the guest link."; }
 
     private void CopyAddress_Click(object sender, RoutedEventArgs e)
     {
@@ -172,6 +217,7 @@ public partial class SetupWindow : Window
 
     private void RotateLink_Click(object sender, RoutedEventArgs e)
     {
+        _dirty = true;
         _draft.RemoteAccessToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         SaveStatus.Text = "Save settings to replace the access link and sign out remembered browsers. Reconnect with your passphrase or the new link.";
     }

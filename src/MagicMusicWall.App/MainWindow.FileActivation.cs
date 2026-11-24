@@ -13,6 +13,9 @@ public partial class MainWindow
         await _fileOpenGate.WaitAsync();
         try
         {
+            // A second Explorer activation can arrive while the initial
+            // checkpoint is still loading. Restore the old queue first.
+            while (!_sessionInitialized && !_closing) await Task.Delay(50);
             if (_closing) return;
             if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
             Show();

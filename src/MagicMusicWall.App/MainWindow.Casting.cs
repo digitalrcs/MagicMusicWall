@@ -148,7 +148,7 @@ public partial class MainWindow
         var active = _player.State is VLCState.Playing or VLCState.Paused or VLCState.Opening or VLCState.Buffering;
         _cast = choice; _castRegistry.Select(choice.Entry?.Id);
         ResetAudioRouteCheck();
-        if (_current is not null && active && !_queueChanging) await PlayIndex(_queueIndex, time, paused);
+        if (_current is not null && active && !_queueChanging) await PlayIndex(_queueIndex, time, paused, recordPlay: false);
         else await Playback(() => { if (!_player.SetRenderer(renderer)) throw new InvalidOperationException("Could not select this renderer."); return true; });
         if (!_closing) Status($"Playback destination: {choice.Name}.");
     }

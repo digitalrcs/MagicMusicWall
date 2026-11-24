@@ -1,6 +1,6 @@
 # Find information and edit file tags
 
-Applies to Magic Music Wall **0.9.19**.
+Applies to Magic Music Wall **1.0.0**.
 
 [Documentation home](README.md)
 
@@ -8,7 +8,7 @@ Metadata describes a song or video, such as its title, artist and album. Magic M
 
 ## Save MusicBrainz information in your library
 
-Open **Music constellation → MusicBrainz info** for the whole music library. In the constellation's details, **MusicBrainz for this selection** limits the window to the selected artist, album or song. The song-information viewer also has **MusicBrainz library info…** for one song.
+Open **Music constellation → MusicBrainz info** for the whole music library. In the constellation's details, **MusicBrainz for this selection** limits the window to the selected artist, album or song. For one song, open **Song info → MusicBrainz → Review MusicBrainz…**.
 
 Select a song in the list. The right-side **Find match** tab contains the search fields and recording candidates; **Saved info** shows the information already stored for that song. **Album for search (optional)** starts with the song's saved album and helps narrow versions. Clear or correct it if that album tag is wrong; editing search fields changes the lookup only.
 
@@ -39,9 +39,20 @@ Select a song and open **Song info / lyrics** from the toolbar or right-click me
 
 | Viewer | What to do |
 | --- | --- |
-| **Info & albums** | Click **Look up song & albums**, inspect MusicBrainz results, and open a source link when needed. |
+| **Overview & albums** | Click **Look up song & albums**, inspect MusicBrainz results, and open a source link when needed. |
 | **Lyrics** | Read local lyrics first; use **Find lyrics online** for LRCLIB suggestions. Compare album and duration when multiple versions appear. |
-| **Song facts** | Click **Find song facts**, choose the matching Wikipedia article, then **Read selected article**. Follow its source link for the full article. |
+| **Articles** | Click **Find song facts**, choose the matching Wikipedia article, then **Read selected article**. Double-clicking a result also loads its excerpt. **Read full article ↗** opens the complete source in your browser. |
+| **MusicBrainz** | Read saved library information, then **Review MusicBrainz…** to look up or change its reviewed match. |
+| **AI notes** | Read saved notes or open **Generate or review notes…**. Generated interpretations are not verified facts. |
+| **File tags** | Inspect the last indexed values, then **Review and edit file tags…** to read the current file and preview writes. |
+
+![Song information tabs showing fictional demonstration metadata](images/song-details.png)
+
+The screenshots use fictional demonstration music in the current application. The saved-data tabs keep related information together; review/edit actions open the existing guarded editors. Double-click a recording in **Overview & albums** to open its MusicBrainz source. This does not apply the album.
+
+![Resizable article results and excerpt reader with demonstration text](images/article-reader.png)
+
+Drag the horizontal divider between article results and the reader to change their heights. The reader scrolls independently; the entire page can scroll when the window is short. Articles are excerpts, not complete reproductions: open the full source for its references. The Lyrics tab has lookup and reload controls without an API-source button.
 
 **Use selected album** in the information viewer saves an album override in this app's library only. It survives rescans and does not edit the media file. **Restore album from file tag** removes that override. If another program changed the file's tags, rescan first to refresh the indexed values.
 

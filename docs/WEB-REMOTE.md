@@ -1,6 +1,6 @@
 # Control the PC or listen in a browser
 
-Applies to Magic Music Wall **0.9.19**.
+Applies to Magic Music Wall **1.0.0**.
 
 [Documentation home](README.md)
 
@@ -20,7 +20,9 @@ You can bookmark the plain address. Without **Remember this browser**, access la
 
 Existing **Show QR code**, **Copy remote link**, and listening links also work. They include a quick access key and do not require the passphrase.
 
-![Web remote with collection and playback controls](images/web-remote.png)
+![Current web remote with collection and playback controls](images/web-remote.png)
+
+Screenshots use demonstration titles and an isolated library; no personal access links are shown.
 
 The other device must be able to reach the PC. A guest Wi-Fi network may isolate devices even when both have internet access. If Windows asks about network access, allow only the private network you intend to use.
 
@@ -43,7 +45,7 @@ Use **Copy listening link** or **Listening QR code** in Setup to open the page w
 
 Tap **Remove** beside the item in **Up next** or **This browser’s queue**. It removes only that queue entry; it does not delete the media file or change a saved playlist. The PC and browser queues remain separate.
 
-Removing another item leaves the current song playing. Removing the current item starts the next item, or the previous item if the removed item was last. Removing the final item stops playback and leaves an empty queue. If another controller changed the queue first, refresh it and try again.
+Removing another item leaves the current song playing. Removing the current item advances to the next item, or the previous item if the removed item was last; a paused PC session stays paused. Removing the final item stops playback and leaves an empty queue. If another controller changed the queue first, refresh it and try again.
 
 ## Browse and view song information
 
@@ -51,7 +53,7 @@ The remote has **Folders / All songs**, **All folders** and **↑ Up** controls.
 
 Long song and folder names wrap onto multiple lines in the directory and queue. On a phone, artist and album appear beneath the song name, leaving more room for the title. You do not need to drag a column heading to read it.
 
-![Phone remote with a wrapped title and a Remove action for each queued song](images/web-remote-phone.jpg)
+![Current phone remote with destination, playback settings, selection and queue controls](images/web-remote-phone.jpg)
 
 Tap **Song info** for the current track, or **Info** beside a library or queue song, to read saved details and local lyrics. The dialog also offers online albums, lyrics and song facts. These viewers do not write media tags; use the Windows app for that.
 
@@ -85,7 +87,7 @@ When **Shuffle** is enabled in the desktop player, the web remote's **Control PC
 
 ## PC output and queue settings
 
-In **Control PC**, expand **Now playing** to change **Shuffle** and **Repeat queue**. These controls use the same saved settings as the desktop player and update when another controller changes them.
+In **Control PC**, expand **Now playing** to change **Shuffle**, **Repeat queue**, and **Repeat track**. These controls use the same saved settings as the desktop player and update when another controller changes them.
 
 Choose a **PC audio output**, then select **Use output**. **Refresh outputs** reloads the Windows device list. Connect Bluetooth devices in Windows first. Audio-output selection is unavailable while casting; stop casting in the Windows app before selecting a PC output. These controls do not change the phone or browser's audio output in **Listen/watch here** mode.
 
@@ -100,3 +102,19 @@ Use the checkboxes beside files and folders in the collection. **Add selected** 
 Use **Add** on a folder row to queue that folder, or **Add folder to queue** to queue the open folder. At collection home this becomes **Add collection to queue**. Folders include all indexed tracks in their subfolders, including tracks beyond the visible 500-row browsing limit. Overlapping folders/files in one batch add each track once; tracks already in the queue are not removed or deduplicated. A stale selected item cancels the entire batch instead of adding only part of it.
 
 **Clear queue** in Up next stops playback and empties the active destination's queue. In **Control PC** it clears the desktop queue; in **Listen/watch here** it clears only that browser's queue. Original files, the library, and saved playlists are unchanged. Adding to an empty queue does not start it; select a queued track to play.
+
+## Large queues, play next and undo
+
+The PC queue shows its full count and pages of 100 entries. **Previous page**, **Next page**, and **Show current** reach tracks anywhere in the queue, including beyond 500. Repeated songs remain separate occurrences. **Next** on a library row inserts the song immediately after the current queue entry; it does not interrupt playback.
+
+**Undo queue edit** restores the last supported desktop queue removal/clear, or the browser's last removal/clear in browser mode. Restoring a stopped browser queue does not start sound; choose a track to resume. **Repeat track** repeats a naturally finished PC track; manually selecting Next still advances.
+
+## Browser queue recovery
+
+The browser remembers its queue and selected occurrence on this device, including duplicate songs. Reloading never starts sound automatically. Storage contains song identifiers and display metadata, not temporary stream URLs. If storage is blocked or full, the queue still works for the current tab. A file that returns “no longer available” when selected is removed from this browser queue. Browser storage does not back up the desktop library.
+
+The header shows **Reconnecting…** when the PC cannot be reached. The page retries while visible; keep the Windows app running and both devices on the same reachable network. It does not replay failed queue commands automatically.
+
+## Guest queue access
+
+A host can share a separate guest link from **Setup → Remote**. Guests can browse the collection and append songs or folders to the PC queue. They cannot start/stop playback, change outputs or volume, remove/clear/reorder songs, open song information, or stream media to their browser. The destination header identifies guest mode. Share a full control link only with someone who should have those additional controls. The host can replace or disable guest access independently in Setup.

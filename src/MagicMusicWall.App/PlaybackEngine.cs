@@ -18,7 +18,7 @@ internal static class PlaybackEngine
         if (moveActive) player.SetOutputDevice(device);
     }
 
-    public static LibVLC Create(int initialVolume, bool headless = false)
+    public static LibVLC Create(int initialVolume, bool headless = false, bool replayGain = false)
     {
         // mmdevice's default volume-save uses VLC's persistent session GUID.
         // The app owns its saved volume; use a process-local session so a silent
@@ -26,6 +26,9 @@ internal static class PlaybackEngine
         var options = new List<string>
         {
             "--quiet", "--no-video-title-show", "--no-volume-save",
+            "--audio-replay-gain-mode=" + (replayGain ? "track" : "none"),
+            "--audio-replay-gain-preamp=0", "--audio-replay-gain-default=0",
+            "--audio-replay-gain-peak-protection",
             "--mmdevice-volume=" + (Math.Clamp(initialVolume, 0, 100) / 100f).ToString(CultureInfo.InvariantCulture)
         };
         if (headless) options.Add("--vout=dummy");
