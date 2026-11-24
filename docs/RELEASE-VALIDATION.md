@@ -1,5 +1,9 @@
 # Release validation
 
+## Version 1.0.2 mini-player fix
+
+All 24 native session checks pass, including independent mini-player visibility when the main window is minimized, restoring an existing minimized mini player, closing the mini without closing the main window, and closing both on application exit. The new visibility regression was reproduced against the previous implementation before applying the fix. The broader 1.0.0 baseline below remains historical evidence.
+
 ## Version 1.0.1 maintenance update
 
 Version 1.0.1 moves **Mini player** after both main view choices and refreshes the current guides and main-window screenshots. The version 1.0.0 results below remain the broader validation baseline; they are not a claim that every check was rerun for this maintenance update.

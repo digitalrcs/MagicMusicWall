@@ -1,6 +1,6 @@
 # Common questions
 
-Applies to Magic Music Wall **1.0.1**.
+Applies to Magic Music Wall **1.0.2**.
 
 [All guides](README.md) · [First-use walkthrough](GETTING-STARTED.md)
 

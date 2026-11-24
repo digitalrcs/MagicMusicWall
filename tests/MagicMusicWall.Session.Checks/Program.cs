@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -45,6 +47,24 @@ internal static class Program
                 Check(queue.Select(x => x.Id).SequenceEqual(["a", "b", "a"]), "restore preserves duplicate order");
                 Check(Field<int>(window, "_queueIndex") == 2 && Field<long?>(window, "_pendingSessionPosition") == 9000, "restore keeps the second occurrence and position");
                 Check(!player.IsPlaying && player.Media is null, "default restore does not load or emit audio");
+                Call(window, "ShowMiniPlayer");
+                var mini = Field<Window>(window, "_miniPlayer");
+                window.WindowState = WindowState.Minimized;
+                await Task.Delay(200);
+                var miniHandle = new WindowInteropHelper(mini).Handle;
+                Check(IsWindowVisible(miniHandle) && !IsIconic(miniHandle), "mini player stays visible when main window is minimized");
+                window.WindowState = WindowState.Normal;
+                mini.WindowState = WindowState.Minimized;
+                Call(window, "ShowMiniPlayer");
+                await Task.Delay(200);
+                Check(ReferenceEquals(mini, Field<Window>(window, "_miniPlayer")) && !IsIconic(miniHandle), "reopening mini restores the existing minimized window");
+                mini.Close();
+                Check(window.IsVisible && Field<Window?>(window, "_miniPlayer") is null, "closing mini leaves main player open");
+                Call(window, "ShowMiniPlayer");
+                var finalMini = Field<Window>(window, "_miniPlayer");
+                var miniClosed = false;
+                finalMini.Closed += (_, _) => miniClosed = true;
+                window.Closed += (_, _) => Check(miniClosed, "closing main also closes independent mini player");
                 var queueList = (ListBox)window.FindName("QueueList");
                 queueList.UpdateLayout();
                 Check(((int[])Call(window, "SelectedQueueIndices")!).SequenceEqual([2]), "WPF selection identifies second duplicate occurrence");
@@ -121,6 +141,12 @@ internal static class Program
     }
 
     private static T Field<T>(object target, string name) => (T)target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(target)!;
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindowVisible(IntPtr window);
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsIconic(IntPtr window);
     private static object? Call(object target, string name, params object?[] args) => target.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(target, args);
     private static Task Invoke(object target, string name, params object?[] args) => (Task)Call(target, name, args)!;
     private static async Task Wait(Func<bool> condition, string label)

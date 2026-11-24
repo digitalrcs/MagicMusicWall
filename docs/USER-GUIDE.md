@@ -1,6 +1,6 @@
 # Listen to your collection
 
-Applies to Magic Music Wall **1.0.1**.
+Applies to Magic Music Wall **1.0.2**.
 
 [Documentation home](README.md) · [Install first](WINDOWS-INSTALLER.md)
 
@@ -156,7 +156,7 @@ In **Articles**, double-click a result to load its excerpt. In **Overview & albu
 
 ## Adapt the workspace
 
-Drag the panel dividers to resize the library and queue. **View options** toggles either panel and compact/comfortable spacing. **Ctrl+L** toggles the library, **Ctrl+Q** the queue, and **F11** fullscreen listening. **Mini player**, after the **Music list** and **Playing music · visuals** choices, opens compact transport controls. **Pause visual motion** stops animation without stopping playback. Window size, maximized state and panel preferences are saved.
+Drag the panel dividers to resize the library and queue. **View options** toggles either panel and compact/comfortable spacing. **Ctrl+L** toggles the library, **Ctrl+Q** the queue, and **F11** fullscreen listening. **Mini player**, after the **Music list** and **Playing music · visuals** choices, opens compact, always-on-top transport controls. You can minimize the main window while the mini player stays visible. Closing the mini player leaves playback running; closing the main window exits both. **Pause visual motion** stops animation without stopping playback. Window size, maximized state and panel preferences are saved.
 
 Use **View options → Filter and sort library…** to group songs by artist/album, choose sort order, or show favorites, unplayed/recently played, missing metadata or unavailable tracks. Genre and year fields narrow the results. **Toggle favorite for selected songs** marks or unmarks selected tracks. **Create smart playlist…** saves rules instead of a fixed list; all chosen conditions must match and results update when opened.
 

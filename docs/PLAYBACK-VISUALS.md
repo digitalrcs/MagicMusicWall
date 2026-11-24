@@ -1,6 +1,6 @@
-# Playback visuals (version 1.0.1)
+# Playback visuals (version 1.0.2)
 
-Applies to Magic Music Wall **1.0.1**.
+Applies to Magic Music Wall **1.0.2**.
 
 ## More room for playlists
 
@@ -47,4 +47,4 @@ Casting and browser-only playback happen on other devices and cannot feed these 
 
 ## Focused listening
 
-Use **View options → Fullscreen listening** or F11 to expand the visuals. Press Escape or F11 to return. **Pause visual motion** freezes animation while audio continues. **Mini player** opens compact transport controls. Ctrl+L and Ctrl+Q toggle the library and queue panels; their widths and visibility are remembered.
+Use **View options → Fullscreen listening** or F11 to expand the visuals. Press Escape or F11 to return. **Pause visual motion** freezes animation while audio continues. **Mini player** opens compact, always-on-top transport controls that remain visible when the main window is minimized. Closing the mini player leaves playback running; closing the main window exits both. Ctrl+L and Ctrl+Q toggle the library and queue panels; their widths and visibility are remembered.

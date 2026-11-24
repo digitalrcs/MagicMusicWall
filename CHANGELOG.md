@@ -1,5 +1,9 @@
 # Changes
 
+## 1.0.2 — Independent mini player
+
+- Keep the always-on-top mini player visible when the main window is minimized, and restore an existing minimized mini player when reopened. Closing the main window still closes both windows.
+
 ## 1.0.1 — Mini player placement and current documentation
 
 - Keep the Music list and Playing music · visuals radio buttons together; place Mini player after both options.

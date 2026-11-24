@@ -187,10 +187,17 @@ public partial class MainWindow
     private void MiniPlayer_Click(object sender, RoutedEventArgs e) => ShowMiniPlayer();
     private void ShowMiniPlayer()
     {
-        if (_miniPlayer is not null) { _miniPlayer.Activate(); return; }
+        if (_miniPlayer is not null)
+        {
+            if (_miniPlayer.WindowState == WindowState.Minimized) _miniPlayer.WindowState = WindowState.Normal;
+            _miniPlayer.Activate();
+            return;
+        }
         var panel = new StackPanel { Margin = new Thickness(16) }; _miniTitle = Ui.Text(NowTitle.Text); panel.Children.Add(_miniTitle);
         var buttons = new WrapPanel(); buttons.Children.Add(Ui.Button("Previous", Previous_Click)); buttons.Children.Add(Ui.Button("Play / pause", Pause_Click)); buttons.Children.Add(Ui.Button("Next", Next_Click)); panel.Children.Add(buttons);
-        _miniPlayer = new Window { Title = "Magic Music Wall · Mini player", Width = 390, Height = 150, MinWidth = 340, MinHeight = 150, Content = panel, Owner = this, Topmost = true };
+        // An owned window is minimized with its owner. Keep the mini player independent;
+        // the main window's closing handler explicitly closes it during shutdown.
+        _miniPlayer = new Window { Title = "Magic Music Wall · Mini player", Width = 390, Height = 150, MinWidth = 340, MinHeight = 150, Content = panel, Topmost = true };
         Ui.Theme(_miniPlayer);
         _miniPlayer.Closed += (_, _) => { _miniPlayer = null; _miniTitle = null; }; _miniPlayer.Show();
     }
